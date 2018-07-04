@@ -5,7 +5,7 @@ from sanic.response import json
 from .app import app
 from .github_webhook import github_webhook
 from .utils import error_handler
-from .worker import worker
+from .worker import get_worker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('gitops')
@@ -15,7 +15,7 @@ logger = logging.getLogger('gitops')
 @error_handler
 @github_webhook
 async def webhook(request):
-    worker.enqueue(request.json)
+    await get_worker().enqueue(request.json)
     return json({}, status=200)
 
 

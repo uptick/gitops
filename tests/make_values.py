@@ -6,8 +6,8 @@ from gitops.deploy import Deployer
 logging.basicConfig(level=logging.INFO)
 
 payload = {
-    'before': '0e2df044219727927b204061cb8b77b2a19994f4',
-    'after': 'a3349eace6f0c8cdea3ba9ffb67f87df8205712d',
+    'before': 'ddd1f4a49a1898eaf49f5985b5d616d9a0065a1b',
+    'after': 'f9b02724b94fa67d8e6cbfd4afb8e9cfeb697969',
     'repository': {
         'clone_url': 'file:///Users/luke/Workspace/uptick/workforce-cluster'
     }

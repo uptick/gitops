@@ -1,9 +1,8 @@
 FROM python:rc-alpine
 
-ENV KUBE_LATEST_VERSION="v1.10.2"
-ENV HELM_VERSION="v2.9.1"
-
-# Install kubectl and dependencies.
+##
+## Install kubectl and dependencies.
+##
 # RUN apk add -U openssl curl tar gzip bash ca-certificates && \
 # wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
 # wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.23-r3/glibc-2.23-r3.apk && \
@@ -12,16 +11,37 @@ ENV HELM_VERSION="v2.9.1"
 # RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl && \
 # chmod +x /usr/bin/kubectl && \
 # kubectl version --client
+ENV KUBE_LATEST_VERSION v1.10.2
+ENV HELM_VERSION v2.9.1
 RUN    apk add --no-cache ca-certificates bash git \
     && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl \
     && wget -q http://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
 
+##
+## Install git-crypt.
+##
+ENV GITCRYPT_VERSION 0.5.0-2
+RUN    apk add --no-cache --update --virtual build-dependencies \
+        make openssl-dev \
+    && apk add --update \
+        openssl g++ \
+    && wget -q https://github.com/AGWA/git-crypt/archive/debian/$GITCRYPT_VERSION.tar.gz -O - | tar zxv -C /var/tmp \
+    && cd /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && make \
+    && make install PREFIX=/usr/local \
+    && rm -rf /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && apk del build-dependencies \
+    && rm -rf /var/lib/apt/lists/* /root/.cache
+
+##
+## Install dependencies and copy GitOps.
+##
 RUN mkdir -p /app
 COPY requirements.txt /app
 RUN    apk add --no-cache --update --virtual build-dependencies \
-        git wget g++ make libffi-dev \
+        git make libffi-dev \
     && pip install -r /app/requirements.txt \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache

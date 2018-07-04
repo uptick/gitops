@@ -16,7 +16,14 @@ def get_repo_path(name):
     return path
 
 
+def inject_oauth_token(url):
+    ii = url.index('://') + 3
+    return url[:ii] + os.environ['GITHUB_OAUTH_TOKEN'] + '@' + url[ii:]
+
+
 def clone_repo(name, url, path):
+    # TODO: Don't log the oauth token.
+    url = inject_oauth_token(url)
     logger.info(f'Cloning "{name}" from "{url}".')
     run((
         'git clone {url} {path}'

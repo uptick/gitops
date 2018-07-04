@@ -13,7 +13,7 @@ class Worker:
         self.queue = asyncio.Queue(loop=self.loop)
 
     async def enqueue(self, work):
-        logger.info('ENQUEUED WORK, {self.queue.qsize() + 1} IN QUEUE')
+        logger.info(f'Enqueued work, {self.queue.qsize() + 1} items in the queue.')
         await self.queue.put(work)
 
     async def run(self):
@@ -26,7 +26,12 @@ class Worker:
     async def process_work(self):
         work = await self.queue.get()
         deployer = Deployer(work)
-        deployer.deploy()
+        await deployer.deploy()
+
+
+def get_worker():
+    global worker
+    return worker
 
 
 worker = None

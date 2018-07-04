@@ -9,12 +9,14 @@ from sanic.response import json
 logger = logging.getLogger('gitops')
 
 
-def run(command):
+def run(command, catch=False):
     logger.info(f'Running "{command}".')
     exit_code = 0
     try:
         output = subprocess.check_output(command, shell=True)
     except subprocess.CalledProcessError as e:
+        if not catch:
+            raise
         exit_code = e.returncode
         output = e.stderr
     return {

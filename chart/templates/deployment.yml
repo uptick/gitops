@@ -33,6 +33,11 @@ spec:
               secretKeyRef:
                 name: gitops-secrets
                 key: SLACK_URL
+          - name: GITHUB_OAUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: gitops-secrets
+                key: GITHUB_OAUTH_TOKEN
           - name: GITHUB_WEBHOOK_KEY
             valueFrom:
               secretKeyRef:

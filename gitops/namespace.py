@@ -27,6 +27,12 @@ class Namespace:
         logger.info(f'Deploying namespace "{self.name}".')
         print(json.dumps(self.values, indent=2))
         with temp_repo(self.values['chart'], 'chart') as repo:
+            run((
+                'cd {}; '
+                'helm dependency build'
+            ).format(
+                repo
+            ))
             with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
                 cfg.write(json.dumps(self.values).encode())
                 cfg.flush()
@@ -43,7 +49,7 @@ class Namespace:
                     namespace=self.values['namespace'],
                     values_file=cfg.name,
                     path=repo
-                ))
+                ), catch=True)
 
     def from_path(self, path):
         self.path = path
