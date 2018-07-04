@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('gitops')
 
 
-@app.get('/webhook')
+@app.post('/webhook')
 @error_handler
 @github_webhook
 async def webhook(request):
@@ -19,5 +19,5 @@ async def webhook(request):
     return json({}, status=200)
 
 
-if __name__ == '__main__':
+def main():
     app.run(host='0.0.0.0', port=8000)

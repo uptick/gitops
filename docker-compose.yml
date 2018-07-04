@@ -4,6 +4,9 @@ services:
     build: .
     ports:
       - 80:8000
+    volumes:
+      - ./gitops:/app/gitops
     environment:
       - GITHUB_SECRET=secret
       - SLACK_TOKEN
+      - GIT_CRYPT_KEY_FILE

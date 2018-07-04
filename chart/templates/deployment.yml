@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gitops-deployment
+  labels:
+    app: gitops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitops
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: gitops
+      annotations:
+        checksum/environment: {{ include (print $.Template.BasePath "/environment.yml") . | sha256sum }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yml") . | sha256sum }}
+    spec:
+      containers:
+      - name: gitops
+        image: {{ .Values.image }}
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: gitops-environment
+        env:
+          - name: SLACK_URL
+            valueFrom:
+              secretKeyRef:
+                name: gitops-secrets
+                key: SLACK_URL
+          - name: GIT_WEBHOOK_KEY
+            valueFrom:
+              secretKeyRef:
+                name: gitops-secrets
+                key: GIT_WEBHOOK_KEY
+        volumeMounts:
+        - name: git-crypt-key
+          mountPath: "/etc/gitops"
+          readOnly: true
+      volumes:
+      - name: git-crypt-key
+        secret:
+          secretName: gitops-secrets
+          items:
+          - key: GIT_CRYPT_KEY
+            path: git_crypt_key
+      restartPolicy: Always
