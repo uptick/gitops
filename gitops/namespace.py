@@ -23,11 +23,11 @@ class Namespace:
             json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
-    def deploy(self):
+    async def deploy(self):
         logger.info(f'Deploying namespace "{self.name}".')
         print(json.dumps(self.values, indent=2))
-        with temp_repo(self.values['chart'], 'chart') as repo:
-            run((
+        async with temp_repo(self.values['chart'], 'chart') as repo:
+            await run((
                 'cd {}; '
                 'helm dependency build'
             ).format(
@@ -37,7 +37,7 @@ class Namespace:
                 cfg.write(json.dumps(self.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
-                return run((
+                return await run((
                     'helm upgrade'
                     ' --install'
                     ' -f {values_file}'

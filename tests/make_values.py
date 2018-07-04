@@ -15,7 +15,8 @@ payload = {
 
 
 async def go():
-    deployer = Deployer(payload)
+    deployer = Deployer()
+    await deployer.from_push_event(payload)
     await deployer.deploy()
 
 

@@ -25,7 +25,8 @@ class Worker:
 
     async def process_work(self):
         work = await self.queue.get()
-        deployer = Deployer(work)
+        deployer = Deployer()
+        await deployer.from_push_event(work)
         await deployer.deploy()
 
 

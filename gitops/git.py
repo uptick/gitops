@@ -1,7 +1,7 @@
 import logging
 import os
 import tempfile
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 
 from .utils import run
 
@@ -21,17 +21,17 @@ def inject_oauth_token(url):
     return url[:ii] + os.environ['GITHUB_OAUTH_TOKEN'] + '@' + url[ii:]
 
 
-def clone_repo(name, url, path):
+async def clone_repo(name, url, path):
     # TODO: Don't log the oauth token.
     url = inject_oauth_token(url)
     logger.info(f'Cloning "{name}" from "{url}".')
-    run((
+    await run((
         'git clone {url} {path}'
     ).format(
         path=path,
         url=url
     ))
-    run((
+    await run((
         'cd {path}; '
         'git-crypt unlock {key}'
     ).format(
@@ -40,9 +40,9 @@ def clone_repo(name, url, path):
     ))
 
 
-def update_repo(name, url, path):
+async def update_repo(name, url, path):
     logger.info('PULL: {name}')
-    run((
+    await run((
         'cd {path}; '
         'git pull {url}'
     ).format(
@@ -51,9 +51,9 @@ def update_repo(name, url, path):
     ))
 
 
-def checkout_repo_sha(name, sha, path):
+async def checkout_repo_sha(name, sha, path):
     logger.info(f'Checkout "{name}" at "{sha}".')
-    run((
+    await run((
         'cd {path}; '
         'git checkout {sha}'
     ).format(
@@ -62,23 +62,23 @@ def checkout_repo_sha(name, sha, path):
     ))
 
 
-def refresh_repo(name, url, sha=None, path=None):
+async def refresh_repo(name, url, sha=None, path=None):
     if not path:
         path = get_repo_path(name)
     if not os.path.exists(path):
-        update_repo(name, url, path)
+        await update_repo(name, url, path)
     else:
-        clone_repo(name, url, path)
+        await clone_repo(name, url, path)
     if sha:
-        checkout_repo_sha(name, sha, path)
+        await checkout_repo_sha(name, sha, path)
 
 
-@contextmanager
-def temp_repo(url, name=None, sha=None):
+@asynccontextmanager
+async def temp_repo(url, name=None, sha=None):
     if not name:
         name = 'anonymous'
     with tempfile.TemporaryDirectory() as tmp:
         if not isinstance(tmp, str):
             tmp = tmp.name
-        refresh_repo(name, url, sha=sha, path=tmp)
+        await refresh_repo(name, url, sha=sha, path=tmp)
         yield tmp

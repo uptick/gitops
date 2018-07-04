@@ -92,14 +92,17 @@ async def deploy(data):
 
 
 class Deployer:
-    def __init__(self, push_event):
+    def __init__(self):
+        pass
+
+    async def from_push_event(self, push_event):
         url = push_event['repository']['clone_url']
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
-        self.current_cluster = self.load_cluster(url, after)
+        self.current_cluster = await self.load_cluster(url, after)
         try:
-            self.previous_cluster = self.load_cluster(url, before)
+            self.previous_cluster = await self.load_cluster(url, before)
         except Exception as e:
             logger.warning('An exception was generated loading previous cluster state.')
             self.previous_cluster = None
@@ -111,7 +114,7 @@ class Deployer:
         results = {}
         for name in changed:
             ns = self.current_cluster.namespaces[name]
-            result = ns.deploy()
+            result = await ns.deploy()
             results[name] = result
 
     def calculate_changed(self):
@@ -125,9 +128,9 @@ class Deployer:
                 changed.add(name)
         return changed
 
-    def load_cluster(self, url, sha):
+    async def load_cluster(self, url, sha):
         logger.info(f'Loading cluster at "{sha}".')
-        with temp_repo(url, 'cluster', sha=sha) as repo:
+        async with temp_repo(url, 'cluster', sha=sha) as repo:
             cluster = Cluster(self.get_name_from_url(url))
             cluster.from_path(repo)
             return cluster

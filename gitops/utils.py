@@ -1,7 +1,8 @@
+import asyncio
 import logging
 import os
 import subprocess
-from functools import wraps
+from functools import partial, wraps
 
 import yaml
 from sanic.response import json
@@ -9,7 +10,17 @@ from sanic.response import json
 logger = logging.getLogger('gitops')
 
 
-def run(command, catch=False):
+async def run(command, catch=False):
+    loop = asyncio.get_event_loop()
+    call = partial(
+        sync_run,
+        command,
+        catch=catch
+    )
+    return await loop.run_in_executor(None, call)
+
+
+def sync_run(command, catch=False):
     logger.info(f'Running "{command}".')
     exit_code = 0
     try:
