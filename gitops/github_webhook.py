@@ -11,7 +11,7 @@ logger = logging.getLogger('gitops')
 
 def get_digest(data):
     return hmac.new(
-        os.environ['GITHUB_SECRET'].encode(),
+        os.environ['GITHUB_WEBHOOK_KEY'].encode(),
         data,
         hashlib.sha1
     ).hexdigest()

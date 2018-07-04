@@ -37,12 +37,12 @@ def deploy(ctx):
         ' --set domain=.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         ' --set secrets.SLACK_URL={}'
-        ' --set secrets.GIT_WEBHOOK_KEY={}'
+        ' --set secrets.GITHUB_WEBHOOK_KEY={}'
         ' --set secrets.GIT_CRYPT_KEY={}'
     ).format(
         IMAGE_URI.format(tag=get_tag()),
         get_secret('SLACK_URL'),
-        get_secret('GIT_WEBHOOK_KEY'),
+        get_secret('GITHUB_WEBHOOK_KEY'),
         get_secret_file('GIT_CRYPT_KEY_FILE')
     ))
 

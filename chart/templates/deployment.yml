@@ -33,11 +33,11 @@ spec:
               secretKeyRef:
                 name: gitops-secrets
                 key: SLACK_URL
-          - name: GIT_WEBHOOK_KEY
+          - name: GITHUB_WEBHOOK_KEY
             valueFrom:
               secretKeyRef:
                 name: gitops-secrets
-                key: GIT_WEBHOOK_KEY
+                key: GITHUB_WEBHOOK_KEY
         volumeMounts:
         - name: git-crypt-key
           mountPath: "/etc/gitops"
