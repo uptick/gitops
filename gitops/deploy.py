@@ -58,7 +58,7 @@ async def post_app_result(cluster, result):
         ).format(
             result['app'],
             cluster,
-            result['error']
+            result['output']
         ))
 
 
@@ -115,7 +115,10 @@ class Deployer:
         for name in changed:
             ns = self.current_cluster.namespaces[name]
             result = await ns.deploy()
-            results[name] = result
+            results[name] = {
+                **result,
+                'app': name
+            }
             await self.post_deploy_result(result)
         await self.post_final_summary(results)
 

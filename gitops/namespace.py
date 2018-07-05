@@ -25,7 +25,6 @@ class Namespace:
 
     async def deploy(self):
         logger.info(f'Deploying namespace "{self.name}".')
-        print(json.dumps(self.values, indent=2))
         async with temp_repo(self.values['chart'], 'chart') as repo:
             await run('helm init --client-only')
             await run((

@@ -25,9 +25,12 @@ class Worker:
 
     async def process_work(self):
         work = await self.queue.get()
-        deployer = Deployer()
-        await deployer.from_push_event(work)
-        await deployer.deploy()
+        ref = work.get('ref')
+        logger.info(f'Have a push to "{ref}".')
+        if ref == 'refs/heads/master':
+            deployer = Deployer()
+            await deployer.from_push_event(work)
+            await deployer.deploy()
 
 
 def get_worker():
