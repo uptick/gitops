@@ -20,6 +20,12 @@ async def run(command, catch=False):
     return await loop.run_in_executor(None, call)
 
 
+def compose_errors(exception):
+    if exception.stderr:
+        return exception.stderr
+    return exception.stdout
+
+
 def sync_run(command, catch=False):
     logger.info(f'Running "{command}".')
     exit_code = 0
@@ -29,7 +35,7 @@ def sync_run(command, catch=False):
         if not catch:
             raise
         exit_code = e.returncode
-        output = e.stderr
+        output = compose_errors(e)
     return {
         'exit_code': exit_code,
         'output': output
