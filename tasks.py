@@ -62,6 +62,16 @@ def deploy(ctx):
     ))
 
 
+@task
+def logs(ctx):
+    name = run(
+        'kubectl get pods --selector=app=gitops'
+        ' -o jsonpath=\'{.items[*].metadata.name}\'',
+        hide=True
+    ).stdout.strip()
+    run(f'kubectl logs -f {name}', pty=True)
+
+
 def get_tag():
     return run('git rev-parse --short HEAD', hide=True).stdout.strip()
 

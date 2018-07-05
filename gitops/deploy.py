@@ -115,10 +115,8 @@ class Deployer:
         for name in changed:
             ns = self.current_cluster.namespaces[name]
             result = await ns.deploy()
-            results[name] = {
-                **result,
-                'app': name
-            }
+            result['app'] = name
+            results[name] = result
             await self.post_deploy_result(result)
         await self.post_final_summary(results)
 
