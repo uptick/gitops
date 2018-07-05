@@ -51,12 +51,14 @@ def deploy(ctx):
         ' --set secrets.GITHUB_OAUTH_TOKEN={}'
         ' --set secrets.GITHUB_WEBHOOK_KEY={}'
         ' --set secrets.GIT_CRYPT_KEY={}'
+        ' --set secrets.KUBE_CONFIG={}'
     ).format(
         IMAGE_URI.format(tag=get_tag()),
         get_secret('SLACK_URL'),
         get_secret('GITHUB_OAUTH_TOKEN'),
         get_secret('GITHUB_WEBHOOK_KEY'),
-        get_secret_file('GIT_CRYPT_KEY_FILE')
+        get_secret_file('GIT_CRYPT_KEY_FILE'),
+        get_secret_file('KUBE_CONFIG_FILE')
     ))
 
 

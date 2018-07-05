@@ -69,8 +69,8 @@ async def post_app_summary(cluster, results):
         '\t• {n_failed} failed'
     ).format(
         cluster,
-        n_success=sum([r['exit_code'] == 0 for r in results]),
-        n_failed=sum([r['exit_code'] != 0 for r in results])
+        n_success=sum([r['exit_code'] == 0 for r in results.values()]),
+        n_failed=sum([r['exit_code'] != 0 for r in results.values()])
     ))
 
 
@@ -110,12 +110,14 @@ class Deployer:
     async def deploy(self):
         changed = self.calculate_changed()
         logger.info(f'Running deployment with these changes: {changed}')
-        # await self.post_init_summary(changed)
+        await self.post_init_summary(changed)
         results = {}
         for name in changed:
             ns = self.current_cluster.namespaces[name]
             result = await ns.deploy()
             results[name] = result
+            await self.post_deploy_result(result)
+        await self.post_final_summary(results)
 
     def calculate_changed(self):
         changed = set()
@@ -140,3 +142,10 @@ class Deployer:
 
     async def post_init_summary(self, changed):
         await post_app_updates(self.current_cluster.name, changed)
+
+    async def post_deploy_result(self, result):
+        await post_app_result(self.current_cluster.name, result)
+
+
+    async def post_final_summary(self, results):
+        await post_app_summary(self.current_cluster.name, results)
