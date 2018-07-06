@@ -147,6 +147,5 @@ class Deployer:
     async def post_deploy_result(self, result):
         await post_app_result(self.current_cluster.name, result)
 
-
     async def post_final_summary(self, results):
         await post_app_summary(self.current_cluster.name, results)

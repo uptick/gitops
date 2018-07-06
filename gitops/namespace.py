@@ -68,6 +68,8 @@ class Namespace:
                 }
             }
         }
+        # TODO: Remove this.
+        logger.info(f'Built values: {json.dumps(self.values, indent=2)}')
 
     def make_image(self, details):
         if 'image-tag' in details:
