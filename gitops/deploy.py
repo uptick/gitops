@@ -58,7 +58,7 @@ async def post_app_result(cluster, result):
         ).format(
             result['app'],
             cluster,
-            result['output']['stderr']
+            result['output']
         ))
 
 

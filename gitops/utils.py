@@ -24,15 +24,16 @@ def sync_run(command, catch=False):
     logger.info(f'Running "{command}".')
     exit_code = 0
     try:
-        output = subprocess.check_output(command, shell=True)
+        output = subprocess.check_output(
+            command,
+            shell=True,
+            stderr=subprocess.STDOUT
+        )
     except subprocess.CalledProcessError as e:
         if not catch:
             raise
         exit_code = e.returncode
-        output = {
-            'stdout': e.stdout.decode(),
-            'stderr': e.stderr.decode()
-        }
+        output = e.output
     return {
         'exit_code': exit_code,
         'output': output
