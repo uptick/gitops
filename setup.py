@@ -11,7 +11,7 @@ setup(
     author_email='luke.hodkinson@uptickhq.com',
     maintainer='Luke Hodkinson',
     maintainer_email='luke.hodkinson@uptickhq.com',
-    url='https://gitlab.org/structrs/structrs-cli.git',
+    url='https://gitlab.org/uptick/gitops.git',
     description='',
     long_description=open(
         os.path.join(os.path.dirname(__file__), 'README.md')

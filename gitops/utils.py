@@ -11,6 +11,12 @@ logger = logging.getLogger('gitops')
 
 
 async def run(command, catch=False):
+    """ Run a shell command.
+
+    Runs the command in an asyncio executor to keep things async. Will
+    optionally prevent raising an exception on failure with `catch`. Returns a
+    dictionary containing `exit_code` and `output`.
+    """
     loop = asyncio.get_event_loop()
     call = partial(
         sync_run,
@@ -51,6 +57,12 @@ def load_yaml(path, default_value=None):
 
 
 def deep_merge(parent, child):
+    """ Deeply merge two dictionaries.
+
+    Dictionary entries will be followed and merged, anything else will be
+    replaced. If the child dictionary has overlapping values. `child` is merged
+    into `parent`. The operation is in-place, but the result is still returned.
+    """
     for key, value in child.items():
         parent_value = parent.get(key)
         if isinstance(parent_value, dict):
@@ -82,6 +94,12 @@ def split_path(path):
 
 
 def error_handler(view):
+    """ Decorator to handle view errors.
+
+    Catches any exceptions thrown from a view and encodes them properly. At the
+    moment we're capturing any exception and returning it as a string. This
+    should be handled more gracefully and also catch more specific errors.
+    """
     @wraps(view)
     async def inner(*args, **kwargs):
         try:

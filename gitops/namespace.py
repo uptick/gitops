@@ -68,8 +68,12 @@ class Namespace:
                 }
             }
         }
-        # TODO: Remove this.
-        logger.info(f'Built values: {json.dumps(self.values, indent=2)}')
+        # Don't include the `images` key. It will only cause everything to be
+        # redeployed when any group changes.
+        try:
+            del self.values['images']
+        except KeyError:
+            pass
 
     def make_image(self, details):
         if 'image-tag' in details:
