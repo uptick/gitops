@@ -37,19 +37,35 @@ class Namespace:
                 cfg.write(json.dumps(self.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
-                return await run((
-                    'helm upgrade'
-                    ' --install'
-                    ' -f {values_file}'
-                    ' --namespace={namespace}'
-                    ' {name}'
-                    ' {path}'
-                ).format(
-                    name=self.name,
-                    namespace=self.values['namespace'],
-                    values_file=cfg.name,
-                    path=repo
-                ), catch=True)
+                retry = 0
+                while retry < 2: # TODO: Better retry system
+                    results = await run((
+                        'helm upgrade'
+                        ' --install'
+                        ' -f {values_file}'
+                        ' --namespace={namespace}'
+                        ' {name}'
+                        ' {path}'
+                    ).format(
+                        name=self.name,
+                        namespace=self.values['namespace'],
+                        values_file=cfg.name,
+                        path=repo
+                    ), catch=True)
+                    # TODO: explain
+                    if 'has no deployed releases' in results['output']:
+                        logger.info(f'Purging release.')
+                        await run((
+                            'helm delete'
+                            ' --purge'
+                            ' {name}'
+                        ).format(
+                            name=self.name,
+                        ))
+                        retry += 1
+                    else:
+                        break
+                return results
 
     def from_path(self, path):
         self.path = path

@@ -42,7 +42,7 @@ def sync_run(command, catch=False):
         output = e.output
     return {
         'exit_code': exit_code,
-        'output': output
+        'output': output.decode()
     }
 
 
