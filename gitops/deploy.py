@@ -110,6 +110,9 @@ class Deployer:
     async def deploy(self):
         changed = self.calculate_changed()
         logger.info(f'Running deployment with these changes: {changed}')
+        if not len(changed):
+            logger.info('Nothing to deploy, aborting.')
+            return
         await self.post_init_summary(changed)
         results = {}
         for name in changed:
