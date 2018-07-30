@@ -35,7 +35,7 @@ setup(
     install_requires=[
         'sanic==0.7.0',
         'asyncio_extras==1.3.2',
-        'pyyaml==3.12',
+        'pyyaml',
         'aiorequests'
     ],
     dependency_links=[
