@@ -24,7 +24,7 @@ class Namespace:
         )
 
     def is_inactive(self):
-        return self.values.get('inactive', False)
+        return 'inactive' in self.values.get('tags', [])
 
     async def deploy(self):
         logger.info(f'Deploying namespace "{self.name}".')
