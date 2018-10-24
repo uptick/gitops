@@ -117,6 +117,9 @@ class Deployer:
         results = {}
         for name in changed:
             ns = self.current_cluster.namespaces[name]
+            # If the namespace has been marked inactive, skip.
+            if ns.is_inactive():
+                continue
             result = await ns.deploy()
             result['app'] = name
             results[name] = result

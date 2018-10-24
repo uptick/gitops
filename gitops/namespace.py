@@ -23,6 +23,9 @@ class Namespace:
             json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
+    def is_inactive(self):
+        return self.values.get('inactive', False)
+
     async def deploy(self):
         logger.info(f'Deploying namespace "{self.name}".')
         async with temp_repo(self.values['chart'], 'chart') as repo:
