@@ -40,14 +40,14 @@ def collect_modifications(data):
     return resources
 
 
-async def post_app_updates(cluster, apps, username=None):
+async def post_app_updates(cluster, apps, namespaces, username=None):
     await post((
         'A deployment on the `{}` cluster has been initiated{}'
         ', the following apps will be updated:\n{}'
     ).format(
         cluster,
         f' by {username}' if username else '',
-        '\n'.join(f'\t• `{a}`' for a in apps)
+        '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
     ))
 
 
@@ -148,7 +148,7 @@ class Deployer:
         return url.split('/')[-1].split('.')[0]
 
     async def post_init_summary(self, changed):
-        await post_app_updates(self.current_cluster.name, changed)
+        await post_app_updates(self.current_cluster.name, changed, self.current_cluster.namespaces)
 
     async def post_deploy_result(self, result):
         await post_app_result(self.current_cluster.name, result)
