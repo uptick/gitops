@@ -45,6 +45,7 @@ class Namespace:
                     results = await run((
                         'helm upgrade'
                         ' --install'
+                        ' --wait'
                         ' --timeout 1800'
                         ' -f {values_file}'
                         ' --namespace={namespace}'
