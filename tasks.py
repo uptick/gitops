@@ -48,6 +48,7 @@ def deploy(ctx):
         ' gitops'
         ' chart'
         ' --install'
+	' --wait'
         ' --namespace default'
         ' --set image={}'
         ' --set domain=.onuptick.com'
