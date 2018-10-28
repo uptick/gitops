@@ -1,7 +1,8 @@
 import logging
 import os
 import tempfile
-from contextlib import asynccontextmanager
+# from contextlib import asynccontextmanager
+from async_generator import asynccontextmanager
 
 from .utils import run
 
