@@ -41,11 +41,11 @@ class Namespace:
                 cfg.flush()
                 os.fsync(cfg.fileno())
                 retry = 0
-                while retry < 2: # TODO: Better retry system
+                while retry < 2:  # TODO: Better retry system
                     results = await run((
                         'helm upgrade'
                         ' --install'
-                        ' --wait'
+                        # ' --wait'
                         ' --timeout 1800'
                         ' -f {values_file}'
                         ' --namespace={namespace}'

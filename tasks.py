@@ -71,11 +71,11 @@ def deploy(ctx):
 @task
 def logs(ctx):
     name = run(
-        'kubectl get pods --selector=app=gitops'
+        'kubectl -n default get pods --selector=app=gitops'
         ' -o jsonpath=\'{.items[*].metadata.name}\'',
         hide=True
     ).stdout.strip()
-    run(f'kubectl logs -f {name}', pty=True)
+    run(f'kubectl -n default logs -f {name}', pty=True)
 
 
 def get_tag():
