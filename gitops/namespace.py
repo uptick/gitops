@@ -56,7 +56,7 @@ class Namespace:
                         namespace=self.values['namespace'],
                         values_file=cfg.name,
                         path=repo
-                    ), catch=True)
+                    ), catch=True, sync=True)
                     # TODO: explain
                     if 'has no deployed releases' in results['output']:
                         logger.info(f'Purging release.')
