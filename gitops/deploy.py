@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from itertools import chain
 
@@ -115,16 +116,21 @@ class Deployer:
             return
         await self.post_init_summary(changed)
         results = {}
+        ongoing = []
         for name in changed:
             ns = self.current_cluster.namespaces[name]
             # If the namespace has been marked inactive, skip.
             if ns.is_inactive():
                 continue
-            result = await ns.deploy()
-            result['app'] = name
-            results[name] = result
-            await self.post_deploy_result(result)
+            ongoing.append(self.deploy_one(name, ns, results))
+        await asyncio.gather(*ongoing)
         await self.post_final_summary(results)
+
+    async def deploy_one(self, name, namespace, results):
+        result = await namespace.deploy()
+        result['app'] = name
+        results[name] = result
+        await self.post_deploy_result(result)
 
     def calculate_changed(self):
         changed = set()
