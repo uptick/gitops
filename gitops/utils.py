@@ -10,23 +10,20 @@ from sanic.response import json
 logger = logging.getLogger('gitops')
 
 
-async def run(command, catch=False, sync=False):
+async def run(command, catch=False):
     """ Run a shell command.
 
     Runs the command in an asyncio executor to keep things async. Will
     optionally prevent raising an exception on failure with `catch`. Returns a
     dictionary containing `exit_code` and `output`.
     """
+    loop = asyncio.get_event_loop()
     call = partial(
         sync_run,
         command,
         catch=catch
     )
-    if not sync:
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, call)
-    else:
-        return call()
+    return await loop.run_in_executor(None, call)
 
 
 def sync_run(command, catch=False):

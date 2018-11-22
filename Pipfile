@@ -6,9 +6,8 @@ name = "pypi"
 [packages]
 invoke = "*"
 pyyaml = "*"
-async_generator = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
