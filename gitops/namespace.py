@@ -41,12 +41,12 @@ class Namespace:
                 cfg.flush()
                 os.fsync(cfg.fileno())
                 retry = 0
-                while retry < 2:  # TODO: Better retry system
+                while retry < 2: # TODO: Better retry system
                     results = await run((
                         'helm upgrade'
                         ' --install'
-                        # ' --wait'
-                        ' --timeout 1800'
+                        ' --wait'
+                        ' --timeout 600'
                         ' -f {values_file}'
                         ' --namespace={namespace}'
                         ' {name}'
@@ -56,7 +56,7 @@ class Namespace:
                         namespace=self.values['namespace'],
                         values_file=cfg.name,
                         path=repo
-                    ), catch=True, sync=True)
+                    ), catch=True)
                     # TODO: explain
                     if 'has no deployed releases' in results['output']:
                         logger.info(f'Purging release.')
