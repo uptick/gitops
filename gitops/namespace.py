@@ -46,7 +46,7 @@ class Namespace:
                         'helm upgrade'
                         ' --install'
                         ' --wait'
-                        ' --timeout 1800'
+                        ' --timeout 600'
                         ' -f {values_file}'
                         ' --namespace={namespace}'
                         ' {name}'
