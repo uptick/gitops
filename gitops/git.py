@@ -1,8 +1,7 @@
 import logging
 import os
 import tempfile
-# from contextlib import asynccontextmanager
-from asyncio_extras import async_contextmanager
+from contextlib import asynccontextmanager
 
 from .utils import run
 
@@ -74,7 +73,7 @@ async def refresh_repo(name, url, sha=None, path=None):
         await checkout_repo_sha(name, sha, path)
 
 
-@async_contextmanager
+@asynccontextmanager
 async def temp_repo(url, name=None, sha=None):
     if not name:
         name = 'anonymous'
