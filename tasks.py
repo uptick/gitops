@@ -1,6 +1,5 @@
 import os
 from base64 import b64encode
-
 from invoke import run, task
 
 IMAGE_URI = '305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:{tag}'
@@ -29,6 +28,7 @@ def build(ctx):
     print(f'Building container ({local}) ... ', flush=True)
     run(f'docker build -t {local} .')
 
+
 @task
 def push(ctx):
     tag = get_tag()
@@ -48,23 +48,16 @@ def deploy(ctx):
         ' gitops'
         ' chart'
         ' --install'
-	' --wait'
+        ' --wait'
         ' --namespace default'
-        ' --set image={}'
+        f' --set image={IMAGE_URI.format(tag=get_tag())}'
         ' --set domain=.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
-        ' --set secrets.SLACK_URL={}'
-        ' --set secrets.GITHUB_OAUTH_TOKEN={}'
-        ' --set secrets.GITHUB_WEBHOOK_KEY={}'
-        ' --set secrets.GIT_CRYPT_KEY={}'
-        ' --set secrets.KUBE_CONFIG={}'
-    ).format(
-        IMAGE_URI.format(tag=get_tag()),
-        get_secret('SLACK_URL'),
-        get_secret('GITHUB_OAUTH_TOKEN'),
-        get_secret('GITHUB_WEBHOOK_KEY'),
-        get_secret_file('GIT_CRYPT_KEY_FILE'),
-        get_secret_file('KUBE_CONFIG_FILE')
+        f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
+        f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
+        f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
+        f" --set secrets.GIT_CRYPT_KEY={get_secret_file('GIT_CRYPT_KEY_FILE')}"
+        f" --set secrets.KUBE_CONFIG={get_secret_file('KUBE_CONFIG_FILE')}"
     ))
 
 
