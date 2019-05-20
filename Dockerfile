@@ -11,7 +11,7 @@ FROM python:rc-alpine
 # RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl && \
 # chmod +x /usr/bin/kubectl && \
 # kubectl version --client
-ENV KUBE_LATEST_VERSION v1.10.2
+ENV KUBE_LATEST_VERSION v1.12.7
 ENV HELM_VERSION v2.14.0
 RUN    apk add --no-cache ca-certificates bash git \
     && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
