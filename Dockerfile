@@ -22,16 +22,16 @@ RUN    apk add --no-cache ca-certificates bash git \
 ##
 ## Install git-crypt.
 ##
-ENV GITCRYPT_VERSION 0.5.0-2
+ENV GITCRYPT_VERSION 0.6.0
 RUN    apk add --no-cache --update --virtual build-dependencies \
         make openssl-dev \
     && apk add --update \
         openssl g++ \
     && wget -q https://github.com/AGWA/git-crypt/archive/debian/$GITCRYPT_VERSION.tar.gz -O - | tar zxv -C /var/tmp \
-    && cd /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && cd /var/tmp/git-crypt-debian \
     && make \
     && make install PREFIX=/usr/local \
-    && rm -rf /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && rm -rf /var/tmp/git-crypt-debian \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
