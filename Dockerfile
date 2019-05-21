@@ -1,4 +1,4 @@
-FROM python:rc-alpine
+FROM python:3.7-alpine
 
 ##
 ## Install kubectl and dependencies.
@@ -11,8 +11,8 @@ FROM python:rc-alpine
 # RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl && \
 # chmod +x /usr/bin/kubectl && \
 # kubectl version --client
-ENV KUBE_LATEST_VERSION v1.10.2
-ENV HELM_VERSION v2.11.0
+ENV KUBE_LATEST_VERSION v1.12.7
+ENV HELM_VERSION v2.14.0
 RUN    apk add --no-cache ca-certificates bash git \
     && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl \
@@ -22,16 +22,16 @@ RUN    apk add --no-cache ca-certificates bash git \
 ##
 ## Install git-crypt.
 ##
-ENV GITCRYPT_VERSION 0.5.0-2
+ENV GITCRYPT_VERSION 0.6.0
 RUN    apk add --no-cache --update --virtual build-dependencies \
         make openssl-dev \
     && apk add --update \
         openssl g++ \
     && wget -q https://github.com/AGWA/git-crypt/archive/debian/$GITCRYPT_VERSION.tar.gz -O - | tar zxv -C /var/tmp \
-    && cd /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && cd /var/tmp/git-crypt-debian \
     && make \
     && make install PREFIX=/usr/local \
-    && rm -rf /var/tmp/git-crypt-debian-$GITCRYPT_VERSION \
+    && rm -rf /var/tmp/git-crypt-debian \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
