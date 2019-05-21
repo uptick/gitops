@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: gitops-ingress
   namespace: {{ .Release.Namespace }}
-  label:
+  labels:
     app: gitops
   annotations:
     certmanager.k8s.io/cluster-issuer: http-issuer
