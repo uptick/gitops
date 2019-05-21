@@ -1,4 +1,4 @@
-FROM python:rc-alpine
+FROM python3.7:rc-alpine
 
 ##
 ## Install kubectl and dependencies.
