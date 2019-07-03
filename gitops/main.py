@@ -15,10 +15,10 @@ logger = logging.getLogger('gitops')
 @error_handler
 @github_webhook
 async def webhook(request):
-    """ Fulfill a git webhook request.
+    """ Fulfil a git webhook request.
 
     By this stage the request has been validated and is ready to be queued.
-    Return immediately to flag the webhook as recieved.
+    Return immediately to flag the webhook as received.
     """
     await get_worker().enqueue(request.json)
     return json({}, status=200)

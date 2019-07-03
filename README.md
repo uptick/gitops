@@ -16,7 +16,7 @@ to the cluster are performed as applications of Helm charts.
 
 ## Installation
 
-TODO: Setup the repository.
+TODO: Set up the repository.
 
 TODO: Install GitOps. Include details on domain name?
 
