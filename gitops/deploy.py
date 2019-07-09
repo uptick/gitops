@@ -52,14 +52,14 @@ async def post_app_updates(cluster, apps, namespaces, username=None):
 async def post_app_result(cluster, result):
     if result['exit_code'] != 0:
         await post(
-            f'Failed to deploy app `{result['app']}` to cluster `{cluster}`:\n>>>{result['output']}'
+            f'Failed to deploy app `{result["app"]}` to cluster `{cluster}`:\n>>>{result["output"]}'
         )
 
 
 async def post_app_summary(cluster, results):
-        n_success=sum([r['exit_code'] == 0 for r in results.values()])
-        n_failed=sum([r['exit_code'] != 0 for r in results.values()])
-    await post((
+    n_success=sum([r['exit_code'] == 0 for r in results.values()])
+    n_failed=sum([r['exit_code'] != 0 for r in results.values()])
+    await post(
         f'Deployment to `{cluster}` results summary:\n'
         f'\t• {n_success} succeeded\n'
         f'\t• {n_failed} failed'

@@ -29,7 +29,7 @@ async def clone_repo(name, url, path):
         f'git clone {url} {path}'
     )
     await run(
-        f'cd {path}; git-crypt unlock {os.environ['GIT_CRYPT_KEY_FILE']}'
+        f'cd {path}; git-crypt unlock {os.environ["GIT_CRYPT_KEY_FILE"]}'
     )
 
 
