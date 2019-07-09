@@ -41,37 +41,29 @@ def collect_modifications(data):
 
 
 async def post_app_updates(cluster, apps, namespaces, username=None):
-    await post((
-        'A deployment on the `{}` cluster has been initiated{}'
-        ', the following apps will be updated:\n{}'
-    ).format(
-        cluster,
-        f' by {username}' if username else '',
-        '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
-    ))
+    user_string = f' by {username}' if username else ''
+    app_list = '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
+    await post(
+        f'A deployment on the `{cluster}` cluster has been initiated{user_string}'
+        f', the following apps will be updated:\n{app_list}'
+    )
 
 
 async def post_app_result(cluster, result):
     if result['exit_code'] != 0:
-        await post((
-            'Failed to deploy app `{}` to cluster `{}`:\n>>>{}'
-        ).format(
-            result['app'],
-            cluster,
-            result['output']
-        ))
+        await post(
+            f'Failed to deploy app `{result['app']}` to cluster `{cluster}`:\n>>>{result['output']}'
+        )
 
 
 async def post_app_summary(cluster, results):
-    await post((
-        'Deployment to `{}` results summary:\n'
-        '\t• {n_success} succeeded\n'
-        '\t• {n_failed} failed'
-    ).format(
-        cluster,
-        n_success=sum([r['exit_code'] == 0 for r in results.values()]),
+        n_success=sum([r['exit_code'] == 0 for r in results.values()])
         n_failed=sum([r['exit_code'] != 0 for r in results.values()])
-    ))
+    await post((
+        f'Deployment to `{cluster}` results summary:\n'
+        f'\t• {n_success} succeeded\n'
+        f'\t• {n_failed} failed'
+    )
 
 
 async def deploy(data):
