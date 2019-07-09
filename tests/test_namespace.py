@@ -6,7 +6,7 @@ from gitops.namespace import Namespace
 
 class MakeImageTests(TestCase):
     def test_direct_image(self):
-        ns = Namespace()
+        ns = Namespace('test')
         self.assertEqual(
             ns.make_image({'image': 'I0'}),
             'I0'
@@ -85,7 +85,7 @@ class MakeValuesTests(TestCase):
 
 class DeployTests(TestCase):
     @patch('gitops.namespace.run')
-    def test_all(self, run_mock):
+    async def test_all(self, run_mock):
         ns = Namespace(
             'test',
             {
@@ -123,7 +123,7 @@ class DeployTests(TestCase):
                 }
             }
         )
-        ns.deploy()
+        await ns.deploy()
         self.assertEqual(run_mock.call_count, 2)
         self.assertRegex(
             run_mock.call_args_list[0][0][0],
