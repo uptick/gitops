@@ -11,10 +11,15 @@ logger = logging.getLogger('gitops')
 
 
 class Namespace:
-    def __init__(self, name, deployments=None, secrets=None):
+    def __init__(self, name, path=None, deployments={}, secrets={}):
         self.name = name
-        self.deployments = deployments or {}
-        self.secrets = secrets or {}
+        self.path = path
+        if path:
+            self.deployments = load_yaml(os.path.join(path, 'deployment.yml'))
+            self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
+        else:
+            self.deployments = deployments
+            self.secrets = secrets
         self.make_values()
 
     def __eq__(self, other):
@@ -59,12 +64,6 @@ class Namespace:
                         break
                 return results
 
-    def from_path(self, path):
-        self.path = path
-        self.deployments = load_yaml(os.path.join(path, 'deployment.yml'))
-        self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
-        self.make_values()
-
     def make_values(self):
         self.values = {
             **self.deployments,
@@ -87,12 +86,6 @@ class Namespace:
         if 'image-tag' in details:
             return self.deployments['images']['template'].format(
                 tag=details['image-tag']
-            )
-        elif 'image-group' in details:
-            return self.make_image(
-                self.deployments['images']['groups'][
-                    details['image-group']
-                ]
             )
         else:
             return details.get('image')
