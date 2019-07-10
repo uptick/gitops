@@ -24,8 +24,8 @@ class Namespace:
 
     def __eq__(self, other):
         return (
-            self.name == other.name and
-            json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
+            self.name == other.name
+            and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
     def is_inactive(self):
@@ -41,7 +41,7 @@ class Namespace:
                 cfg.flush()
                 os.fsync(cfg.fileno())
                 retry = 0
-                while retry < 2: # TODO: Better retry system
+                while retry < 2:  # TODO: Better retry system
                     results = await run((
                         'helm upgrade'
                         ' --install'

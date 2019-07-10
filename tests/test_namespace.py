@@ -71,7 +71,7 @@ class MakeImageTests(TestCase):
     def test_images_key_deleted(self):
         path = create_test_yaml()
         ns = Namespace('test', path)
-        self.assertNotIn('images',ns.values)
+        self.assertNotIn('images', ns.values)
 
 
 class DeployTests(TestCase):
@@ -100,9 +100,8 @@ class DeployTests(TestCase):
             r' --namespace=test'
         )
 
-
     @patch('gitops.namespace.run')
-    async def test_all_yaml(self, loader):
+    async def test_all_yaml(self, run_mock):
         path = create_test_yaml()
         ns = Namespace('test', path)
         await ns.deploy()
