@@ -1,8 +1,7 @@
 import logging
-from itertools import chain
 
 from .cluster import Cluster
-from .git import refresh_repo, temp_repo
+from .git import temp_repo
 from .slack import post
 
 BASE_REPO_DIR = '/var/gitops/repos'
@@ -27,8 +26,8 @@ async def post_app_result(cluster, result):
 
 
 async def post_app_summary(cluster, results):
-    n_success=sum([r['exit_code'] == 0 for r in results.values()])
-    n_failed=sum([r['exit_code'] != 0 for r in results.values()])
+    n_success = sum([r['exit_code'] == 0 for r in results.values()])
+    n_failed = sum([r['exit_code'] != 0 for r in results.values()])
     await post(
         f'Deployment to `{cluster}` results summary:\n'
         f'\t• {n_success} succeeded\n'
@@ -49,7 +48,7 @@ class Deployer:
         try:
             self.previous_cluster = await self.load_cluster(url, before)
         except Exception as e:
-            logger.warning('An exception was generated loading previous cluster state.')
+            logger.warning(f'An exception was generated loading previous cluster state: {str(e)}')
             self.previous_cluster = None
 
     async def deploy(self):
