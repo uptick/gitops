@@ -10,36 +10,6 @@ BASE_REPO_DIR = '/var/gitops/repos'
 logger = logging.getLogger('gitops')
 
 
-def iter_commits(data):
-    for commit in data['commits']:
-        yield commit
-
-
-def iter_changed_files(data):
-    for commit in iter_commits(data):
-        all_files = chain(
-            commit['added'],
-            commit['modified'],
-            commit['removed']
-        )
-        for filename in all_files:
-            yield filename
-
-
-def collect_modifications(data):
-    seen = set()
-    resources = []
-    for filename in iter_changed_files(data):
-        try:
-            resource = Resource.from_changed_file(filename)
-            if resource.id not in seen:
-                seen.add(resource.id)
-                resources.append(resource)
-        except ValueError:
-            pass
-    return resources
-
-
 async def post_app_updates(cluster, apps, namespaces, username=None):
     user_string = f' by {username}' if username else ''
     app_list = '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
@@ -64,23 +34,6 @@ async def post_app_summary(cluster, results):
         f'\t• {n_success} succeeded\n'
         f'\t• {n_failed} failed'
     )
-
-
-async def deploy(data):
-    cluster = data['project']['name']
-    refresh_repo(
-        cluster,
-        data['project']['http_url'],
-        data['checkout_sha']
-    )
-    resources = collect_modifications(cluster)
-    post_updates(cluster, resources, data['user_username'])
-    results = []
-    for resource in resources:
-        result = resource.deploy()
-        post_result(cluster, result)
-        results.append(result)
-    post_summary(cluster, results)
 
 
 class Deployer:
