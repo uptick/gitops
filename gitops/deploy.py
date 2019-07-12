@@ -41,6 +41,7 @@ class Deployer:
 
     async def from_push_event(self, push_event):
         url = push_event['repository']['clone_url']
+        self.pusher = push_event['pusher']
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
@@ -92,7 +93,7 @@ class Deployer:
         return url.split('/')[-1].split('.')[0]
 
     async def post_init_summary(self, changed):
-        await post_app_updates(self.current_cluster.name, changed, self.current_cluster.namespaces)
+        await post_app_updates(self.current_cluster.name, changed, self.current_cluster.namespaces, self.pusher)
 
     async def post_deploy_result(self, result):
         await post_app_result(self.current_cluster.name, result)
