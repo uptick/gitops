@@ -1,3 +1,3 @@
-# GitOps Helm Chart
+# GitOps Server Helm Chart
 
 TODO

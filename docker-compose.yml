@@ -5,7 +5,7 @@ services:
     ports:
       - 80:8000
     volumes:
-      - ./gitops:/app/gitops
+      - ./gitops_server:/app/gitops_server
     environment:
       - GITHUB_SECRET=secret
       - SLACK_TOKEN
