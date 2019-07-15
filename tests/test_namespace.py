@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from gitops.namespace import Namespace
+from gitops_server.namespace import Namespace
 
 
 def create_test_yaml():
@@ -75,8 +75,8 @@ class MakeImageTests(TestCase):
 
 
 class DeployTests(TestCase):
-    @patch('gitops.namespace.run')
-    async def test_all_manual(self, run_mock):
+    @patch('gitops_server.namespace.run')
+    def test_all(self, run_mock):
         ns = Namespace(
             'test',
             deployments={

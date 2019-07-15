@@ -36,7 +36,7 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
 ##
-## Install dependencies and copy GitOps.
+## Install dependencies and copy GitOps server.
 ##
 RUN mkdir -p /app
 COPY requirements.txt /app
@@ -45,10 +45,7 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && pip install -r /app/requirements.txt \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
-COPY gitops /app/gitops
-COPY tests /app/tests
+COPY gitops_server /app/gitops_server
 
 ENV PYTHONPATH=/app:$PYTHONPATH
-WORKDIR /app
-
-CMD ["python", "gitops"]
+CMD ["python", "/app/gitops_server"]

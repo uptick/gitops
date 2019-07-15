@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from gitops.deploy import Deployer
+from gitops_server.deploy import Deployer
 
 logging.basicConfig(level=logging.INFO)
 
