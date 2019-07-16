@@ -25,7 +25,7 @@ def get_app_details(app_name):
 def update_app(app_name, **kwargs):
     filename = Path('apps') / app_name / 'deployment.yml'
     with open(filename, 'r') as f:
-        data = yaml.load(f)
+        data = yaml.load(f, Loader=yaml.BaseLoader)
     for k, v in kwargs.items():
         if k not in data:
             print(warning(f"Key '{k}' is not a recognised config attribute for {app_name}."))
