@@ -2,15 +2,12 @@ import os
 
 from setuptools import find_packages, setup
 
-version = '0.0.1'
+version = '0.1.0'
 
 setup(
     name='gitops',
     version=version,
-    author='Luke Hodkinson',
-    author_email='luke.hodkinson@uptickhq.com',
-    maintainer='Luke Hodkinson',
-    maintainer_email='luke.hodkinson@uptickhq.com',
+    author='Uptick',
     url='https://gitlab.org/uptick/gitops.git',
     description='',
     long_description=open(
@@ -26,24 +23,23 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     license='BSD',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'': ['*.txt', '*.js', '*.html', '*.*']},
+    package_data={'gitops': ['*.txt', '*.js', '*.html', '*.*']},
     install_requires=[
-        'sanic==0.7.0',
-        'asyncio_extras==1.3.2',
-        'pyyaml',
-        'aiorequests'
-    ],
-    dependency_links=[
-        'git+https://gitlab.com/structrs/aiorequests#egg=aiorequests'
+        'tabulate',
+        'boto3',
+        'invoke',
+        'humanize',
     ],
     entry_points={
         'console_scripts': [
-            'gitops=gitops.command_line:entrypoint'
+            'gitops=gitops.main:program.run'
         ]
     },
     zip_safe=False
