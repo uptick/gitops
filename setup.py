@@ -1,18 +1,34 @@
 import os
+import re
+import codecs
 
 from setuptools import find_packages, setup
 
-version = '0.1.0'
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+def read(*parts):
+    return codecs.open(os.path.join(here, *parts), 'r').read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
 
 setup(
     name='gitops',
-    version=version,
+    version=find_version('gitops', '__init__.py'),
     author='Uptick',
     url='https://gitlab.org/uptick/gitops.git',
     description='',
-    long_description=open(
-        os.path.join(os.path.dirname(__file__), 'README.md')
-    ).read(),
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -34,6 +50,7 @@ setup(
     install_requires=[
         'tabulate',
         'boto3',
+        'boto',
         'invoke',
         'humanize',
     ],
