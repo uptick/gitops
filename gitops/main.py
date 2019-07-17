@@ -1,6 +1,8 @@
 from invoke import Program, Collection, Task
 from . import core, shorthands, db, newtenant, script
+import pkg_resources
 
+version = pkg_resources.require("gitops")[0].version
 
 namespace = Collection()
 
@@ -18,4 +20,4 @@ namespace.add_collection(db)
 namespace.add_collection(newtenant)
 namespace.add_collection(script)
 
-program = Program(namespace=namespace, version='0.1.0')
+program = Program(namespace=namespace, version=version)
