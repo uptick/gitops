@@ -65,11 +65,56 @@ class Deployer:
             # If the namespace has been marked inactive, skip.
             if ns.is_inactive():
                 continue
-            result = await ns.deploy()
+            result = await self.deploy_namespace(ns)
             result['app'] = name
             results[name] = result
             await self.post_deploy_result(result)
         await self.post_final_summary(results)
+
+    async def deploy_namespace(self, namespace):
+        logger.info(f'Deploying namespace "{namespace.name}".')
+        async with temp_repo(namespace.values['chart'], 'chart') as repo:
+            await run('helm init --client-only')
+            await run((
+                'cd {}; '
+                'helm dependency build'
+            ).format(
+                repo
+            ))
+            with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
+                cfg.write(json.dumps(namespace.values).encode())
+                cfg.flush()
+                os.fsync(cfg.fileno())
+                retry = 0
+                while retry < 2: # TODO: Better retry system
+                    results = await run((
+                        'helm upgrade'
+                        ' --install'
+                        ' --timeout 600'
+                        ' -f {values_file}'
+                        ' --namespace={namespace}'
+                        ' {name}'
+                        ' {path}'
+                    ).format(
+                        name=namespace.name,
+                        namespace=namespace.values['namespace'],
+                        values_file=cfg.name,
+                        path=repo
+                    ), catch=True)
+                    # TODO: explain
+                    if 'has no deployed releases' in results['output']:
+                        logger.info(f'Purging release.')
+                        await run((
+                            'helm delete'
+                            ' --purge'
+                            ' {name}'
+                        ).format(
+                            name=namespace.name,
+                        ))
+                        retry += 1
+                    else:
+                        break
+                return results
 
     def calculate_changed(self):
         changed = set()
