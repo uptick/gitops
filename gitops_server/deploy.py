@@ -1,8 +1,13 @@
 import logging
+import os
+import tempfile
+
+from sanic.response import json
 
 from .cluster import Cluster
 from .git import temp_repo
 from .slack import post
+from .utils import run
 
 BASE_REPO_DIR = '/var/gitops/repos'
 
@@ -48,8 +53,8 @@ class Deployer:
         self.current_cluster = await self.load_cluster(url, after)
         try:
             self.previous_cluster = await self.load_cluster(url, before)
-        except Exception as e:
-            logger.warning(f'An exception was generated loading previous cluster state: {str(e)}')
+        except Exception:
+            logger.warning('An exception was generated loading previous cluster state.')
             self.previous_cluster = None
 
     async def deploy(self):
@@ -86,7 +91,7 @@ class Deployer:
                 cfg.flush()
                 os.fsync(cfg.fileno())
                 retry = 0
-                while retry < 2: # TODO: Better retry system
+                while retry < 2:  # TODO: Better retry system
                     results = await run((
                         'helm upgrade'
                         ' --install'

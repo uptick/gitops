@@ -2,9 +2,8 @@ import asyncio
 import logging
 import os
 import subprocess
-from functools import partial, wraps
-
 import yaml
+from functools import partial
 
 logger = logging.getLogger('gitops')
 

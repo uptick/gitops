@@ -1,6 +1,8 @@
-from invoke import Program, Collection, Task
-from . import core, shorthands, db, newtenant
+from invoke import Collection, Program, Task
+
 import pkg_resources
+
+from . import core, db, newtenant, shorthands
 
 version = pkg_resources.require("gitops")[0].version
 

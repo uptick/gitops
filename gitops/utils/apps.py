@@ -1,9 +1,10 @@
-from colorama import Fore
 from pathlib import Path
+
+from colorama import Fore
+from gitops_server.namespace import Namespace
 from tabulate import tabulate
 
 import gitops.utils.yaml as yaml
-from gitops_server.namespace import Namespace
 
 from .cli import colourise, confirm, warning
 from .exceptions import AppDoesNotExist, AppOperationAborted

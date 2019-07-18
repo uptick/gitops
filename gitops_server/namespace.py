@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import tempfile
 from base64 import b64encode
 
 from .utils import load_yaml
