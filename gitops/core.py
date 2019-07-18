@@ -1,5 +1,6 @@
+from invoke import run, task
+
 from colorama import Fore
-from invoke import task, run
 
 from gitops.utils.apps import get_apps, update_app
 from gitops.utils.cli import colourise, success, success_negative

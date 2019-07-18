@@ -1,7 +1,7 @@
-from colorama import Fore
 from contextlib import suppress
 
 import boto3
+from colorama import Fore
 
 from .cli import colourise
 

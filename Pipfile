@@ -10,6 +10,7 @@ docker-compose = "*"
 
 [dev-packages]
 flake8 = "*"
+isort = "*"
 
 [requires]
 python_version = "3.7"

@@ -10,7 +10,6 @@ import textwrap
 import time
 # import uuid
 from base64 import b64encode
-from colorama import Fore
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
@@ -19,6 +18,7 @@ from invoke.exceptions import UnexpectedExit
 
 import boto3
 import humanize
+from colorama import Fore
 from gitops_server.namespace import Namespace
 
 from .exceptions import CommandError

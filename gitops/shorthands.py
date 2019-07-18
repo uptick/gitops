@@ -1,12 +1,13 @@
-from colorama import Fore
 from invoke import task
 
-from .newtenant import create_archiver_ses
+from colorama import Fore
+
 from gitops.utils.apps import get_app_details, get_apps
 from gitops.utils.cli import colourise, success
 from gitops.utils.kube import run_job
 
 from .core import command
+from .newtenant import create_archiver_ses
 
 
 @task

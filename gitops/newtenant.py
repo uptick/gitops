@@ -1,11 +1,12 @@
 import json
 import os
-import requests
 from invoke import run, task
 from pathlib import Path
 
 import boto
 import boto3
+import requests
+
 import gitops.utils.yaml as yaml
 from gitops.utils import gen_secret
 from gitops.utils.cli import confirm, progress, success, success_negative, warning

@@ -1,4 +1,5 @@
 import logging
+from functools import wraps
 
 from sanic.response import json
 
@@ -8,7 +9,6 @@ from .worker import get_worker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('gitops')
-
 
 
 def error_handler(view):
