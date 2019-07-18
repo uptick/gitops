@@ -1,8 +1,7 @@
 import logging
-from itertools import chain
 
 from .cluster import Cluster
-from .git import refresh_repo, temp_repo
+from .git import temp_repo
 from .slack import post
 
 BASE_REPO_DIR = '/var/gitops/repos'
@@ -10,85 +9,30 @@ BASE_REPO_DIR = '/var/gitops/repos'
 logger = logging.getLogger('gitops')
 
 
-def iter_commits(data):
-    for commit in data['commits']:
-        yield commit
-
-
-def iter_changed_files(data):
-    for commit in iter_commits(data):
-        all_files = chain(
-            commit['added'],
-            commit['modified'],
-            commit['removed']
-        )
-        for filename in all_files:
-            yield filename
-
-
-def collect_modifications(data):
-    seen = set()
-    resources = []
-    for filename in iter_changed_files(data):
-        try:
-            resource = Resource.from_changed_file(filename)
-            if resource.id not in seen:
-                seen.add(resource.id)
-                resources.append(resource)
-        except ValueError:
-            pass
-    return resources
-
-
 async def post_app_updates(cluster, apps, namespaces, username=None):
-    await post((
-        'A deployment on the `{}` cluster has been initiated{}'
-        ', the following apps will be updated:\n{}'
-    ).format(
-        cluster,
-        f' by {username}' if username else '',
-        '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
-    ))
+    user_string = f' by {username}' if username else ''
+    app_list = '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
+    await post(
+        f'A deployment on the `{cluster}` cluster has been initiated{user_string}'
+        f', the following apps will be updated:\n{app_list}'
+    )
 
 
 async def post_app_result(cluster, result):
     if result['exit_code'] != 0:
-        await post((
-            'Failed to deploy app `{}` to cluster `{}`:\n>>>{}'
-        ).format(
-            result['app'],
-            cluster,
-            result['output']
-        ))
+        await post(
+            f'Failed to deploy app `{result["app"]}` to cluster `{cluster}`:\n>>>{result["output"]}'
+        )
 
 
 async def post_app_summary(cluster, results):
-    await post((
-        'Deployment to `{}` results summary:\n'
-        '\t• {n_success} succeeded\n'
-        '\t• {n_failed} failed'
-    ).format(
-        cluster,
-        n_success=sum([r['exit_code'] == 0 for r in results.values()]),
-        n_failed=sum([r['exit_code'] != 0 for r in results.values()])
-    ))
-
-
-async def deploy(data):
-    cluster = data['project']['name']
-    refresh_repo(
-        cluster,
-        data['project']['http_url'],
-        data['checkout_sha']
+    n_success = sum([r['exit_code'] == 0 for r in results.values()])
+    n_failed = sum([r['exit_code'] != 0 for r in results.values()])
+    await post(
+        f'Deployment to `{cluster}` results summary:\n'
+        f'\t• {n_success} succeeded\n'
+        f'\t• {n_failed} failed'
     )
-    resources = collect_modifications(cluster)
-    post_updates(cluster, resources, data['user_username'])
-    results = []
-    for resource in resources:
-        result = resource.deploy()
-        post_result(cluster, result)
-        results.append(result)
-    post_summary(cluster, results)
 
 
 class Deployer:
@@ -97,6 +41,7 @@ class Deployer:
 
     async def from_push_event(self, push_event):
         url = push_event['repository']['clone_url']
+        self.pusher = push_event['pusher']
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
@@ -104,7 +49,7 @@ class Deployer:
         try:
             self.previous_cluster = await self.load_cluster(url, before)
         except Exception as e:
-            logger.warning('An exception was generated loading previous cluster state.')
+            logger.warning(f'An exception was generated loading previous cluster state: {str(e)}')
             self.previous_cluster = None
 
     async def deploy(self):
@@ -148,7 +93,7 @@ class Deployer:
         return url.split('/')[-1].split('.')[0]
 
     async def post_init_summary(self, changed):
-        await post_app_updates(self.current_cluster.name, changed, self.current_cluster.namespaces)
+        await post_app_updates(self.current_cluster.name, changed, self.current_cluster.namespaces, self.pusher)
 
     async def post_deploy_result(self, result):
         await post_app_result(self.current_cluster.name, result)
