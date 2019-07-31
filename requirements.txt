@@ -1,4 +1,6 @@
 sanic==0.7.0
 asyncio_extras==1.3.2
 pyyaml==3.12
+ipdb
+asynctest
 -e git+https://gitlab.com/structrs/aiorequests#egg=aiorequests

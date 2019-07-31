@@ -7,10 +7,14 @@ name = "pypi"
 invoke = "*"
 pyyaml = "*"
 docker-compose = "*"
+sanic = "*"
+aiorequests = "*"
 
 [dev-packages]
 flake8 = "*"
 isort = "*"
+ipdb = "*"
+asynctest = "*"
 
 [requires]
 python_version = "3.7"

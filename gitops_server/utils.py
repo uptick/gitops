@@ -47,7 +47,7 @@ def sync_run(command, catch=False):
 def load_yaml(path, default_value=None):
     try:
         with open(path, 'r') as file:
-            return resolve_values(yaml.load(file, Loader=yaml.BaseLoader), path)
+            return resolve_values(yaml.safe_load(file), path)
     except Exception:
         if default_value is not None:
             return default_value
