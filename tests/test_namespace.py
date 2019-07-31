@@ -1,5 +1,4 @@
 from unittest import TestCase
-from unittest.mock import patch
 
 from gitops_server.namespace import Namespace
 
@@ -72,42 +71,3 @@ class MakeImageTests(TestCase):
         path = create_test_yaml()
         ns = Namespace('test', path)
         self.assertNotIn('images', ns.values)
-
-
-class DeployTests(TestCase):
-    @patch('gitops_server.namespace.run')
-    def test_all(self, run_mock):
-        ns = Namespace(
-            'test',
-            deployments={
-                'images': {'template': 'image-template-{tag}'},
-                'image-tag': 'I1',
-                'containers': {
-                    'fg': {
-                        'replicas': 2
-                    },
-                    'bg': {
-                        'replicas': 1
-                    }
-                }
-            }
-        )
-        await ns.deploy()
-        self.assertEqual(run_mock.call_count, 1)
-        self.assertRegex(
-            run_mock.call_args_list[0][0][0],
-            r'helm upgrade --install --name=server0 -f .+\.yml'
-            r' --namespace=test'
-        )
-
-    @patch('gitops.namespace.run')
-    async def test_all_yaml(self, run_mock):
-        path = create_test_yaml()
-        ns = Namespace('test', path)
-        await ns.deploy()
-        self.assertEqual(run_mock.call_count, 1)
-        self.assertRegex(
-            run_mock.call_args_list[0][0][0],
-            r'helm upgrade --install --name=server0 -f .+\.yml'
-            r' --namespace=test'
-        )

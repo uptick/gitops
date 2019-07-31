@@ -46,6 +46,9 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 COPY gitops_server /app/gitops_server
+COPY tests /app/tests
 
 ENV PYTHONPATH=/app:$PYTHONPATH
-CMD ["python", "/app/gitops_server"]
+WORKDIR /app
+
+CMD ["python", "/gitops_server"]
