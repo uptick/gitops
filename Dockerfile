@@ -18,6 +18,7 @@ RUN    apk add --no-cache ca-certificates bash git \
     && chmod +x /usr/local/bin/kubectl \
     && wget -q http://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
+ENV SHELL=/bin/bash
 
 ##
 ## Install git-crypt.
@@ -47,6 +48,9 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 COPY gitops_server /app/gitops_server
 COPY tests /app/tests
+
+COPY workforce.key /app
+ENV GIT_CRYPT_KEY_FILE=/app/workforce.key
 
 ENV PYTHONPATH=/app:$PYTHONPATH
 WORKDIR /app

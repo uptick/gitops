@@ -1,8 +1,7 @@
 import logging
 import os
 import tempfile
-
-from sanic.response import json
+import json
 
 from .cluster import Cluster
 from .git import temp_repo
@@ -46,7 +45,7 @@ class Deployer:
 
     async def from_push_event(self, push_event):
         url = push_event['repository']['clone_url']
-        self.pusher = push_event['pusher']
+        self.pusher = push_event['pusher']['name']
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
@@ -140,6 +139,7 @@ class Deployer:
             return cluster
 
     def get_name_from_url(self, url):
+        # https://github.com/user/repo-name.git > repo-name
         return url.split('/')[-1].split('.')[0]
 
     async def post_init_summary(self, changed):

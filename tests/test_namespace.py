@@ -1,40 +1,7 @@
 from unittest import TestCase
 
 from gitops_server.namespace import Namespace
-
-
-def create_test_yaml():
-    fh = open('/tmp/deployment.yml', 'w+')
-    fh.write("""
-chart: https://github.com/some/chart
-images:
-  template: template-tag-{tag}
-namespace: mynamespace
-tags:
-  - tag1
-  - tag2
-image-tag: myimagetag
-containers:
-  fg:
-    replicas: 4
-  bg:
-    replicas: 2
-environment:
-  DJANGO_SETTINGS_MODULE: my.settings.module
-  MEDIA_BUCKET: bucket-name
-  MEDIA_BUCKET_PREFIX: ''
-  MEDIA_CLOUDINARY_PREFIX: cloudinaryprefix
-""")
-    fh.close()
-    fh = open('/tmp/secrets.yml', 'w+')
-    fh.write("""
-secrets:
-  SNAPE: KILLS_DUMBLEDORE
-  DARTH_VADER: IS_LUKES_FATHER
-  VERBAL: IS_KEYSER_SOZE
-""")
-    fh.close()
-    return '/tmp/'
+from .utils import create_test_yaml
 
 
 class MakeImageTests(TestCase):
