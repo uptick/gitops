@@ -7,4 +7,4 @@ services:
     volumes:
       - ./gitops_server:/app/gitops_server
     env_file:
-      - .envrc
+      - secrets.env
