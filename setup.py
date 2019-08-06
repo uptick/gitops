@@ -25,8 +25,11 @@ def find_version(*file_paths):
 setup(
     name='gitops',
     version=find_version('gitops', '__init__.py'),
-    author='Uptick',
-    url='https://gitlab.org/uptick/gitops.git',
+    url='https://github.com/uptick/gitops',
+    author='Luke Hodkinson',
+    author_email='luke.hodkinson@uptickhq.com',
+    maintainer='Uptick',
+    maintainer_email='dean.mckendry@uptickhq.com',
     description='',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
