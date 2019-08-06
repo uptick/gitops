@@ -49,8 +49,8 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
 COPY gitops_server /app/gitops_server
 COPY tests /app/tests
 
-COPY workforce.key /app
-ENV GIT_CRYPT_KEY_FILE=/app/workforce.key
+COPY cluster.key /app
+ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
 
 ENV PYTHONPATH=/app:$PYTHONPATH
 WORKDIR /app
