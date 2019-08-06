@@ -2,10 +2,8 @@ import asyncio
 import logging
 import os
 import subprocess
-from functools import partial, wraps
-
 import yaml
-from sanic.response import json
+from functools import partial
 
 logger = logging.getLogger('gitops')
 
@@ -49,7 +47,7 @@ def sync_run(command, catch=False):
 def load_yaml(path, default_value=None):
     try:
         with open(path, 'r') as file:
-            return resolve_values(yaml.load(file), path)
+            return resolve_values(yaml.safe_load(file), path)
     except Exception:
         if default_value is not None:
             return default_value
@@ -91,22 +89,3 @@ def split_path(path):
         name = parts[2]
         return namespace, name
     raise ValueError(f'Invalid application path: {path}')
-
-
-def error_handler(view):
-    """ Decorator to handle view errors.
-
-    Catches any exceptions thrown from a view and encodes them properly. At the
-    moment we're capturing any exception and returning it as a string. This
-    should be handled more gracefully and also catch more specific errors.
-    """
-    @wraps(view)
-    async def inner(*args, **kwargs):
-        try:
-            return await view(*args, **kwargs)
-        except Exception as e:
-            return json({
-                'error': e.__class__.__name__,
-                'details': str(e)
-            }, status=400)
-    return inner

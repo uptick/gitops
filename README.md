@@ -4,12 +4,11 @@ Continuous delivery for your cluster.
 
 ## Overview
 
-Using CI/CD for applications is a wonderful technique to ease the pain of
-DevOps, wouldn't it be nice to apply the same workflow to cluster provisioning?
+Using CI/CD for applications is a wonderful technique to ease the pain of DevOps,wouldn't it be nice to apply the same workflow to cluster provisioning?
 
-GitOps integrates a multi-tenanted cluster with a GitHub repository. Changes
-made to the repository are sent to GitOps running on the cluster, which then
-provisions the calculated changes.
+GitOps is a two-part system. A library of commands is used to manage a
+multi-tenanted cluster within a git repository, and the server component watches
+the repository and provisions the calculated changes.
 
 Currently Kubernetes/Helm is the only supported cluster interface. All changes
 to the cluster are performed as applications of Helm charts.

@@ -1,28 +1,24 @@
-import logging
+from invoke import Collection, Program, Task
 
-from sanic.response import json
+import pkg_resources
 
-from .app import app
-from .github_webhook import github_webhook
-from .utils import error_handler
-from .worker import get_worker
+from . import core, db, newtenant, shorthands
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('gitops')
+version = pkg_resources.require("gitops")[0].version
 
+namespace = Collection()
 
-@app.post('/webhook')
-@error_handler
-@github_webhook
-async def webhook(request):
-    """ Fulfil a git webhook request.
+# Load up some of our functions into the root namespace.
+for core_ns in [core, shorthands]:
+    tasks = filter(
+        lambda x: isinstance(x, Task),
+        vars(core_ns).values()
+    )
+    for task in tasks:
+        namespace.add_task(task)
 
-    By this stage the request has been validated and is ready to be queued.
-    Return immediately to flag the webhook as received.
-    """
-    await get_worker().enqueue(request.json)
-    return json({}, status=200)
+# Namespace the rarer ones.
+namespace.add_collection(db)
+namespace.add_collection(newtenant)
 
-
-def main():
-    app.run(host='0.0.0.0', port=8000)
+program = Program(namespace=namespace, version=version)

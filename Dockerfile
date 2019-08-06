@@ -18,6 +18,7 @@ RUN    apk add --no-cache ca-certificates bash git \
     && chmod +x /usr/local/bin/kubectl \
     && wget -q http://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
+ENV SHELL=/bin/bash
 
 ##
 ## Install git-crypt.
@@ -36,7 +37,7 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
 ##
-## Install dependencies and copy GitOps.
+## Install dependencies and copy GitOps server.
 ##
 RUN mkdir -p /app
 COPY requirements.txt /app
@@ -45,10 +46,13 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && pip install -r /app/requirements.txt \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
-COPY gitops /app/gitops
+COPY gitops_server /app/gitops_server
 COPY tests /app/tests
+
+COPY workforce.key /app
+ENV GIT_CRYPT_KEY_FILE=/app/workforce.key
 
 ENV PYTHONPATH=/app:$PYTHONPATH
 WORKDIR /app
 
-CMD ["python", "gitops"]
+CMD ["python", "/gitops_server"]

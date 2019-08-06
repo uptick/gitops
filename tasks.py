@@ -6,8 +6,8 @@ IMAGE_URI = '305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:{tag}'
 
 
 @task
-def test(ctx):
-    run('docker-compose run --rm web python -m unittest')
+def test(ctx, pty=True):
+    run('docker-compose run --service-ports --rm web python -m unittest -v')
 
 
 @task
