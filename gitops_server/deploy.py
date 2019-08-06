@@ -1,7 +1,7 @@
+import json
 import logging
 import os
 import tempfile
-import json
 
 from .cluster import Cluster
 from .git import temp_repo

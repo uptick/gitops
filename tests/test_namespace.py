@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from gitops_server.namespace import Namespace
+
 from .utils import create_test_yaml
 
 
