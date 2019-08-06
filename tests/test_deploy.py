@@ -34,7 +34,7 @@ class DeployTests(TestCase):
         self.assertRegex(
             run_mock.call_args_list[2][0][0],
             r'helm upgrade --install --timeout 600 -f .+\.yml'
-            r' --namespace=mynamespace sample-ns-1 mock-repo'
+            r' --namespace=mynamespace sample-ns-\d mock-repo'
         )
         self.assertEqual(
             run_mock.call_args_list[3][0][0],
@@ -47,7 +47,7 @@ class DeployTests(TestCase):
         self.assertRegex(
             run_mock.call_args_list[5][0][0],
             r'helm upgrade --install --timeout 600 -f .+\.yml'
-            r' --namespace=mynamespace sample-ns-2 mock-repo'
+            r' --namespace=mynamespace sample-ns-\d mock-repo'
         )
         self.assertEqual(post_mock.call_count, 2)
         check_in_run_mock = [
