@@ -7,7 +7,7 @@ Continuous delivery for your cluster.
 Using CI/CD for applications is a wonderful technique to ease the pain of DevOps,wouldn't it be nice to apply the same workflow to cluster provisioning?
 
 GitOps is a two-part system. A library of commands is used to manage a
-multi-tenanted cluster within a git repository, and the server component watches
+single-tenanted cluster within a git repository, and the server component watches
 the repository and provisions the calculated changes.
 
 Currently Kubernetes/Helm is the only supported cluster interface. All changes
@@ -15,7 +15,7 @@ to the cluster are performed as applications of Helm charts.
 
 ## Installation
 
-Secrets are encrypted with git-crypt in `.envrc`. Contact someone who has access to have your gpg key added.
+Secrets should be placed in `secrets.env`. The example file `secrets.example.env` has the environment variables you will need to supply.
 
 Gitops has a helm chart defining its deployment. Invoke scripts are provided to make deployment painless. See `tasks.py`.
 
@@ -25,7 +25,6 @@ Gitops has a helm chart defining its deployment. Invoke scripts are provided to 
  * Better error reporting on failures.
  * Forced redeployment interface.
  * Make kubernetes specific code modular so that we can start to support multiple deployment methods.
- * Secrets removed from .envrc in the repo. Maybe change chart? Instead we'll provide a setup script to generate an ignored secrets file. Ensure secrets are not present in repo history. This allows us to move to open source.
  * Invoke commands and other tools should be extracted from the uptick-cluster repo, added here and packaged up. Package should create /usr/bin/gitops to act as a CLI interface. Convert invoke commands to this new interface.
  * Add a command to create a template cluster repo (ala uptick-cluster) and give instructions to push it up and set up a webhook.
 
