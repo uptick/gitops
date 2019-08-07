@@ -1,6 +1,7 @@
 import os
 from base64 import b64encode
 from invoke import run, task
+from dotenv import load_dotenv
 
 IMAGE_URI = '305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:{tag}'
 
@@ -43,6 +44,7 @@ def push(ctx):
 
 @task
 def deploy(ctx):
+    load_dotenv('secrets.env')
     run((
         'helm upgrade'
         ' gitops'
