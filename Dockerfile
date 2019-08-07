@@ -55,4 +55,4 @@ ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
 ENV PYTHONPATH=/app:$PYTHONPATH
 WORKDIR /app
 
-CMD ["python", "/gitops_server"]
+CMD ["python", "gitops_server"]

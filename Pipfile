@@ -15,6 +15,7 @@ flake8 = "*"
 isort = "*"
 ipdb = "*"
 asynctest = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.7"

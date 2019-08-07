@@ -1,6 +1,6 @@
 from functools import wraps
 
-from sanic import json
+from sanic.response import json
 
 
 def error_handler(view):
