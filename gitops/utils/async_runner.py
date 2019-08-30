@@ -40,7 +40,6 @@ async def print_async_complete(task, position, length, just, stdscr):
     green check) depending on if the coroutine raises an exception or not.
     """
     cor, name = task
-    # TODO: Log output of `cor` to a file named f'{name}.log'
     stdscr.addstr(position, 0, name)
     stdscr.refresh()
     output = f'{"-"*20}\n{progress(name)}\n{"-"*20}\n'

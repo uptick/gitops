@@ -305,7 +305,6 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
             resource = resource.replace('{{ %s }}' % k, v)
         tmp.write(resource)
         tmp.flush()
-        # TODO: Do we want to log creating the job?
         await async_run(f'kubectl create -n {namespace} -f {tmp.name}')
         cmd = (
             'kubectl get pods'
