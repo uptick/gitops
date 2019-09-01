@@ -82,7 +82,7 @@ def command(ctx, filter, command, exclude='', cleanup=True, sequential=True):
         print(success_negative('Aborted.'))
         return
 
-    if sequential:
+    if sequential or len(apps) == 1:
         for app in apps:
             # For each app, just run the coroutine
             asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential))
