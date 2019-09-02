@@ -4,4 +4,3 @@ pyyaml==5.1.2
 ipdb
 asynctest
 -e git+https://gitlab.com/structrs/aiorequests#egg=aiorequests
-
