@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from colorama import Fore
@@ -13,11 +14,15 @@ from .tags import colour_tags, validate_tags
 
 
 def get_app_details(app_name):
-    ns = Namespace(app_name)
     try:
-        ns.from_path(f'apps/{app_name}')
+        ns = Namespace(app_name, path=f'apps/{app_name}')
     except FileNotFoundError:
-        raise AppDoesNotExist(app_name)
+        # Check if apps dir doesn't exist, or just that one app
+        if os.path.exists("apps"):
+            raise AppDoesNotExist(app_name)
+        else:
+            raise AppDoesNotExist()
+
     values = ns.values
     values['name'] = app_name
     return values
@@ -56,7 +61,11 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
         exclude.add('inactive')
     apps = []
     existing_tags = set()
-    for entry in sorted(Path('apps').iterdir()):
+    try:
+        directory = sorted(Path('apps').iterdir())
+    except FileNotFoundError:
+        raise AppDoesNotExist()
+    for entry in directory:
         if not entry.is_dir():
             continue
         app = get_app_details(entry.name)

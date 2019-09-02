@@ -1,3 +1,4 @@
+import asyncio
 from invoke import task
 
 from gitops.utils import kube
@@ -14,7 +15,7 @@ def backup(ctx, app):
         'name': f'{app}-backup',
         'app': app
     }
-    kube._run_job('jobs/backup-job.yml', values, 'workforce')
+    asyncio.run(kube._run_job('jobs/backup-job.yml', values, 'workforce', sequential=True))
 
 
 @task
@@ -33,7 +34,7 @@ def restore_backup(ctx, app, index):
         'timestamp': backup[0],
         'app': app
     }
-    kube._run_job('jobs/restore-job.yml', values, 'workforce')
+    asyncio.run(kube._run_job('jobs/restore-job.yml', values, 'workforce'))
 
 
 @task
@@ -46,9 +47,9 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
         'destination': destination,
         'skip_backup': 'skip' if skip_backup else ''
     }
-    kube._run_job('jobs/copy-db-job.yml', values, 'workforce', cleanup=cleanup)
+    asyncio.run(kube._run_job('jobs/copy-db-job.yml', values, 'workforce', cleanup=cleanup))
     print(progress('You may want to clear the redis cache now!'))
-    print(progress(f'\t- inv mcommand {destination} clear_cache'))
+    print(progress(f'\t- gitops mcommand {destination} clear_cache'))
 
 
 @task

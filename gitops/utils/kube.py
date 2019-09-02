@@ -21,10 +21,12 @@ import humanize
 from colorama import Fore
 from gitops_server.namespace import Namespace
 
+from gitops.utils.async_runner import async_run
+
 from .exceptions import CommandError
 
 
-def run_job(app, command, cleanup=True):
+async def run_job(app, command, cleanup=True, sequential=True):
     job_id = make_key(4).lower()
     app_name = app['name']
     values = {
@@ -33,7 +35,7 @@ def run_job(app, command, cleanup=True):
         'command': str(shlex.split(command)),
         'image': app['image'],
     }
-    _run_job('jobs/command-job.yml', values, 'workforce', interactive=True, cleanup=cleanup)
+    return await _run_job('jobs/command-job.yml', values, 'workforce', attach=True, cleanup=cleanup, sequential=sequential)
 
 
 def build_image(local_image, path=None, tag=None):
@@ -294,15 +296,16 @@ def make_key(length=64):
     )
 
 
-def _run_job(path, values={}, namespace='default', interactive=False, cleanup=True):
+async def _run_job(path, values={}, namespace='default', attach=False, cleanup=True, sequential=True):
     name = values['name']
+    logs = ''
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
         resource = open(path, 'r').read()
         for k, v in values.items():
             resource = resource.replace('{{ %s }}' % k, v)
         tmp.write(resource)
         tmp.flush()
-        run(f'kubectl create -n {namespace} -f {tmp.name}', hide=True)
+        await async_run(f'kubectl create -n {namespace} -f {tmp.name}')
         cmd = (
             'kubectl get pods'
             ' -n {namespace}'
@@ -312,17 +315,16 @@ def _run_job(path, values={}, namespace='default', interactive=False, cleanup=Tr
             name=name,
             namespace=namespace
         )
-        intro = f'Launching job {Fore.BLUE}{name}{Fore.RESET} ... '
-        with run_wrapper(intro):
-            @retry
-            def _find_pod():
-                pod = run(cmd, hide=True).stdout.strip()
-                if not pod:
-                    raise CommandError('Failed to find pod.')
-                return pod
-            pod = _find_pod()
+        @retry
+        async def _find_pod():
+            stdout, _, _ = await async_run(cmd)
+            pod = stdout.decode()
+            if not pod:
+                raise CommandError('Failed to find pod.')
+            return pod
+        pod = await _find_pod()
         try:
-            if not interactive:
+            if not attach:
                 intro = 'Waiting for job to complete ... '
                 with run_wrapper(intro):
                     cmd = (
@@ -332,11 +334,10 @@ def _run_job(path, values={}, namespace='default', interactive=False, cleanup=Tr
                         ' --timeout=-1s'
                         f' job/{name}'
                     )
-                    run(cmd, hide=True)
+                    _, _, output_log = await async_run(cmd)
+                    logs += output_log
             else:
-                intro = 'Waiting for job to start ... '
-                with run_wrapper(intro):
-                    wait_for_pod(namespace, pod)
+                await wait_for_pod(namespace, pod)
                 cmd = (
                     'kubectl attach'
                     f' -n {namespace}'
@@ -344,24 +345,27 @@ def _run_job(path, values={}, namespace='default', interactive=False, cleanup=Tr
                     f' {pod}'
                 )
                 try:
-                    run(cmd, pty=True)
+                    if sequential:
+                        # If we're not running asynchronously, use invoke.run to preserve interactivity for shell_plus, etc.
+                        run(cmd, pty=True)
+                    else:
+                        _, _, output_log = await async_run(cmd)
+                        logs += output_log
+
                 except Exception as e:
                     if 'current phase is Succeeded' not in str(e.result.stdout):
                         raise e
-                    logs = get_pod_logs(namespace, pod)
-                    print(logs)
         except Exception as e:
             if 'current phase is Succeeded' not in str(e.result.stdout):
                 raise e
         finally:
             if cleanup:
-                intro = 'Cleaning up job ... '
-                with run_wrapper(intro):
-                    cmd = f'kubectl delete -n {namespace} job {name}'
-                    run(cmd, hide=True)
+                cmd = f'kubectl delete -n {namespace} job {name}'
+                await async_run(cmd)
+    return logs
 
 
-def wait_for_pod(namespace, pod):
+async def wait_for_pod(namespace, pod):
     while True:
         cmd = (
             'kubectl get pod'
@@ -369,9 +373,10 @@ def wait_for_pod(namespace, pod):
             ' -o jsonpath="{.status.phase}"'
             f' {pod}'
         )
-        result = run(cmd, hide=True)
-        if result.stdout.lower() != 'pending':
-            return result.stdout.lower()
+        stdout, _, _ = await async_run(cmd)
+        stdout = stdout.decode().lower()
+        if stdout != 'pending':
+            return stdout
 
 
 def get_pod_names(namespace, selector):
