@@ -132,17 +132,17 @@ def untag(ctx, filter, tag, exclude=''):
 def getenv(ctx, filter, exclude='', keys='', **kwargs):
     """ Get one or more env vars on selected app(s).
     """
-    get_value('environment', filter, exclude, keys, **kwargs)
+    _getenv('environment', filter, exclude, keys, **kwargs)
 
 
 @task
 def getsecrets(ctx, filter, exclude='', keys='', **kwargs):
     """ Get one or more secrets on selected app(s).
     """
-    get_value('secrets', filter, exclude, keys, **kwargs)
+    _getenv('secrets', filter, exclude, keys, **kwargs)
 
 
-def get_value(value_type, filter, exclude, filter_values, **kwargs):
+def _getenv(value_type, filter, exclude, filter_values, **kwargs):
     filter_values = filter_values.split(',') if filter_values else ''
     apps = get_apps(filter=filter, exclude=exclude, mode='SILENT')
     for app in apps:
