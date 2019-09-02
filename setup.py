@@ -58,6 +58,7 @@ setup(
         'invoke',
         'humanize',
         'colorama',
+        'pyyaml==5.1.2',
     ],
     entry_points={
         'console_scripts': [
