@@ -1,8 +1,10 @@
+import asyncio
 from invoke import run, task
 
 from colorama import Fore
 
 from gitops.utils.apps import get_apps, update_app
+from gitops.utils.async_runner import run_tasks_async_with_progress
 from gitops.utils.cli import colourise, success, success_negative
 from gitops.utils.exceptions import AppOperationAborted
 from gitops.utils.images import colour_image, get_image, get_latest_image
@@ -69,7 +71,7 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
 
 
 @task
-def command(ctx, filter, command, exclude='', cleanup=True):
+def command(ctx, filter, command, exclude='', cleanup=True, sequential=True):
     """ Run command on selected app(s).
 
         eg. inv command customer,sandbox -e aesg "python manage.py migrate"
@@ -79,8 +81,16 @@ def command(ctx, filter, command, exclude='', cleanup=True):
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
-    for app in apps:
-        run_job(app, command, cleanup=cleanup)
+
+    if sequential or len(apps) == 1:
+        for app in apps:
+            # For each app, just run the coroutine
+            asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential))
+    else:
+        # Build list of coroutines, and execute them all at once
+        jobs = [(run_job(app, command, cleanup=cleanup, sequential=sequential), app['name']) for app in apps]
+        asyncio.run(run_tasks_async_with_progress(jobs))
+
     print(success('Done!'))
 
 

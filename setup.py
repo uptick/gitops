@@ -57,6 +57,7 @@ setup(
         'boto',
         'invoke',
         'humanize',
+        'colorama',
     ],
     entry_points={
         'console_scripts': [
