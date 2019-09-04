@@ -18,39 +18,39 @@ def init_curses():
 
 
 async def run_tasks_async_with_progress(tasks):
-    stdscr = init_curses()
-    stdscr.addstr(0, 0, 'Your command is now running on the following servers:')
+    # stdscr = init_curses()
+    # stdscr.addstr(0, 0, 'Your command is now running on the following servers:')
     # Ugly.
     just = len(max(tasks, key=lambda x: len(x[1]))[1]) + 1
-    tasks = [print_async_complete(task, num + 1, len(tasks), just, stdscr) for num, task in enumerate(tasks)]
-    outputs = await asyncio.gather(*tasks)
-    stdscr.addstr(len(tasks) + 1, 0, 'Done. Press enter to view the outputs of the commands.')
-    stdscr.refresh()
-    curses.echo()
-    curses.nocbreak()
-    input()
-    curses.endwin()
+    tasks = [print_async_complete(task, num + 1, len(tasks), just) for num, task in enumerate(tasks)]
+    outputs = await asyncio.gather(*tasks, return_exceptions=True)
+    # stdscr.addstr(len(tasks) + 1, 0, 'Done. Press enter to view the outputs of the commands.')
+    # stdscr.refresh()
+    # curses.echo()
+    # curses.nocbreak()
+    # input()
+    # curses.endwin()
     print("\n".join(outputs))
 
 
-async def print_async_complete(task, position, length, just, stdscr):
+async def print_async_complete(task, position, length, just):
     """
     Move cursor to `position`, print task name, run  task coroutine, then move
     back to `pos` print message and a justified completion mark (red cross or
     green check) depending on if the coroutine raises an exception or not.
     """
     cor, name = task
-    stdscr.addstr(position, 0, name)
-    stdscr.refresh()
+    # stdscr.addstr(position, 0, name)
+    # stdscr.refresh()
     output = f'{"-"*20}\n{progress(name)}\n{"-"*20}\n'
     try:
         output += await cor
     except Exception as e:
-        stdscr.addstr(position, just, '✗', curses.color_pair(1))
+        # stdscr.addstr(position, just, '✗', curses.color_pair(1))
         output += f'Exception: {str(e)}'
-    else:
-        stdscr.addstr(position, just, '✔', curses.color_pair(2))
-    stdscr.refresh()
+    # else:
+        # stdscr.addstr(position, just, '✔', curses.color_pair(2))
+    # stdscr.refresh()
     return output
 
 
