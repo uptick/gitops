@@ -22,7 +22,8 @@ async def run_tasks_async_with_progress(tasks):
     # stdscr.addstr(0, 0, 'Your command is now running on the following servers:')
     # Ugly.
     just = len(max(tasks, key=lambda x: len(x[1]))[1]) + 1
-    tasks = [print_async_complete(task, num + 1, len(tasks), just) for num, task in enumerate(tasks)]
+    sem = asyncio.Semaphore(5)
+    tasks = [print_async_complete(task, num + 1, len(tasks), just, sem) for num, task in enumerate(tasks)]
     outputs = await asyncio.gather(*tasks, return_exceptions=True)
     # stdscr.addstr(len(tasks) + 1, 0, 'Done. Press enter to view the outputs of the commands.')
     # stdscr.refresh()
@@ -33,7 +34,7 @@ async def run_tasks_async_with_progress(tasks):
     print("\n".join(outputs))
 
 
-async def print_async_complete(task, position, length, just):
+async def print_async_complete(task, position, length, just, sem):
     """
     Move cursor to `position`, print task name, run  task coroutine, then move
     back to `pos` print message and a justified completion mark (red cross or
@@ -44,7 +45,9 @@ async def print_async_complete(task, position, length, just):
     # stdscr.refresh()
     output = f'{"-"*20}\n{progress(name)}\n{"-"*20}\n'
     try:
+        await sem.acquire()
         output += await cor
+        sem.release()
     except Exception as e:
         # stdscr.addstr(position, just, '✗', curses.color_pair(1))
         output += f'Exception: {str(e)}'
