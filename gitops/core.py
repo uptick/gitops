@@ -5,7 +5,7 @@ from colorama import Fore
 
 from gitops.utils.apps import get_apps, update_app
 from gitops.utils.async_runner import run_tasks_async_with_progress
-from gitops.utils.cli import colourise, success, success_negative
+from gitops.utils.cli import colourise, progress, success, success_negative, warning
 from gitops.utils.exceptions import AppOperationAborted
 from gitops.utils.images import colour_image, get_image, get_latest_image
 from gitops.utils.kube import run_job
@@ -129,22 +129,31 @@ def untag(ctx, filter, tag, exclude=''):
 
 
 @task
-def getenv(ctx, filter, exclude='', **kwargs):
-    """ Set one or more env vars on selected app(s).
-        However, please make more broad-reaching environment changes at the chart level though.
+def getenv(ctx, filter, exclude='', keys='', **kwargs):
+    """ Get one or more env vars on selected app(s).
     """
-    # TODO: FINISH THIS
-    # - offer flag to list ALL vars (from global env config too?)
-    # - tabulate output nicely, or just list one after another.
-    raise NotImplementedError
-    try:
-        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(kwargs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}")
-    except AppOperationAborted:
-        print(success_negative('Aborted.'))
-        return
+    _getenv('environment', filter, exclude, keys, **kwargs)
+
+
+@task
+def getsecrets(ctx, filter, exclude='', keys='', **kwargs):
+    """ Get one or more secrets on selected app(s).
+    """
+    _getenv('secrets', filter, exclude, keys, **kwargs)
+
+
+def _getenv(value_type, filter, exclude, filter_values, **kwargs):
+    filter_values = filter_values.split(',') if filter_values else ''
+    apps = get_apps(filter=filter, exclude=exclude, mode='SILENT')
     for app in apps:
-        pass
-    print(success('Done!'))
+        print('-' * 20, progress(app['name']), sep='\n')
+        values = app.get(value_type)
+        if type(values) == dict:
+            filtered_values = {k: v for k, v in values.items() if k in filter_values} if filter_values else values
+            for k, v in filtered_values.items():
+                print(f"{k}={v}")
+        else:
+            print(warning(f'No {value_type} set.'))
 
 
 @task
