@@ -8,7 +8,7 @@ class AppOperationAborted(Exception):
 
 
 class AppDoesNotExist(Exception):
-    def __init__(self, app_name):
+    def __init__(self, app_name=None):
         # Funky hack to stomp on traceback.
         if app_name:
             message = f"There's no app with the name '{app_name}', silly."
