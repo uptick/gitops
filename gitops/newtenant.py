@@ -1,11 +1,11 @@
 import json
 import os
+import requests
 from invoke import run, task
 from pathlib import Path
 
 import boto
 import boto3
-import requests
 
 import gitops.utils.yaml as yaml
 from gitops.utils import gen_secret
@@ -293,12 +293,12 @@ def create_app_configs(context):
 @task
 def delete_tenant(ctx):
     """ We're scared of automating this atm, so just print steps to fully deleting a tenant. """
-    print(progress('\t- Route53: Delete RecordSets (x3 inc archiver)'))
-    print(progress('\t- RDS: Delete Database and Subnet'))
-    print(progress('\t- IAM: Delete User'))
-    print(progress('\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder'))
-    print(progress('\t- SES: Delete Rule Sets'))
-    print(progress(
-        '\t- Delete Authorized URI Redirect in the Google API console under API OAuth client'
-        ' Credentials'
-    ))
+    print(success_negative("\t- Before beginning, ensure you've already scaled fg & bg replicas down to zero and pushed up a corresponding commit."))
+    print(progress("\t- Route53: Delete RecordSets (x3 inc archiver)"))
+    print(progress("\t- RDS: Delete Database (and Subnet if it DB wasn't using a shared one)"))
+    print(progress("\t- IAM: Delete User"))
+    print(progress("\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder"))
+    print(progress("\t- SES: Delete Rule Sets (SES Oregon -> Active Rule Set)"))
+    print(progress("\t- Delete Authorized URI Redirect in the Google API console under API OAuth client Credentials."))
+    print(progress("\t- Delete customer folder in uptick cluster."))
+    print(progress("\t- Delete remaining replicasets and ingress in cluster."))
