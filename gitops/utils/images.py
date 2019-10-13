@@ -58,5 +58,17 @@ def get_latest_image(prefix):
 def colour_image(image_tag):
     # TODO: Make colours automatically change, based on some hashing of the incoming tag.
     bits = image_tag.split('-')
-    bits[0] = colourise(bits[0], Fore.LIGHTBLACK_EX)
+    bits[0] = colourise(bits[0], color_hash(bits[1]))
     return '-'.join(bits)
+
+
+def color_hash(bit):
+    return [
+        Fore.RED,
+        Fore.GREEN,
+        Fore.YELLOW,
+        Fore.BLUE,
+        Fore.MAGENTA,
+        Fore.CYAN,
+        Fore.WHITE,
+    ][hash(bit) % 7]
