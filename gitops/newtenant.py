@@ -1,6 +1,3 @@
-import json
-import os
-import requests
 from invoke import run, task
 from pathlib import Path
 
@@ -97,7 +94,7 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
     rds.create_db_instance(
         DBName=instance_name,
         DBInstanceIdentifier=instance_name,
-        DBInstanceClass='db.t2.micro',
+        DBInstanceClass='db.t3.micro',
         Engine='postgres',
         AllocatedStorage=storage,
         StorageType='gp2',
@@ -155,48 +152,6 @@ def create_iam_user(ctx, name, internal=False):
         'aws_key': access_key.id,
         'aws_secret': access_key.secret
     }
-
-
-@task
-def create_archiver(ctx, name):
-    print(progress('Creating archiver webhook ... '), end='', flush=True)
-    domain_name = name
-    root_domain = 'onuptick.com'
-    conn = boto.connect_route53()
-    zone = conn.get_zone(f'{root_domain}.')
-    endpoint = '10 mx.sendgrid.net'
-    hostname = f'{domain_name}.archiver.{zone.name}'
-    sendgrid_target = f'https://{domain_name}.{root_domain}/api/v1/webhooks/correspondence/'
-    try:
-        zone.add_mx(hostname, endpoint)
-    except Exception:
-        pass
-    data = {
-        'hostname': f'{domain_name}.archiver.{root_domain}',
-        'url': sendgrid_target,
-        'spam_check': False,
-        'send_raw': False,
-    }
-    headers = {
-        'Authorization': f"Bearer {os.getenv('SENDGRID_PASSWORD')}",
-        'Content-Type': 'application/json',
-    }
-    response = requests.post(
-        'https://api.sendgrid.com/v3/user/webhooks/parse/settings',
-        data=json.dumps(data), headers=headers
-    )
-    if response.status_code != 200:
-        raise Exception(
-            'There was an error communicating with SendGrid!'
-            f' {response} {response.content}'
-        )
-    responsedata = response.json()
-    if 'error' in responsedata:
-        raise Exception(
-            'Sendgrid relay creation from'
-            f" '{hostname}' to '{sendgrid_target}' failed:\n{responsedata}"
-        )
-    print('ok')
 
 
 @task

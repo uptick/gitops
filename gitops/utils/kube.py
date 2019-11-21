@@ -8,7 +8,6 @@ import sys
 import tempfile
 import textwrap
 import time
-# import uuid
 from base64 import b64encode
 from contextlib import contextmanager
 from datetime import datetime
