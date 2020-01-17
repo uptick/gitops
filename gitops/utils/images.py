@@ -1,4 +1,5 @@
 from contextlib import suppress
+from hashlib import md5
 
 import boto3
 from colorama import Fore
@@ -71,4 +72,4 @@ def color_hash(bit):
         Fore.MAGENTA,
         Fore.CYAN,
         Fore.WHITE,
-    ][hash(bit) % 7]
+    ][int.from_bytes(md5(bit.encode()).digest(), 'big') % 7]

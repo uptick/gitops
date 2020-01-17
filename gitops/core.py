@@ -84,8 +84,8 @@ def command(ctx, filter, command, exclude='', cleanup=True, sequential=True):
 
     if sequential or len(apps) == 1:
         for app in apps:
-            # For each app, just run the coroutine
-            asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential))
+            # For each app, just run the coroutine and print the output
+            print(asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential)))
     else:
         # Build list of coroutines, and execute them all at once
         jobs = [(run_job(app, command, cleanup=cleanup, sequential=sequential), app['name']) for app in apps]
