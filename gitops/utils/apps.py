@@ -13,9 +13,9 @@ from .images import colour_image
 from .tags import colour_tags, validate_tags
 
 
-def get_app_details(app_name):
+def get_app_details(app_name, load_secrets=True):
     try:
-        ns = Namespace(app_name, path=f'apps/{app_name}')
+        ns = Namespace(app_name, path=f'apps/{app_name}', load_secrets=load_secrets)
     except FileNotFoundError:
         # Check if apps dir doesn't exist, or just that one app
         if os.path.exists("apps"):
@@ -40,7 +40,7 @@ def update_app(app_name, **kwargs):
         yaml.dump(data, f, default_flow_style=False)
 
 
-def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, message=None):
+def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, message=None, load_secrets=True):
     """ Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
         `exclude`. The incoming filter and exclude params may come in as a list or commastring.
         For the purpose of this filtering, app names and image tag prefixes are also considered as
@@ -68,7 +68,7 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
     for entry in directory:
         if not entry.is_dir():
             continue
-        app = get_app_details(entry.name)
+        app = get_app_details(entry.name, load_secrets=load_secrets)
         pseudotags = [
             app['name'],
             app['image'].split(':')[-1].split('-')[0],
