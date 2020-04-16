@@ -38,7 +38,8 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
             filter=filter,
             exclude=exclude,
             autoexclude_inactive=autoexclude_inactive,
-            message=f"{prompt_message}{colourise(':', Fore.LIGHTBLUE_EX)}"
+            message=f"{prompt_message}{colourise(':', Fore.LIGHTBLUE_EX)}",
+            load_secrets=False,
         )
     except AppOperationAborted:
         print(success_negative('Aborted.'))

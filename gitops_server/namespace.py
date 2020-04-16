@@ -9,12 +9,15 @@ logger = logging.getLogger('gitops')
 
 
 class Namespace:
-    def __init__(self, name, path=None, deployments={}, secrets={}):
+    def __init__(self, name, path=None, deployments={}, secrets={}, load_secrets=True):
         self.name = name
         self.path = path
         if path:
             self.deployments = load_yaml(os.path.join(path, 'deployment.yml'))
-            self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
+            if load_secrets:
+                self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
+            else:
+                self.secrets = secrets
         else:
             self.deployments = deployments
             self.secrets = secrets
