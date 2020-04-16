@@ -22,7 +22,7 @@ def summary(ctx, filter='', exclude=''):
 
 
 @task
-def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inactive=True):
+def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inactive=True, interactive=True):
     """ Bump image tag on selected app(s).
         Provide `image_tag` to set to a specific image tag, or provide `prefix` to use latest image
         with the given prefix.
@@ -40,6 +40,7 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
             autoexclude_inactive=autoexclude_inactive,
             message=f"{prompt_message}{colourise(':', Fore.LIGHTBLUE_EX)}",
             load_secrets=False,
+            mode='PROMPT' if interactive else 'SILENT',
         )
     except AppOperationAborted:
         print(success_negative('Aborted.'))
