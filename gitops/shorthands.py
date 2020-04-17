@@ -29,9 +29,9 @@ def shell_plus(ctx, app, cleanup=True):
 
 
 @task
-def migrate(ctx, filter, exclude='', cleanup=True, sequential=False):
+def migrate(ctx, filter, exclude='', cleanup=True, sequential=False, interactive=True):
     """ Runs migrations for selected app.
 
         eg. inv migrate workforce,sandbox
     """
-    return command(ctx, filter, f'python manage.py migrate', exclude=exclude, cleanup=cleanup, sequential=sequential)
+    return command(ctx, filter, f'python manage.py migrate', exclude=exclude, cleanup=cleanup, sequential=sequential, interactive=interactive)
