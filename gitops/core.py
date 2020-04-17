@@ -73,18 +73,24 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
 
 
 @task
-def command(ctx, filter, command, exclude='', cleanup=True, sequential=True):
+def command(ctx, filter, command, exclude='', cleanup=True, sequential=True, interactive=True):
     """ Run command on selected app(s).
 
         eg. inv command customer,sandbox -e aesg "python manage.py migrate"
     """
     try:
-        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The command', Fore.LIGHTBLUE_EX)} {colourise(command, Fore.LIGHTYELLOW_EX)} {colourise('will be run on the following apps:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(
+            filter=filter,
+            exclude=exclude,
+            message=f"{colourise('The command', Fore.LIGHTBLUE_EX)} {colourise(command, Fore.LIGHTYELLOW_EX)} {colourise('will be run on the following apps:', Fore.LIGHTBLUE_EX)}",
+            mode='PROMPT' if interactive else 'SILENT',
+        )
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
 
-    if sequential or len(apps) == 1:
+    # async output is by nature interactive
+    if sequential or (not interactive) or len(apps) == 1:
         for app in apps:
             # For each app, just run the coroutine and print the output
             print(asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential)))
