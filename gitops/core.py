@@ -18,7 +18,7 @@ def summary(ctx, filter='', exclude=''):
         May not necessarily reflect actual app statuses if recent changes haven't yet been pushed to
         the remote, or the deployment has failed.
     """
-    get_apps(filter=filter, exclude=exclude, mode='PREVIEW', autoexclude_inactive=False)
+    get_apps(filter=filter, exclude=exclude, mode='PREVIEW', autoexclude_inactive=False, load_secrets=False)
 
 
 @task
