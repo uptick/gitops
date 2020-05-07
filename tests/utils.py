@@ -25,7 +25,7 @@ def create_test_yaml(fg=4, bg=2):
         'namespace': 'mynamespace',
         'tags': ['tag1', 'tag2'],
         'image-tag': 'myimagetag',
-        'target-cluster': 'UNKNOWN',
+        'cluster': 'UNKNOWN',
         'containers': {'fg': {'replicas': fg}, 'bg': {'replicas': bg}},
         'environment': {
             'DJANGO_SETTINGS_MODULE': 'my.settings.module',
