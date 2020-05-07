@@ -69,7 +69,7 @@ class Deployer:
             if ns.is_inactive():
                 continue
             # If the namespace isn't targeting our cluster, skip.
-            if ns.target_cluster != self.current_app_definitions.name:
+            if ns.get_target_cluster() != CLUSTER_NAME:
                 continue
             result = await self.deploy_namespace(ns)
             result['app'] = name
