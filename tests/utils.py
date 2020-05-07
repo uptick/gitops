@@ -25,6 +25,7 @@ def create_test_yaml(fg=4, bg=2):
         'namespace': 'mynamespace',
         'tags': ['tag1', 'tag2'],
         'image-tag': 'myimagetag',
+        'target-cluster': 'UNKNOWN',
         'containers': {'fg': {'replicas': fg}, 'bg': {'replicas': bg}},
         'environment': {
             'DJANGO_SETTINGS_MODULE': 'my.settings.module',
@@ -46,3 +47,39 @@ def create_test_yaml(fg=4, bg=2):
     with open('/tmp/secrets.yml', 'w+') as fh:
         fh.write(yaml.dump(data))
     return '/tmp/'
+
+
+# def create_test_kubeconfig():
+#     data = {
+#         'apiVersion': 'v1',
+#         'clusters': [
+#             {
+#                 'cluster': {
+#                     'certificate-authority-data': 'XXX',
+#                     'server': 'https://XXX.elb.amazonaws.com',
+#                 },
+#                 'name': 'testcluster',
+#             },
+#         ],
+#         'contexts': [
+#             {
+#                 'context': {
+#                     'cluster': 'testcluster',
+#                     'user': 'testuser',
+#                 },
+#                 'name': 'testcontext',
+#             },
+#         ],
+#         'current-context': 'testcontext',
+#         'kind': 'Config',
+#         'preferences': {},
+#         'users': [
+#             {
+#                 'name': 'testuser',
+#                 'user': {},
+#             },
+#         ],
+#     }
+#     with open('/tmp/kubeconfig', 'w+') as fh:
+#         fh.write(yaml.dump(data))
+#     return '/tmp/'

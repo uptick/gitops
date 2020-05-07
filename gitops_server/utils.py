@@ -4,6 +4,7 @@ import os
 import subprocess
 import yaml
 from functools import partial
+from pathlib import Path
 
 logger = logging.getLogger('gitops')
 
@@ -91,6 +92,21 @@ def split_path(path):
     raise ValueError(f'Invalid application path: {path}')
 
 
-def get_repo_name_from_url(self, url):
+def get_repo_name_from_url(url):
     # https://github.com/user/repo-name.git > repo-name
     return url.split('/')[-1].split('.')[0]
+
+
+def get_cluster_name():
+    fname = os.getenv('KUBE_CONFIG_FILE')
+    if 'HOME' in fname:
+        home = str(Path.home())
+        fname = fname.replace('${HOME}', home)
+    try:
+        with open(fname, 'r') as f:
+            conf = yaml.load(f)
+    except FileNotFoundError:
+        return 'UNKNOWN'
+
+    contexts = {c['name']: c['context'] for c in conf['contexts']}
+    return contexts[conf['current-context']]['cluster']
