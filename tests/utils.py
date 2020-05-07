@@ -1,21 +1,21 @@
 import yaml
 
-from gitops_server.cluster import Cluster
+from gitops_server.app_definitions import AppDefinitions
 from gitops_server.namespace import Namespace
 
 
-async def mock_load_cluster(self, url, sha):
-    # Set different fg amounts for different sha's to mock a change to cluster
+async def mock_load_app_definitions(self, url, sha):
+    # Set different fg amounts for different sha's to mock a change to app_definitions
     if sha == 'bef04e58a0001234567890123456789012345678':
         fg = 4
     else:
         fg = 2
-    cluster = Cluster('mock-repo')
-    cluster.namespaces = {
+    app_definitions = AppDefinitions('mock-repo')
+    app_definitions.namespaces = {
         'sample-app-1': Namespace('sample-ns-1', path=create_test_yaml(fg=fg)),
         'sample-app-2': Namespace('sample-ns-2', path=create_test_yaml(fg=fg)),
     }
-    return cluster
+    return app_definitions
 
 
 def create_test_yaml(fg=4, bg=2):

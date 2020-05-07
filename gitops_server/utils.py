@@ -89,3 +89,8 @@ def split_path(path):
         name = parts[2]
         return namespace, name
     raise ValueError(f'Invalid application path: {path}')
+
+
+def get_repo_name_from_url(self, url):
+    # https://github.com/user/repo-name.git > repo-name
+    return url.split('/')[-1].split('.')[0]
