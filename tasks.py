@@ -1,6 +1,7 @@
 import os
 from base64 import b64encode
 from invoke import run, task
+
 from dotenv import load_dotenv
 
 IMAGE_URI = '305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:{tag}'
@@ -12,10 +13,10 @@ def test(ctx, pty=True):
 
 
 @task
-def redeploy(ctx):
+def redeploy(ctx, kubeconfig=''):
     build(ctx)
     push(ctx)
-    deploy(ctx)
+    deploy(ctx, kubeconfig=kubeconfig)
 
 
 @task
@@ -43,7 +44,7 @@ def push(ctx):
 
 
 @task
-def deploy(ctx):
+def deploy(ctx, kubeconfig=''):
     load_dotenv('secrets.env')
     run((
         'helm upgrade'
@@ -59,7 +60,7 @@ def deploy(ctx):
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
         f" --set secrets.GIT_CRYPT_KEY={get_secret_file('GIT_CRYPT_KEY_FILE')}"
-        f" --set secrets.KUBE_CONFIG={get_secret_file('KUBE_CONFIG_FILE')}"
+        f" --set secrets.KUBE_CONFIG={kubeconfig or get_secret_file('KUBE_CONFIG_FILE')}"
     ))
 
 
