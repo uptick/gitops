@@ -3,7 +3,7 @@ import os
 from .namespace import Namespace
 
 
-class Cluster:
+class AppDefinitions:
     def __init__(self, name):
         self.name = name
 

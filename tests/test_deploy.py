@@ -3,7 +3,7 @@ from asynctest.mock import patch
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
-from .utils import mock_load_cluster
+from .utils import mock_load_app_definitions
 
 # Patch gitops_server.git.run & check correct commands + order
 # Patch command that reads yaml from cluster repo +
@@ -13,7 +13,7 @@ from .utils import mock_load_cluster
 class DeployTests(TestCase):
     @patch('gitops_server.deploy.run')
     @patch('gitops_server.deploy.post')
-    @patch('gitops_server.deploy.Deployer.load_cluster', mock_load_cluster)
+    @patch('gitops_server.deploy.Deployer.load_app_definitions', mock_load_app_definitions)
     @patch('gitops_server.deploy.temp_repo')
     async def test_deployer(self, temp_repo_mock, post_mock, run_mock):
         """Fake a deploy to two servers, bumping fg from 2 to 4."""

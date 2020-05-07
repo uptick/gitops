@@ -32,6 +32,9 @@ class Namespace:
     def is_inactive(self):
         return 'inactive' in self.values.get('tags', [])
 
+    def get_target_cluster(self):
+        return self.values.get('cluster')
+
     def make_values(self):
         self.values = {
             **self.deployments,
