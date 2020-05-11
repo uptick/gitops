@@ -1,4 +1,5 @@
 import os
+import yaml
 from base64 import b64encode
 from invoke import run, task
 
@@ -46,6 +47,7 @@ def push(ctx):
 @task
 def deploy(ctx, kubeconfig=''):
     load_dotenv('secrets.env')
+    cluster_details = get_cluster_details(kubeconfig or os.environ['KUBE_CONFIG_FILE'])
     run((
         'helm upgrade'
         ' gitops'
@@ -56,11 +58,12 @@ def deploy(ctx, kubeconfig=''):
         f' --set image={IMAGE_URI.format(tag=get_tag())}'
         ' --set domain=.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
+        f" --set environment.CLUSTER_NAME={cluster_details['name']}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
         f" --set secrets.GIT_CRYPT_KEY={get_secret_file('GIT_CRYPT_KEY_FILE')}"
-        f" --set secrets.KUBE_CONFIG={kubeconfig or get_secret_file('KUBE_CONFIG_FILE')}"
+        f" --set secrets.KUBE_CONFIG={cluster_details['kube_config']}"
     ))
 
 
@@ -89,3 +92,14 @@ def get_secret(name):
 def get_secret_file(name):
     data = open(os.environ[name], 'rb').read()
     return b64encode(data).decode()
+
+
+def get_cluster_details(filename):
+    with open(filename, 'rb') as f:
+        data = f.read()
+        conf = yaml.load(data)
+        contexts = {c['name']: c['context'] for c in conf['contexts']}
+        return {
+            'kube_config': b64encode(data).decode(),
+            'name': contexts[conf['current-context']]['cluster'],
+        }
