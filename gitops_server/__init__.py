@@ -1,3 +1,3 @@
-from .utils import get_cluster_name
+import os
 
-CLUSTER_NAME = get_cluster_name()
+CLUSTER_NAME = os.getenv('CLUSTER_NAME')
