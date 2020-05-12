@@ -12,7 +12,7 @@ SAMPLE_GITHUB_PAYLOAD = {
             "id": "c099171d00c099171d00c099171d00c099171d00",
             "tree_id": "74ee1d000074ee1d000074ee1d000074ee1d0000",
             "distinct": True,
-            "message": "bump test-namespace-1",
+            "message": "bump test-app-1",
             "timestamp": "2019-07-18T15:07:37+10:00",
             "url": "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00",
             "author": {
@@ -27,14 +27,14 @@ SAMPLE_GITHUB_PAYLOAD = {
             },
             "added": [],
             "removed": [],
-            "modified": ["apps/test-namespace-1/deployment.yml"]
+            "modified": ["apps/test-app-1/deployment.yml"]
         }
     ],
     "head_commit": {
         "id": "c099171d00c099171d00c099171d00c099171d00",
         "tree_id": "74ee1d000074ee1d000074ee1d000074ee1d0000",
         "distinct": True,
-        "message": "bump test-namespace-1",
+        "message": "bump test-app-1",
         "timestamp": "2019-07-18T15:07:37+10:00",
         "url": "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00",
         "author": {
@@ -49,7 +49,7 @@ SAMPLE_GITHUB_PAYLOAD = {
         },
         "added": [],
         "removed": [],
-        "modified": ["apps/test-namespace-1/deployment.yml"]
+        "modified": ["apps/test-app-1/deployment.yml"]
     },
     "repository": {
         "id": 123123123,

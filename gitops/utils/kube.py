@@ -18,7 +18,6 @@ from invoke.exceptions import UnexpectedExit
 import boto3
 import humanize
 from colorama import Fore
-from gitops_server.namespace import Namespace
 
 from gitops.utils.async_runner import async_run
 
@@ -250,12 +249,6 @@ def get_secret_file(name):
     return b64encode(data).decode()
 
 
-def get_app_image(app):
-    ns = Namespace(app)
-    ns.from_path(f'../apps/{app}')
-    return ns.values['image']
-
-
 def get_session():
     return boto3.Session(
         aws_access_key_id=os.environ['BACKUPS_AWS_ACCESS_KEY_ID'],
@@ -314,6 +307,7 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
             name=name,
             namespace=namespace
         )
+
         @retry
         async def _find_pod():
             stdout, _, _ = await async_run(cmd)

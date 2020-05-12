@@ -82,15 +82,6 @@ def resolve_values(values, path):
     return deep_merge(parent_values, values)
 
 
-def split_path(path):
-    parts = path.split('/')
-    if len(parts) == 4 and parts[0].lower() == 'apps':
-        namespace = parts[1]
-        name = parts[2]
-        return namespace, name
-    raise ValueError(f'Invalid application path: {path}')
-
-
 def get_repo_name_from_url(url):
     # https://github.com/user/repo-name.git > repo-name
     return url.split('/')[-1].split('.')[0]

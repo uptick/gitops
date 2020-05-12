@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from colorama import Fore
-from gitops_server.namespace import Namespace
+from gitops_server.app_definitions import App
 from tabulate import tabulate
 
 import gitops.utils.yaml as yaml
@@ -15,7 +15,7 @@ from .tags import colour_tags, validate_tags
 
 def get_app_details(app_name, load_secrets=True):
     try:
-        ns = Namespace(app_name, path=f'apps/{app_name}', load_secrets=load_secrets)
+        app = App(app_name, path=f'apps/{app_name}', load_secrets=load_secrets)
     except FileNotFoundError:
         # Check if apps dir doesn't exist, or just that one app
         if os.path.exists("apps"):
@@ -23,7 +23,7 @@ def get_app_details(app_name, load_secrets=True):
         else:
             raise AppDoesNotExist()
 
-    values = ns.values
+    values = app.values
     values['name'] = app_name
     return values
 
