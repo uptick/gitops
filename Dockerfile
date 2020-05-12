@@ -20,6 +20,9 @@ RUN    apk add --no-cache ca-certificates bash git \
     && chmod +x /usr/local/bin/helm
 ENV SHELL=/bin/bash
 
+# Install aws cli
+RUN pip install awscli
+
 ##
 ## Install git-crypt.
 ##
