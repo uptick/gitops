@@ -101,5 +101,5 @@ def get_cluster_details(filename):
         contexts = {c['name']: c['context'] for c in conf['contexts']}
         return {
             'kube_config': b64encode(data).decode(),
-            'name': contexts[conf['current-context']]['cluster'],
+            'name': contexts[conf['current-context']]['cluster'].split(':cluster/')[-1],
         }
