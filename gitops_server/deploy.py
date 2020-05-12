@@ -56,24 +56,26 @@ class Deployer:
             self.previous_app_definitions = None
 
     async def deploy(self):
-        changed = self.calculate_changed()
-        logger.info(f'Running deployment with these changes: {changed}')
-        if not len(changed):
+        changed_apps = self.calculate_changed_apps()
+        logger.info(f'Running deployment for these changed apps: {changed_apps}')
+        if not len(changed_apps):
             logger.info('Nothing to deploy, aborting.')
             return
-        await self.post_init_summary(changed)
+        await self.post_init_summary(changed_apps)
         results = {}
-        for name in changed:
-            ns = self.current_app_definitions.namespaces[name]
+        for app_name in changed_apps:
+            ns = self.current_app_definitions.namespaces[app_name]
             # If the namespace has been marked inactive, skip.
             if ns.is_inactive():
+                logger.info('Skipping deploy; app marked inactive.')
                 continue
             # If the namespace isn't targeting our cluster, skip.
             if ns.get_target_cluster() != CLUSTER_NAME:
+                logger.info(f'Skipping deploy; app targeting different cluster: {ns.get_target_cluster()!r} != {CLUSTER_NAME!r}')
                 continue
             result = await self.deploy_namespace(ns)
-            result['app'] = name
-            results[name] = result
+            result['app'] = app_name
+            results[app_name] = result
             await self.post_deploy_result(result)
         await self.post_final_summary(results)
 
@@ -122,7 +124,7 @@ class Deployer:
                         break
                 return results
 
-    def calculate_changed(self):
+    def calculate_changed_apps(self):
         changed = set()
         for name, namespace in self.current_app_definitions.namespaces.items():
             old_namespace = self.previous_app_definitions.namespaces.get(name) if self.previous_app_definitions else None
