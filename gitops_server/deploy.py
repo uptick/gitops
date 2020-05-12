@@ -14,9 +14,9 @@ BASE_REPO_DIR = '/var/gitops/repos'
 logger = logging.getLogger('gitops')
 
 
-async def post_app_updates(source, apps, namespaces, username=None):
-    user_string = f' by {username}' if username else ''
-    app_list = '\n'.join(f'\t• `{a}`' for a in apps if not namespaces[a].is_inactive())
+async def post_app_updates(source, apps, username=None):
+    user_string = f' by *{username}*' if username else ''
+    app_list = '\n'.join(f'\t• `{a}`' for a in apps)
     await post(
         f'A deployment from `{source}` has been initiated{user_string} for cluster `{CLUSTER_NAME}`'
         f', the following apps will be updated:\n{app_list}'
@@ -64,33 +64,20 @@ class Deployer:
         await self.post_init_summary(changed_apps)
         results = {}
         for app_name in changed_apps:
-            ns = self.current_app_definitions.namespaces[app_name]
-            # If the namespace has been marked inactive, skip.
-            if ns.is_inactive():
-                logger.info('Skipping deploy; app marked inactive.')
-                continue
-            # If the namespace isn't targeting our cluster, skip.
-            if ns.get_target_cluster() != CLUSTER_NAME:
-                logger.info(f'Skipping deploy; app targeting different cluster: {ns.get_target_cluster()!r} != {CLUSTER_NAME!r}')
-                continue
-            result = await self.deploy_namespace(ns)
+            app = self.current_app_definitions.apps[app_name]
+            result = await self.deploy_app(app)
             result['app'] = app_name
             results[app_name] = result
             await self.post_deploy_result(result)
         await self.post_final_summary(results)
 
-    async def deploy_namespace(self, namespace):
-        logger.info(f'Deploying namespace "{namespace.name}".')
-        async with temp_repo(namespace.values['chart'], 'chart') as repo:
+    async def deploy_app(self, app):
+        logger.info(f'Deploying app {app.name!r}.')
+        async with temp_repo(app.values['chart'], 'chart') as repo:
             await run('helm init --client-only')
-            await run((
-                'cd {}; '
-                'helm dependency build'
-            ).format(
-                repo
-            ))
+            await run(f'cd {repo}; helm dependency build')
             with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
-                cfg.write(json.dumps(namespace.values).encode())
+                cfg.write(json.dumps(app.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
                 retry = 0
@@ -99,39 +86,34 @@ class Deployer:
                         'helm upgrade'
                         ' --install'
                         ' --timeout 600'
-                        ' -f {values_file}'
-                        ' --namespace={namespace}'
-                        ' {name}'
-                        ' {path}'
-                    ).format(
-                        name=namespace.name,
-                        namespace=namespace.values['namespace'],
-                        values_file=cfg.name,
-                        path=repo
+                        f' -f {cfg.name}'
+                        f" --namespace={app.values['namespace']}"
+                        f' {app.name}'
+                        f' {repo}'
                     ), catch=True)
                     # TODO: explain
                     if 'has no deployed releases' in results['output']:
                         logger.info('Purging release.')
-                        await run((
-                            'helm delete'
-                            ' --purge'
-                            ' {name}'
-                        ).format(
-                            name=namespace.name,
-                        ))
+                        await run(f'helm delete --purge {app.name}')
                         retry += 1
                     else:
                         break
                 return results
 
     def calculate_changed_apps(self):
+        # TODO: If an app has been removed from the list of app definitions, we want to delete its deployment.
         changed = set()
-        for name, namespace in self.current_app_definitions.namespaces.items():
-            old_namespace = self.previous_app_definitions.namespaces.get(name) if self.previous_app_definitions else None
-            if old_namespace:
-                if namespace != old_namespace:
-                    changed.add(name)
-            else:
+        for name, app in self.current_app_definitions.apps.items():
+            prev_app = self.previous_app_definitions.apps.get(name) if self.previous_app_definitions else None
+            if app != prev_app:  # prev_app may be None, sfine.
+                # If the app has been marked inactive, skip.
+                if app.is_inactive():
+                    logger.info(f'Skipping changes in app {name!r}: marked inactive.')
+                    continue
+                # If the app isn't targeting our cluster, skip.
+                if app.get_target_cluster() != CLUSTER_NAME:
+                    logger.info(f'Skipping changes in app {name!r}: targeting different cluster: {app.get_target_cluster()!r} != {CLUSTER_NAME!r}')
+                    continue
                 changed.add(name)
         return changed
 
@@ -142,8 +124,8 @@ class Deployer:
             app_definitions.from_path(repo)
             return app_definitions
 
-    async def post_init_summary(self, changed):
-        await post_app_updates(self.current_app_definitions.name, changed, self.current_app_definitions.namespaces, self.pusher)
+    async def post_init_summary(self, changed_apps):
+        await post_app_updates(self.current_app_definitions.name, changed_apps, self.pusher)
 
     async def post_deploy_result(self, result):
         await post_app_result(self.current_app_definitions.name, result)

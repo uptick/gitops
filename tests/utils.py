@@ -11,7 +11,7 @@ async def mock_load_app_definitions(self, url, sha):
     else:
         fg = 2
     app_definitions = AppDefinitions('mock-repo')
-    app_definitions.namespaces = {
+    app_definitions.apps = {
         'sample-app-1': Namespace('sample-ns-1', path=create_test_yaml(fg=fg)),
         'sample-app-2': Namespace('sample-ns-2', path=create_test_yaml(fg=fg)),
     }
