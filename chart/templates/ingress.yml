@@ -12,7 +12,7 @@ spec:
   tls:
   - secretName: gitops-cert-key
   rules:
-  - host: gitops{{ .Values.domain }}
+  - host: gitops.{{ .Values.domain }}
     http:
       paths:
       - backend:
