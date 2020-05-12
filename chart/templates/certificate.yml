@@ -1,4 +1,4 @@
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: gitops-cert
@@ -8,10 +8,4 @@ spec:
     name: gitops-issuer
     kind: Issuer
   dnsNames:
-  - gitops{{ .Values.domain }}
-  acme:
-    config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - gitops{{ .Values.domain }}
+  - gitops.{{ .Values.domain }}
