@@ -95,7 +95,6 @@ class Deployer:
                     results = await run((
                         'helm upgrade'
                         ' --install'
-                        ' --timeout 600'
                         ' -f {values_file}'
                         ' --namespace={namespace}'
                         ' {name}'
