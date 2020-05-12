@@ -80,7 +80,6 @@ class Deployer:
     async def deploy_namespace(self, namespace):
         logger.info(f'Deploying namespace "{namespace.name}".')
         async with temp_repo(namespace.values['chart'], 'chart') as repo:
-            await run('helm init --client-only')
             await run((
                 'cd {}; '
                 'helm dependency build'
