@@ -84,7 +84,6 @@ class Deployer:
                     results = await run((
                         'helm upgrade'
                         ' --install'
-                        ' --timeout 600'
                         f' -f {cfg.name}'
                         f" --namespace={app.values['namespace']}"
                         f' {app.name}'
