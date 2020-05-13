@@ -102,7 +102,7 @@ def get_secret_file(name):
 def get_cluster_details(name):
     with open(os.environ[name], 'rb') as f:
         data = f.read()
-        conf = yaml.load(data)
+        conf = yaml.safe_load(data)
         contexts = {c['name']: c['context'] for c in conf['contexts']}
         return {
             'kube_config': b64encode(data).decode(),
