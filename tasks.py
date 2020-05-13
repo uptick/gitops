@@ -5,8 +5,9 @@ from invoke import run, task
 
 from dotenv import load_dotenv
 
-# TODO: Read this in from env.
-REPO_URI = '964754172176.dkr.ecr.ap-southeast-2.amazonaws.com'
+# TODO: Infer this from env.
+ACCOUNT_ID = 964754172176
+REPO_URI = '{ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com'
 
 
 @task
@@ -60,6 +61,7 @@ def deploy(ctx, kubeconfig=''):
         # f" --set domain={cluster_details['name']}.onuptick.com"
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
+        f" --set secrets.ACCOUNT_ID={ACCOUNT_ID}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
