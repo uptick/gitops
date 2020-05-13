@@ -3,6 +3,7 @@ import logging
 import os
 from base64 import b64encode
 
+from . import ACCOUNT_ID
 from .utils import load_yaml
 
 logger = logging.getLogger('gitops')
@@ -70,7 +71,8 @@ class App:
     def make_image(self, details):
         if 'image-tag' in details:
             return self.deployments['images']['template'].format(
-                tag=details['image-tag']
+                account_id=ACCOUNT_ID,
+                tag=details['image-tag'],
             )
         else:
             return details.get('image')
