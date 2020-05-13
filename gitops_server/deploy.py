@@ -10,6 +10,7 @@ from .slack import post
 from .utils import get_repo_name_from_url, run
 
 BASE_REPO_DIR = '/var/gitops/repos'
+ROLE_ARN = 'arn:aws:iam::964754172176:role/AdminAccess'
 
 logger = logging.getLogger('gitops')
 
@@ -62,6 +63,8 @@ class Deployer:
             logger.info('Nothing to deploy, aborting.')
             return
         await self.post_init_summary(changed_apps)
+        # TODO move to function
+        await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --role-arn {ROLE_ARN} --alias {CLUSTER_NAME}')
         results = {}
         for app_name in changed_apps:
             app = self.current_app_definitions.apps[app_name]
