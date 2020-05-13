@@ -59,7 +59,7 @@ def deploy(ctx):
         ' --set domain=.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
-        f" --set environtment.ACCOUNT_ID={ACCOUNT_ID}"
+        f" --set secrets.ACCOUNT_ID={b64encode(str(ACCOUNT_ID).encode()).decode()}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
