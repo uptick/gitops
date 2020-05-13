@@ -5,9 +5,9 @@ from invoke import run, task
 
 from dotenv import load_dotenv
 
-# TODO move to secrets.env
-IMAGE_URI = '964754172176.dkr.ecr.ap-southeast-2.amazonaws.com/develop/gitops:{tag}'
-
+ENV = 'develop' # we can get this from local branch instead of hardcoding instead
+REPO_URI = '964754172176.dkr.ecr.ap-southeast-2.amazonaws.com'
+IMAGE_URI = '{repo_uri}/{env}/gitops:{tag}'
 
 @task
 def test(ctx, pty=True):
@@ -39,8 +39,8 @@ def push(ctx):
     local = get_image()
     print(f'Pushing to ECR ({local}) ... ', flush=True)
     password = run('aws ecr get-login-password', hide=True, warn=False).stdout.strip()
-    run(f'docker login -u AWS -p {password} https://964754172176.dkr.ecr.ap-southeast-2.amazonaws.com', hide=True)
-    remote = IMAGE_URI.format(tag=tag)
+    run(f'docker login -u AWS -p {password} https://{REPO_URI}', hide=True)
+    remote = IMAGE_URI.format(repo_uri=REPO_URI, env=ENV, tag=tag)
     run(f'docker tag {local} {remote}', hide=True)
     run(f'docker push {remote}', pty=True)
 
