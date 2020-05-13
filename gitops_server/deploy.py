@@ -10,7 +10,7 @@ from .slack import post
 from .utils import get_repo_name_from_url, run
 
 BASE_REPO_DIR = '/var/gitops/repos'
-ROLE_ARN = 'arn:aws:iam::964754172176:role/AdminAccess'
+ROLE_ARN = 'arn:aws:iam::964754172176:role/DevAccess' # This should be Gitops own role instead of the general one
 
 logger = logging.getLogger('gitops')
 
