@@ -5,7 +5,7 @@ from invoke import run, task
 
 from dotenv import load_dotenv
 
-ENV = 'develop'  # TODO: Read this in from somewhere (current branch, or cluster name)
+# TODO: Read this in from env.
 REPO_URI = '964754172176.dkr.ecr.ap-southeast-2.amazonaws.com'
 
 
@@ -56,7 +56,8 @@ def deploy(ctx, kubeconfig=''):
         ' --wait'
         ' --namespace default'
         f' --set image={get_remote_image()}'
-        f' --set domain={ENV}.onuptick.com'
+        f' --set domain=develop.onuptick.com'  # TODO: This should use cluster_name, not 'develop'.
+        # f" --set domain={cluster_details['name']}.onuptick.com"
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
@@ -86,7 +87,8 @@ def get_local_image():
 
 
 def get_remote_image():
-    return f'{REPO_URI}/{ENV}/gitops:{get_tag()}'
+    branch = run('git rev-parse --abbrev-ref HEAD').stdout
+    return f'{REPO_URI}/{branch}/gitops:{get_tag()}'
 
 
 def get_secret(name):
