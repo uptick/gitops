@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # TODO: Infer this from env.
 ACCOUNT_ID = 964754172176
-REPO_URI = '{ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com'
+REPO_URI = f'{ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com'
 
 
 @task
@@ -16,10 +16,10 @@ def test(ctx, pty=True):
 
 
 @task
-def redeploy(ctx, kubeconfig=''):
+def redeploy(ctx):
     build(ctx)
     push(ctx)
-    deploy(ctx, kubeconfig=kubeconfig)
+    deploy(ctx)
 
 
 @task
@@ -46,9 +46,9 @@ def push(ctx):
 
 
 @task
-def deploy(ctx, kubeconfig=''):
+def deploy(ctx):
     load_dotenv('secrets.env')
-    cluster_details = get_cluster_details(kubeconfig or os.environ['KUBE_CONFIG_FILE'])
+    cluster_details = get_cluster_details('KUBE_CONFIG_FILE')
     run((
         'helm upgrade'
         ' gitops'
@@ -61,7 +61,7 @@ def deploy(ctx, kubeconfig=''):
         # f" --set domain={cluster_details['name']}.onuptick.com"
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
-        f" --set secrets.ACCOUNT_ID={ACCOUNT_ID}"
+        f" --set environment.ACCOUNT_ID={ACCOUNT_ID}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
@@ -89,8 +89,7 @@ def get_local_image():
 
 
 def get_remote_image():
-    branch = run('git rev-parse --abbrev-ref HEAD', hide=True).stdout.strip()
-    return f'{REPO_URI}/{branch}/gitops:{get_tag()}'
+    return f'{REPO_URI}/gitops:{get_tag()}'
 
 
 def get_secret(name):
@@ -102,8 +101,8 @@ def get_secret_file(name):
     return b64encode(data).decode()
 
 
-def get_cluster_details(filename):
-    with open(filename, 'rb') as f:
+def get_cluster_details(name):
+    with open(os.environ['name'], 'rb') as f:
         data = f.read()
         conf = yaml.load(data)
         contexts = {c['name']: c['context'] for c in conf['contexts']}
