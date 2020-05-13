@@ -87,11 +87,7 @@ def get_local_image():
 
 
 def get_remote_image():
-<<<<<<< HEAD
     branch = run('git rev-parse --abbrev-ref HEAD', hide=True).stdout.strip()
-=======
-    branch = run('git rev-parse --abbrev-ref HEAD').stdout.strip()
->>>>>>> 2ae9a88f225055a1efa767288b355bbb51936b0e
     return f'{REPO_URI}/{branch}/gitops:{get_tag()}'
 
 
