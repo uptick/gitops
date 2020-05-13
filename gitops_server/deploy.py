@@ -76,7 +76,10 @@ class Deployer:
 
     async def deploy_app(self, app):
         logger.info(f'Deploying app {app.name!r}.')
-        async with temp_repo(app.values['chart'], 'chart') as repo:
+        repo, sha = app.values['chart'], None
+        if '@' in repo:
+            repo, sha = repo.split('@')
+        async with temp_repo(repo, 'chart', sha=sha) as repo:
             await run(f'cd {repo}; helm dependency build')
             with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
                 cfg.write(json.dumps(app.values).encode())

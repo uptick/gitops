@@ -25,26 +25,18 @@ async def clone_repo(name, url, path):
     # TODO: Don't log the oauth token.
     url = inject_oauth_token(url)
     logger.info(f'Cloning "{name}" from "{url}".')
-    await run(
-        f'git clone {url} {path}'
-    )
-    await run(
-        f'cd {path}; git-crypt unlock {os.environ["GIT_CRYPT_KEY_FILE"]}'
-    )
+    await run(f'git clone {url} {path}')
+    await run(f'cd {path}; git-crypt unlock {os.environ["GIT_CRYPT_KEY_FILE"]}')
 
 
 async def update_repo(name, url, path):
     logger.info('PULL: {name}')
-    await run(
-        f'cd {path}; git pull {url}'
-    )
+    await run(f'cd {path}; git pull {url}')
 
 
 async def checkout_repo_sha(name, sha, path):
     logger.info(f'Checkout "{name}" at "{sha}".')
-    await run(
-        f'cd {path}; git checkout {sha}'
-    )
+    await run(f'cd {path}; git checkout {sha}')
 
 
 async def refresh_repo(name, url, sha=None, path=None):
