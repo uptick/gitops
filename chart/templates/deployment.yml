@@ -33,6 +33,11 @@ spec:
               secretKeyRef:
                 name: gitops-secrets
                 key: SLACK_URL
+          - name: ACCOUNT_ID
+            valueFrom:
+              secretKeyRef:
+                name: gitops-secrets
+                key: ACCOUNT_ID
           - name: GITHUB_OAUTH_TOKEN
             valueFrom:
               secretKeyRef:
