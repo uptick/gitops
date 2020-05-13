@@ -6,7 +6,7 @@ from invoke import run, task
 from dotenv import load_dotenv
 
 ACCOUNT_ID = 305686791668
-REPO_URI = '{ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com'
+REPO_URI = f'{ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com'
 
 
 @task
@@ -59,7 +59,7 @@ def deploy(ctx):
         ' --set domain=.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
-        f" --set secrets.ACCOUNT_ID={ACCOUNT_ID}"
+        f" --set environtment.ACCOUNT_ID={ACCOUNT_ID}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
@@ -87,8 +87,7 @@ def get_local_image():
 
 
 def get_remote_image():
-    branch = run('git rev-parse --abbrev-ref HEAD', hide=True).stdout.strip()
-    return f'{REPO_URI}/{branch}/gitops:{get_tag()}'
+    return f'{REPO_URI}/gitops:{get_tag()}'
 
 
 def get_secret(name):
