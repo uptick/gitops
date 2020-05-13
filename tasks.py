@@ -5,9 +5,9 @@ from invoke import run, task
 
 from dotenv import load_dotenv
 
-ENV = 'develop' # we can get this from local branch instead of hardcoding instead
+ENV = 'develop'  # TODO: Read this in from somewhere (current branch, or cluster name)
 REPO_URI = '964754172176.dkr.ecr.ap-southeast-2.amazonaws.com'
-IMAGE_URI = '{repo_uri}/{env}/gitops:{tag}'
+
 
 @task
 def test(ctx, pty=True):
@@ -28,19 +28,18 @@ def build(ctx):
     Uses the short hash code for the Git repo to identify this build. This
     allows for easier rollback.
     """
-    local = get_image()
+    local = get_local_image()
     print(f'Building container ({local}) ... ', flush=True)
     run(f'docker build -t {local} .')
 
 
 @task
 def push(ctx):
-    tag = get_tag()
-    local = get_image()
+    local = get_local_image()
+    remote = get_remote_image()
     print(f'Pushing to ECR ({local}) ... ', flush=True)
     password = run('aws ecr get-login-password', hide=True, warn=False).stdout.strip()
     run(f'docker login -u AWS -p {password} https://{REPO_URI}', hide=True)
-    remote = IMAGE_URI.format(repo_uri=REPO_URI, env=ENV, tag=tag)
     run(f'docker tag {local} {remote}', hide=True)
     run(f'docker push {remote}', pty=True)
 
@@ -56,8 +55,8 @@ def deploy(ctx, kubeconfig=''):
         ' --install'
         ' --wait'
         ' --namespace default'
-        f' --set image={IMAGE_URI.format(tag=get_tag())}'
-        ' --set domain=develop.onuptick.com'
+        f' --set image={get_remote_image()}'
+        f' --set domain={ENV}.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_details['name']}"
         f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
@@ -82,8 +81,12 @@ def get_tag():
     return run('git rev-parse --short HEAD', hide=True).stdout.strip()
 
 
-def get_image():
+def get_local_image():
     return f'uptick/gitops:{get_tag()}'
+
+
+def get_remote_image():
+    return f'{REPO_URI}/{ENV}/gitops:{get_tag()}'
 
 
 def get_secret(name):
