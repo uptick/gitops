@@ -52,9 +52,6 @@ spec:
         - name: git-crypt-key
           mountPath: "/etc/gitops"
           readOnly: true
-        # - name: kube-config
-        #   mountPath: "/root/.kube"
-        #   readOnly: true
       volumes:
       - name: git-crypt-key
         secret:
@@ -62,10 +59,4 @@ spec:
           items:
           - key: GIT_CRYPT_KEY
             path: git_crypt_key
-      # - name: kube-config
-      #   secret:
-      #     secretName: gitops-secrets
-      #     items:
-      #     - key: KUBE_CONFIG
-      #       path: config
       restartPolicy: Always

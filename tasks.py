@@ -66,7 +66,6 @@ def deploy(ctx):
         f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
         f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
         f" --set secrets.GIT_CRYPT_KEY={get_secret_file('GIT_CRYPT_KEY_FILE')}"
-        f" --set secrets.KUBE_CONFIG={cluster_details['kube_config']}"
     ))
 
 
