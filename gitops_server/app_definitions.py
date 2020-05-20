@@ -40,7 +40,8 @@ class App:
 
     def __eq__(self, other):
         return (
-            self.name == other.name
+            type(self) == type(other)
+            and self.name == other.name
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
