@@ -55,7 +55,7 @@ def deploy(ctx):
         ' --wait'
         ' --namespace default'
         f' --set image={get_remote_image()}'
-        f" --set domain={cluster_env}.onuptick.com"
+        f' --set domain={cluster_env}.onuptick.com'
         ' --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key'
         f" --set environment.CLUSTER_NAME={cluster_name}"
         f" --set secrets.ACCOUNT_ID={b64encode(get_account_id().encode()).decode()}"
@@ -110,4 +110,4 @@ def get_cluster_name():
     data = run('kubectl config view', hide=True).stdout.strip()
     conf = yaml.safe_load(data)
     contexts = {c['name']: c['context'] for c in conf['contexts']}
-    return contexts[conf['current-context']]['cluster'].split(':cluster/')[-1],
+    return contexts[conf['current-context']]['cluster'].split(':cluster/')[-1]
