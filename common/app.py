@@ -2,7 +2,6 @@ import json
 import os
 from base64 import b64encode
 
-from . import ACCOUNT_ID
 from .utils import load_yaml
 
 
@@ -56,7 +55,7 @@ class App:
     def make_image(self, details):
         if 'image-tag' in details:
             return self.deployments['images']['template'].format(
-                account_id=ACCOUNT_ID,
+                account_id=self.account_id,
                 tag=details['image-tag'],
             )
         else:
