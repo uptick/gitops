@@ -300,12 +300,9 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
         await async_run(f'kubectl create -n {namespace} -f {tmp.name}')
         cmd = (
             'kubectl get pods'
-            ' -n {namespace}'
-            ' --selector=job-name={name}'
-            ' -o jsonpath=\'{{.items[*].metadata.name}}\''
-        ).format(
-            name=name,
-            namespace=namespace
+            f' -n {namespace}'
+            f' --selector=job-name={name}'
+            ' -o jsonpath=\'{.items[*].metadata.name}\''
         )
 
         @retry

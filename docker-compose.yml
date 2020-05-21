@@ -5,6 +5,7 @@ services:
     ports:
       - 80:8000
     volumes:
+      - ./common:/app/common
       - ./gitops_server:/app/gitops_server
     env_file:
       - secrets.env

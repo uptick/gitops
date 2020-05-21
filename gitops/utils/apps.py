@@ -2,8 +2,9 @@ import os
 from pathlib import Path
 
 from colorama import Fore
-from gitops_server.app_definitions import App
 from tabulate import tabulate
+
+from common.app import App
 
 import gitops.utils.yaml as yaml
 

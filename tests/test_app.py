@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from gitops_server.app_definitions import App
+from common.app import App
 
 from .utils import create_test_yaml
 

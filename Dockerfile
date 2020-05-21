@@ -49,6 +49,7 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && pip install -r /app/requirements.txt \
     && apk del build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
+COPY common /app/common
 COPY gitops_server /app/gitops_server
 COPY tests /app/tests
 
