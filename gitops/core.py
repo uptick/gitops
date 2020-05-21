@@ -106,7 +106,13 @@ def command(ctx, filter, command, exclude='', cleanup=True, sequential=True, int
 def tag(ctx, filter, tag, exclude=''):
     """ Set a tag on selected app(s). """
     try:
-        apps = get_apps(filter=filter, exclude=exclude, autoexclude_inactive=False, message=f"{colourise('The tag', Fore.LIGHTBLUE_EX)} {colour_tag(tag)} {colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(
+            filter=filter,
+            exclude=exclude,
+            autoexclude_inactive=False,
+            message=f"{colourise('The tag', Fore.LIGHTBLUE_EX)} {colour_tag(tag)} {colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}",
+            load_secrets=False,
+        )
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
@@ -123,7 +129,13 @@ def tag(ctx, filter, tag, exclude=''):
 def untag(ctx, filter, tag, exclude=''):
     """ Unset a tag from selected app(s). """
     try:
-        apps = get_apps(filter=filter, exclude=exclude, autoexclude_inactive=False, message=f"{colourise('The tag', Fore.LIGHTBLUE_EX)} {colour_tag(tag)} {colourise('will be removed from the following apps:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(
+            filter=filter,
+            exclude=exclude,
+            autoexclude_inactive=False,
+            message=f"{colourise('The tag', Fore.LIGHTBLUE_EX)} {colour_tag(tag)} {colourise('will be removed from the following apps:', Fore.LIGHTBLUE_EX)}",
+            load_secrets=False,
+        )
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
