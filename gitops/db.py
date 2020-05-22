@@ -17,7 +17,7 @@ def backup(ctx, app_name):
         'app': app_name
     }
     app = get_app_details(app_name, load_secrets=False)
-    asyncio.run(kube._run_job('jobs/backup-job.yml', values, context=app.values['cluster'], namespace='workforce', sequential=True))
+    asyncio.run(kube._run_job('jobs/backup-job.yml', values, context=app['cluster'], namespace='workforce', sequential=True))
 
 
 @task
@@ -37,7 +37,7 @@ def restore_backup(ctx, app_name, index):
         'app': app_name,
     }
     app = get_app_details(app_name, load_secrets=False)
-    asyncio.run(kube._run_job('jobs/restore-job.yml', values, context=app.values['cluster'], namespace='workforce'))
+    asyncio.run(kube._run_job('jobs/restore-job.yml', values, context=app['cluster'], namespace='workforce'))
 
 
 @task

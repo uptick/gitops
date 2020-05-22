@@ -33,7 +33,7 @@ async def run_job(app, command, cleanup=True, sequential=True):
         'command': str(shlex.split(command)),
         'image': app['image'],
     }
-    return await _run_job('jobs/command-job.yml', values, context=app.values['cluster'], namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
+    return await _run_job('jobs/command-job.yml', values, context=app['cluster'], namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
 
 
 def list_backups(product, prefix):
