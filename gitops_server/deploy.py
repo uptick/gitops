@@ -114,8 +114,8 @@ class Deployer:
                     logger.info(f'Skipping changes in app {name!r}: marked inactive.')
                     continue
                 # If the app isn't targeting our cluster, skip.
-                if app.get_target_cluster() != CLUSTER_NAME:
-                    logger.info(f'Skipping changes in app {name!r}: targeting different cluster: {app.get_target_cluster()!r} != {CLUSTER_NAME!r}')
+                if app.values['cluster'] != CLUSTER_NAME:
+                    logger.info(f"Skipping changes in app {name!r}: targeting different cluster: {app.values['cluster']!r} != {CLUSTER_NAME!r}")
                     continue
                 changed.add(name)
         return changed

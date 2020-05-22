@@ -8,6 +8,7 @@ from common.app import App
 
 import gitops.utils.yaml as yaml
 
+from . import get_account_id
 from .cli import colourise, confirm, warning
 from .exceptions import AppDoesNotExist, AppOperationAborted
 from .images import colour_image
@@ -15,8 +16,9 @@ from .tags import colour_tags, validate_tags
 
 
 def get_app_details(app_name, load_secrets=True):
+    account_id = get_account_id() if load_secrets else 'UNKOWN'
     try:
-        app = App(app_name, path=f'apps/{app_name}', load_secrets=load_secrets)
+        app = App(app_name, path=f'apps/{app_name}', load_secrets=load_secrets, account_id=account_id)
     except FileNotFoundError:
         # Check if apps dir doesn't exist, or just that one app
         if os.path.exists("apps"):

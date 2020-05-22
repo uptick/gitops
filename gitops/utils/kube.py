@@ -33,109 +33,25 @@ async def run_job(app, command, cleanup=True, sequential=True):
         'command': str(shlex.split(command)),
         'image': app['image'],
     }
-    return await _run_job('jobs/command-job.yml', values, 'workforce', attach=True, cleanup=cleanup, sequential=sequential)
-
-
-def build_image(local_image, path=None, tag=None):
-    """ Build a Docker image.
-
-    :param local_image: Image to write as.
-    :param path: Run command from this path.
-    :param tag: Tag to use for image.
-    """
-    local_image = get_image(local_image, tag)
-    intro = f'Building container {Fore.BLUE}{local_image}{Fore.RESET} ... '
-    with run_wrapper(intro):
-        cmd = f'docker build -t {local_image} .'
-        if path:
-            cmd = f'cd {path} && {cmd}'
-        run(cmd, hide=True)
-
-
-def tag_image(local_image, remote_image, tag=None):
-    """ Tag Docker image.
-
-    Used to tag a local image to match AWS image signature prior to a push.
-
-    :param local_image: Image to tag.
-    :param remote_image: Image to tag as.
-    :param tag: Tag to use for image.
-    """
-    local_image = get_image(local_image, tag)
-    remote_image = get_image(remote_image, tag)
-    intro = (
-        f'Tagging container {Fore.BLUE}{local_image}{Fore.RESET}'
-        f' as {Fore.BLUE}{local_image}{Fore.RESET} ... '
-    )
-    with run_wrapper(intro):
-        run(f'docker tag {remote_image} {local_image}')
-
-
-def build_bundle(bucket, path=None):
-    """ Build a JS bundle.
-
-    Uses `yarn` to build a JS bundle. Accepts a bucket parameter to pass into
-    the build to set the public prefix. This is useful for production builds to
-    specify the S3 bucket to use.
-
-    :param bucket: Prefix to use in the build.
-    """
-    intro = f'Building bundle for bucket {Fore.BLUE}{bucket}{Fore.RESET} ... '
-    with run_wrapper(intro):
-        cmd = f'yarn && yarn build:prod --env.bucket={bucket}'
-        if path:
-            cmd = f'cd {path} && {cmd}'
-        run(cmd, hide=True)
-
-
-def push_image(local_image, remote_image, path=None, tag=None):
-    """ Push image to AWS.
-
-    :param local_image: Image to push.
-    :param remote_image: Image to tag as.
-    :param tag: Tag to use for image.
-    """
-    tag = get_tag(tag)
-    remote_image = get_image(remote_image, tag)
-    intro = (
-        f'Pushing {Fore.BLUE}{local_image}{Fore.RESET} to ECR'
-        f' {Fore.BLUE}{remote_image}{Fore.RESET} ... '
-    )
-    with run_wrapper(intro):
-        login = run(
-            'aws ecr get-login --no-include-email',
-            hide=True,
-            warn=False
-        ).stdout.strip()
-        run(login, hide=True)
-        run(f'docker tag {local_image} {remote_image}', hide=True)
-        run(f'docker push {remote_image}', hide=True)
+    return await _run_job('jobs/command-job.yml', values, context=app.values['cluster'], namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
 
 
 def list_backups(product, prefix):
-    """ List application backups.
-    """
+    """ List application backups. """
     backups = get_backups(product, prefix)
     for ii, backup in enumerate(reversed(backups)):
         index = len(backups) - ii
         size = humanize.naturalsize(backup[2])
-        msg = (
+        print(
             f'{Fore.BLUE}{index:4}{Fore.RESET}. {backup[1]}'
             f' - {Fore.GREEN}{size}{Fore.RESET}'
         )
-        print(msg)
 
 
 def download_backup(product, prefix, index, path=None, datestamp=False):
     s3 = get_client('s3')
     key = get_backups(product, prefix)[int(index) - 1][3]
-    url = s3.generate_presigned_url(
-        'get_object',
-        Params={
-            'Bucket': 'uptick-backups',
-            'Key': key
-        }
-    )
+    url = s3.generate_presigned_url('get_object', Params={'Bucket': 'uptick-backups', 'Key': key})
     name = prefix
     if datestamp:
         name += f'-{get_backup_datestamp(url)}'
@@ -147,8 +63,7 @@ def download_backup(product, prefix, index, path=None, datestamp=False):
     print(f'{Fore.GREEN}ok{Fore.RESET}')
 
 
-@task
-def copy_db(ctx, source, destination):
+def copy_db(ctx, source, destination, context=''):
     """ Copy database between two applications.
     """
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
@@ -161,6 +76,7 @@ def copy_db(ctx, source, destination):
         print('Waiting for copy to complete ... ', end='', flush=True)
         run((
             'kubectl wait'
+            f' --context {context}'
             ' -n workforce'
             ' --for=condition=complete'
             ' --timeout=-1s'
@@ -180,7 +96,7 @@ def copy_db(ctx, source, destination):
 
 
 @task
-def create_backup_secrets(ctx, namespace='workforce'):
+def create_backup_secrets(ctx, context='', namespace='workforce'):
     """ Create backup job secrets.
 
     Before running backups certain secret keys need to be available to
@@ -188,12 +104,10 @@ def create_backup_secrets(ctx, namespace='workforce'):
     """
     run((
         'kubectl create secret generic backups-secrets'
+        f' --context {context}'
         f' -n {namespace}'
-        ' --from-literal=AWS_ACCESS_KEY_ID={}'
-        ' --from-literal=AWS_SECRET_ACCESS_KEY={}'
-    ).format(
-        get_secret('BACKUPS_AWS_ACCESS_KEY_ID'),
-        get_secret('BACKUPS_AWS_SECRET_ACCESS_KEY')
+        " --from-literal=AWS_ACCESS_KEY_ID={get_secret('BACKUPS_AWS_ACCESS_KEY_ID')}"
+        " --from-literal=AWS_SECRET_ACCESS_KEY={get_secret('BACKUPS_AWS_SECRET_ACCESS_KEY')}"
     ))
 
 
@@ -216,19 +130,6 @@ def get_backup_datestamp(url):
     return url[ii:jj][:-4]
 
 
-def get_tag(tag=None):
-    if tag:
-        return tag
-    return run('git rev-parse --short HEAD', hide=True).stdout.strip()
-
-
-def get_image(image, tag=None):
-    tag = get_tag(tag)
-    if tag:
-        image = image + f':{tag}'
-    return image
-
-
 def get_secret(name, base64=False):
     try:
         value = os.environ[name]
@@ -244,21 +145,11 @@ def get_secret(name, base64=False):
     return value
 
 
-def get_secret_file(name):
-    data = open(os.environ[name], 'rb').read()
-    return b64encode(data).decode()
-
-
-def get_session():
+def get_client(name):
     return boto3.Session(
         aws_access_key_id=os.environ['BACKUPS_AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['BACKUPS_AWS_SECRET_ACCESS_KEY']
-    )
-
-
-def get_client(name):
-    session = get_session()
-    return session.client(name)
+    ).client('name')
 
 
 @contextmanager
@@ -288,7 +179,7 @@ def make_key(length=64):
     )
 
 
-async def _run_job(path, values={}, namespace='default', attach=False, cleanup=True, sequential=True):
+async def _run_job(path, values={}, context='', namespace='default', attach=False, cleanup=True, sequential=True):
     name = values['name']
     logs = ''
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
@@ -297,9 +188,10 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
             resource = resource.replace('{{ %s }}' % k, v)
         tmp.write(resource)
         tmp.flush()
-        await async_run(f'kubectl create -n {namespace} -f {tmp.name}')
+        await async_run(f'kubectl create --context {context} -n {namespace} -f {tmp.name}')
         cmd = (
             'kubectl get pods'
+            f' --context {context}'
             f' -n {namespace}'
             f' --selector=job-name={name}'
             ' -o jsonpath=\'{.items[*].metadata.name}\''
@@ -319,6 +211,7 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
                 with run_wrapper(intro):
                     cmd = (
                         'kubectl wait'
+                        f' --context {context}'
                         f' -n {namespace}'
                         ' --for=condition=complete'
                         ' --timeout=-1s'
@@ -327,9 +220,10 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
                     _, _, output_log = await async_run(cmd)
                     logs += output_log
             else:
-                await wait_for_pod(namespace, pod)
+                await wait_for_pod(context, namespace, pod)
                 cmd = (
                     'kubectl attach'
+                    f' --context {context}'
                     f' -n {namespace}'
                     ' -it'
                     f' {pod}'
@@ -350,15 +244,16 @@ async def _run_job(path, values={}, namespace='default', attach=False, cleanup=T
                 raise e
         finally:
             if cleanup:
-                cmd = f'kubectl delete -n {namespace} job {name}'
+                cmd = f'kubectl delete --context {context} -n {namespace} job {name}'
                 await async_run(cmd)
     return logs
 
 
-async def wait_for_pod(namespace, pod):
+async def wait_for_pod(context, namespace, pod):
     while True:
         cmd = (
             'kubectl get pod'
+            f' --context {context}'
             f' -n {namespace}'
             ' -o jsonpath="{.status.phase}"'
             f' {pod}'
@@ -367,29 +262,6 @@ async def wait_for_pod(namespace, pod):
         stdout = stdout.decode().lower()
         if stdout != 'pending':
             return stdout
-
-
-def get_pod_names(namespace, selector):
-    cmd = (
-        'kubectl get pods'
-        f' -n {namespace}'
-        f' --selector={selector}'
-        ' -o jsonpath=\'{{.items[*].metadata.name}}\''
-    ).format(
-        namespace=namespace,
-        selector=selector
-    )
-    return run(cmd, hide=True).stdout.strip().split()
-
-
-def get_pod_logs(namespace, pod):
-    cmd = (
-        'kubectl logs'
-        f' -n {namespace}'
-        f' {pod}'
-    )
-    result = run(cmd, hide=True)
-    return result.stdout
 
 
 def retry(*args, max_attempts=3, delay=1):

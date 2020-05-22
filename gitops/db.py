@@ -2,6 +2,7 @@ import asyncio
 from invoke import task
 
 from gitops.utils import kube
+from gitops.utils.apps import get_app_details
 from gitops.utils.cli import progress
 
 
@@ -9,13 +10,14 @@ from gitops.utils.cli import progress
 # DATABASE COMMANDS #
 #####################
 @task
-def backup(ctx, app):
+def backup(ctx, app_name):
     """ Backup production or staging database. """
     values = {
-        'name': f'{app}-backup',
-        'app': app
+        'name': f'{app_name}-backup',
+        'app': app_name
     }
-    asyncio.run(kube._run_job('jobs/backup-job.yml', values, 'workforce', sequential=True))
+    app = get_app_details(app_name, load_secrets=False)
+    asyncio.run(kube._run_job('jobs/backup-job.yml', values, context=app.values['cluster'], namespace='workforce', sequential=True))
 
 
 @task
@@ -24,17 +26,18 @@ def list_backups(ctx, app):
 
 
 @task
-def restore_backup(ctx, app, index):
+def restore_backup(ctx, app_name, index):
     """ Restore backed up database. """
-    kube.confirm_database(app)
-    backups = kube.get_backups('workforce', app)
+    kube.confirm_database(app_name)
+    backups = kube.get_backups('workforce', app_name)
     backup = backups[int(index) - 1]
     values = {
-        'name': f'{app}-restore',
+        'name': f'{app_name}-restore',
         'timestamp': backup[0],
-        'app': app
+        'app': app_name,
     }
-    asyncio.run(kube._run_job('jobs/restore-job.yml', values, 'workforce'))
+    app = get_app_details(app_name, load_secrets=False)
+    asyncio.run(kube._run_job('jobs/restore-job.yml', values, context=app.values['cluster'], namespace='workforce'))
 
 
 @task
