@@ -75,6 +75,7 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
         pseudotags = [
             app['name'],
             app['image'].split(':')[-1].split('-')[0],
+            app['cluster'],
         ]
         tags = set(app['tags'] + pseudotags)
         existing_tags |= tags
@@ -106,11 +107,12 @@ def preview_apps(apps):
     for app in apps:
         table.append([
             colourise(app['name'], Fore.RED, lambda _: 'inactive' in app['tags']),
-            colour_image(app.get('image').split(':')[-1]),
+            colour_image(app['image'].split(':')[-1]),
+            app['cluster'],
             colourise(app.get('containers', {}).get('fg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
             colourise(app.get('containers', {}).get('bg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
             colour_tags(app['tags']),
         ])
     # Sort table by app tags. TODO: Do we want this over alphabetical app sorting..?
     # table = sorted(table, key=lambda x: x[4])
-    print(tabulate(table, ['Name', 'Image', 'FGs', 'BGs', 'Tags']))
+    print(tabulate(table, ['Name', 'Image', 'Cluster', 'FGs', 'BGs', 'Tags']))
