@@ -1,9 +1,9 @@
 import asyncio
 from invoke import task
 
-from gitops.utils import kube
-from gitops.utils.apps import get_app_details
-from gitops.utils.cli import progress
+from .utils import kube
+from .utils.apps import get_app_details
+from .utils.cli import progress
 
 
 #####################

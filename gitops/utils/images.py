@@ -1,8 +1,8 @@
+from colorama import Fore
 from contextlib import suppress
 from hashlib import md5
 
 import boto3
-from colorama import Fore
 
 from .cli import colourise
 
@@ -57,7 +57,6 @@ def get_latest_image(prefix):
 
 
 def colour_image(image_tag):
-    # TODO: Make colours automatically change, based on some hashing of the incoming tag.
     bits = image_tag.split('-')
     bits[0] = colourise(bits[0], color_hash(bits[1]))
     return '-'.join(bits)

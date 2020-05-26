@@ -1,11 +1,10 @@
 import asyncio
 from invoke import task
 
-from gitops.utils.apps import get_app_details
-from gitops.utils.cli import success
-from gitops.utils.kube import run_job
-
 from .core import command
+from .utils.apps import get_app_details
+from .utils.cli import success
+from .utils.kube import run_job
 
 
 @task

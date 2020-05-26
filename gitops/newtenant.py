@@ -4,10 +4,9 @@ from pathlib import Path
 import boto
 import boto3
 
-import gitops.utils.yaml as yaml
-from gitops.utils import gen_secret
-from gitops.utils.cli import confirm, progress, success, success_negative, warning
-from gitops.utils.images import get_latest_image
+from .utils import gen_secret, yaml
+from .utils.cli import confirm, progress, success, success_negative, warning
+from .utils.images import get_latest_image
 
 
 ######################
@@ -256,4 +255,3 @@ def delete_tenant(ctx):
     print(progress("\t- SES: Delete Rule Sets (SES Oregon -> Active Rule Set)"))
     print(progress("\t- Delete Authorized URI Redirect in the Google API console under API OAuth client Credentials."))
     print(progress("\t- Delete customer folder in uptick cluster."))
-    

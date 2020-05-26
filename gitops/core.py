@@ -1,15 +1,14 @@
 import asyncio
+from colorama import Fore
 from invoke import run, task
 
-from colorama import Fore
-
-from gitops.utils.apps import get_apps, update_app
-from gitops.utils.async_runner import run_tasks_async_with_progress
-from gitops.utils.cli import colourise, progress, success, success_negative, warning
-from gitops.utils.exceptions import AppOperationAborted
-from gitops.utils.images import colour_image, get_image, get_latest_image
-from gitops.utils.kube import run_job
-from gitops.utils.tags import colour_tag, sort_tags
+from .utils.apps import get_apps, update_app
+from .utils.async_runner import run_tasks_async_with_progress
+from .utils.cli import colourise, progress, success, success_negative, warning
+from .utils.exceptions import AppOperationAborted
+from .utils.images import colour_image, get_image, get_latest_image
+from .utils.kube import run_job
+from .utils.tags import colour_tag, sort_tags
 
 
 @task
