@@ -194,7 +194,7 @@ async def _run_job(path, values={}, context='', namespace='default', attach=Fals
             f' --context {context}'
             f' -n {namespace}'
             f' --selector=job-name={name}'
-            ' -o jsonpath=\'{.items[*].metadata.name}\''
+            " -o jsonpath='{.items[*].metadata.name}'"
         )
 
         @retry
