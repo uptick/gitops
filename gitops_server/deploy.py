@@ -81,7 +81,7 @@ class Deployer:
     async def update_app_deployment(self, app, uninstall=False):
         if uninstall:
             logger.info(f'Uninstalling app {app.name!r}.')
-            return await run(f'helm uninstall {app.name}')
+            return await run(f"helm uninstall {app.name} -n {app.values['namespace']}")
 
         logger.info(f'Deploying app {app.name!r}.')
         repo, sha = app.values['chart'], None
