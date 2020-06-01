@@ -45,6 +45,11 @@ def restore_backup(ctx, app_name, index):
 @task
 def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
     """ Copy database between apps. """
+    source_app = get_app_details(source, load_secrets=False)
+    destination_app = get_app_details(destination, load_secrets=False)
+    if source_app['cluster'] != destination_app['cluster']:
+        print(warning(f"Source ({source!r} on {source_app['cluster']!r}) and destination ({destination!r} on {destination_app['cluster']!r}) apps must belong to the same cluster."))
+        return
     kube.confirm_database(destination)
     values = {
         'name': f'copy-db-{source}-{destination}',
@@ -52,11 +57,6 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
         'destination': destination,
         'skip_backup': 'skip' if skip_backup else ''
     }
-    source_app = get_app_details(source, load_secrets=False)
-    destination_app = get_app_details(destination, load_secrets=False)
-    if source_app['cluster'] != destination_app['cluster']:
-        print(warning(f"Source ({source!r} on {source_app['cluster']!r}) and destination ({destination!r} on {destination_app['cluster']!r}) apps must belong to the same cluster."))
-        return
     asyncio.run(kube._run_job('jobs/copy-db-job.yml', values, context=source_app['cluster'], namespace='workforce', cleanup=cleanup))
     print(progress('You may want to clear the redis cache now!'))
     print(progress(f'\t- gitops mcommand {destination} clear_cache'))
