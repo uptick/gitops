@@ -16,7 +16,7 @@ logger = logging.getLogger('gitops')
 
 async def post_init_summary(source, username, added_apps, updated_apps, removed_apps):
     deltas = ''
-    for typ, d in [('Added', added_apps), ('Updated', updated_apps), ('Removed', removed_apps)]:
+    for typ, d in [('Adding', added_apps), ('Updating', updated_apps), ('Removing', removed_apps)]:
         if d:
             deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in d)}"
     await post(
