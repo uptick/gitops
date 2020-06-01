@@ -16,9 +16,9 @@ logger = logging.getLogger('gitops')
 
 async def post_init_summary(source, username, added_apps, updated_apps, removed_apps):
     deltas = ''
-    for typ, d in [('Added', added_apps), ('Updated', updated_apps), ('Removed', 'removed_apps')]:
+    for typ, d in [('Added', added_apps), ('Updated', updated_apps), ('Removed', removed_apps)]:
         if d:
-            deltas += f"\n\t• {typ}: {', '.join(f'`{a}`' for a in added_apps)}"
+            deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in d)}"
     await post(
         f"A deployment from `{source}` has been initiated by *{username}* for cluster `{CLUSTER_NAME}`"
         f", the following apps will be updated:{deltas}"
@@ -59,7 +59,7 @@ class Deployer:
         if not (added_apps | updated_apps | removed_apps):
             logger.info('No deltas; aborting.')
             return
-        logger.info(f'Running deployment for these deltas: A{added_apps}, U{updated_apps}, R{removed_apps}')
+        logger.info(f'Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)}, R{list(removed_apps)}')
         await post_init_summary(self.current_app_definitions.name, self.pusher, added_apps=added_apps, updated_apps=updated_apps, removed_apps=removed_apps)
         # TODO move to function
         await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --role-arn {ROLE_ARN} --alias {CLUSTER_NAME}')
@@ -69,7 +69,7 @@ class Deployer:
             result = await self.update_app_deployment(app)
             result['app'] = app_name
             results[app_name] = result
-            await self.post_result(result)
+            await post_result(self.current_app_definitions.name, result)
         for app_name in removed_apps:
             app = self.previous_app_definitions.apps[app_name]
             result = await self.update_app_deployment(app, uninstall=True)
