@@ -5,6 +5,8 @@ from .utils import kube
 from .utils.apps import get_app_details
 from .utils.cli import progress, warning
 
+# TODO: Abstract this code out of gitops.
+
 
 #####################
 # DATABASE COMMANDS #
