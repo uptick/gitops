@@ -3,7 +3,7 @@ import os
 
 from common.app import App
 
-from . import ACCOUNT_ID
+from . import ACCOUNT_ID, CLUSTER_NAME
 
 logger = logging.getLogger('gitops')
 
@@ -19,4 +19,6 @@ class AppDefinitions:
             entry_path = os.path.join(path, entry)
             if entry[0] != '.' and not os.path.isfile(entry_path):
                 app = App(entry, entry_path, account_id=ACCOUNT_ID)
-                self.apps[entry] = app
+                # We only care for apps pertaining to our current cluster.
+                if app.values['cluster'] == CLUSTER_NAME:
+                    self.apps[entry] = app

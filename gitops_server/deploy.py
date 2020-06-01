@@ -14,30 +14,32 @@ ROLE_ARN = f'arn:aws:iam::{ACCOUNT_ID}:role/GitopsAccess'
 logger = logging.getLogger('gitops')
 
 
-async def post_app_updates(source, apps, username=None):
-    user_string = f' by *{username}*' if username else ''
-    app_list = '\n'.join(f'\t• `{a}`' for a in apps)
+async def post_init_summary(source, username, added_apps, updated_apps, removed_apps):
+    deltas = ''
+    for typ, d in [('Added', added_apps), ('Updated', updated_apps), ('Removed', 'removed_apps')]:
+        if d:
+            deltas += f"\n\t• {typ}: {', '.join(f'`{a}`' for a in added_apps)}"
     await post(
-        f'A deployment from `{source}` has been initiated{user_string} for cluster `{CLUSTER_NAME}`'
-        f', the following apps will be updated:\n{app_list}'
+        f"A deployment from `{source}` has been initiated by *{username}* for cluster `{CLUSTER_NAME}`"
+        f", the following apps will be updated:{deltas}"
     )
 
 
-async def post_app_result(source, result):
+async def post_result(source, result):
     if result['exit_code'] != 0:
         await post(
-            f'Failed to deploy app `{result["app"]}` from `{source}` for cluster `{CLUSTER_NAME}`:'
-            f'\n>>>{result["output"]}'
+            f"Failed to deploy app `{result['app']}` from `{source}` for cluster `{CLUSTER_NAME}`:"
+            f"\n>>>{result['output']}"
         )
 
 
-async def post_app_summary(source, results):
+async def post_result_summary(source, results):
     n_success = sum([r['exit_code'] == 0 for r in results.values()])
     n_failed = sum([r['exit_code'] != 0 for r in results.values()])
     await post(
-        f'Deployment from `{source}` for `{CLUSTER_NAME}` results summary:\n'
-        f'\t• {n_success} succeeded\n'
-        f'\t• {n_failed} failed'
+        f"Deployment from `{source}` for `{CLUSTER_NAME}` results summary:\n"
+        f"\t• {n_success} succeeded\n"
+        f"\t• {n_failed} failed"
     )
 
 
@@ -49,31 +51,38 @@ class Deployer:
         before = push_event['before']
         after = push_event['after']
         self.current_app_definitions = await self.load_app_definitions(url, after)
-        try:
-            self.previous_app_definitions = await self.load_app_definitions(url, before)
-        except Exception:
-            logger.warning('An exception was generated loading previous app definitions state.')
-            self.previous_app_definitions = None
+        # TODO: Handle case where there is no previous commit.
+        self.previous_app_definitions = await self.load_app_definitions(url, before)
 
     async def deploy(self):
-        changed_apps = self.calculate_changed_apps()
-        logger.info(f'Running deployment for these changed apps: {changed_apps}')
-        if not len(changed_apps):
-            logger.info('Nothing to deploy, aborting.')
+        added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
+        if not (added_apps | updated_apps | removed_apps):
+            logger.info('No deltas; aborting.')
             return
-        await self.post_init_summary(changed_apps)
+        logger.info(f'Running deployment for these deltas: A{added_apps}, U{updated_apps}, R{removed_apps}')
+        await post_init_summary(self.current_app_definitions.name, self.pusher, added_apps=added_apps, updated_apps=updated_apps, removed_apps=removed_apps)
         # TODO move to function
         await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --role-arn {ROLE_ARN} --alias {CLUSTER_NAME}')
         results = {}
-        for app_name in changed_apps:
+        for app_name in (added_apps | updated_apps):
             app = self.current_app_definitions.apps[app_name]
-            result = await self.deploy_app(app)
+            result = await self.update_app_deployment(app)
             result['app'] = app_name
             results[app_name] = result
-            await self.post_deploy_result(result)
-        await self.post_final_summary(results)
+            await self.post_result(result)
+        for app_name in removed_apps:
+            app = self.previous_app_definitions.apps[app_name]
+            result = await self.update_app_deployment(app, uninstall=True)
+            result['app'] = app_name
+            results[app_name] = result
+            await post_result(self.current_app_definitions.name, result)
+        await post_result_summary(self.current_app_definitions.name, results)
 
-    async def deploy_app(self, app):
+    async def update_app_deployment(self, app, uninstall=False):
+        if uninstall:
+            logger.info('Purging app {app.name!r}.')
+            return await run(f'helm delete --purge {app.name}')
+
         logger.info(f'Deploying app {app.name!r}.')
         repo, sha = app.values['chart'], None
         if '@' in repo:
@@ -84,41 +93,33 @@ class Deployer:
                 cfg.write(json.dumps(app.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
-                retry = 0
-                while retry < 2:  # TODO: Better retry system
-                    results = await run((
-                        'helm upgrade'
-                        ' --install'
-                        f' -f {cfg.name}'
-                        f" --namespace={app.values['namespace']}"
-                        f' {app.name}'
-                        f' {repo}'
-                    ), catch=True)
-                    # TODO: explain
-                    if 'has no deployed releases' in results['output']:
-                        logger.info('Purging release.')
-                        await run(f'helm delete --purge {app.name}')
-                        retry += 1
-                    else:
-                        break
-                return results
+                return await run((
+                    'helm upgrade'
+                    ' --install'
+                    f' -f {cfg.name}'
+                    f" --namespace={app.values['namespace']}"
+                    f' {app.name}'
+                    f' {repo}'
+                ), catch=True)
 
-    def calculate_changed_apps(self):
-        # TODO: If an app has been removed from the list of app definitions, we want to delete its deployment.
-        changed = set()
-        for name, app in self.current_app_definitions.apps.items():
-            prev_app = self.previous_app_definitions.apps.get(name) if self.previous_app_definitions else None
-            if app != prev_app:  # prev_app may be None, sfine.
-                # If the app has been marked inactive, skip.
-                if app.is_inactive():
-                    logger.info(f'Skipping changes in app {name!r}: marked inactive.')
+    def calculate_app_deltas(self):
+        cur = self.current_app_definitions.apps.keys()
+        prev = self.previous_app_definitions.apps.keys()
+
+        added = cur - prev
+        common = cur & prev
+        removed = prev - cur
+
+        updated = set()
+        for app_name in common:
+            cur_app = self.current_app_definitions.apps[app_name]
+            prev_app = self.previous_app_definitions.apps[app_name]
+            if cur_app != prev_app:
+                if cur_app.is_inactive():
+                    logger.info(f'Skipping changes in app {app_name!r}: marked inactive.')
                     continue
-                # If the app isn't targeting our cluster, skip.
-                if app.values['cluster'] != CLUSTER_NAME:
-                    logger.info(f"Skipping changes in app {name!r}: targeting different cluster: {app.values['cluster']!r} != {CLUSTER_NAME!r}")
-                    continue
-                changed.add(name)
-        return changed
+                updated.add(app_name)
+        return added, updated, removed
 
     async def load_app_definitions(self, url, sha):
         logger.info(f'Loading app definitions at "{sha}".')
@@ -126,12 +127,3 @@ class Deployer:
             app_definitions = AppDefinitions(get_repo_name_from_url(url))
             app_definitions.from_path(repo)
             return app_definitions
-
-    async def post_init_summary(self, changed_apps):
-        await post_app_updates(self.current_app_definitions.name, changed_apps, self.pusher)
-
-    async def post_deploy_result(self, result):
-        await post_app_result(self.current_app_definitions.name, result)
-
-    async def post_final_summary(self, results):
-        await post_app_summary(self.current_app_definitions.name, results)
