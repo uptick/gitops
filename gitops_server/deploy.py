@@ -18,7 +18,7 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
     deltas = ''
     for typ, d in [('Adding', added_apps), ('Updating', updated_apps), ('Removing', removed_apps)]:
         if d:
-            deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in d)}"
+            deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in sorted(d))}"
     await post(
         f"A deployment from `{source}` has been initiated by *{username}* for cluster `{CLUSTER_NAME}`"
         f", the following apps will be updated:{deltas}"
