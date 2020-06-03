@@ -8,10 +8,13 @@ from .utils import gen_secret, yaml
 from .utils.cli import confirm, progress, success, success_negative, warning
 from .utils.images import get_latest_image
 
-
 ######################
 # NEWTENANT COMMANDS #
-######################
+#####################################################################################
+# NOTE: These should live in uptick-cluster repo, not in the public-facing gitops.. #
+#####################################################################################
+
+
 @task
 def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
     """ Create a new tenant.
