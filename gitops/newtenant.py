@@ -226,7 +226,7 @@ def create_app_configs(context):
         print(warning(f"Unable to find image tag with prefix {image_prefix}. You'll need to bump the image before you can deploy."))
         image_tag = image_prefix
     deployment = {
-        'extends': '../deployment.yml',
+        'extends': '../deployment-eks.yml',
         'tags': context['tags'],
         'image-tag': image_tag,
     }
