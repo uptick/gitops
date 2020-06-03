@@ -47,7 +47,7 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
         db_name = db_name.replace('-', '')
     tags = tags.split(',') if tags else []
     context = {
-        **create_database(ctx, db_name),
+        'database_url': create_database(ctx, db_name),
         **create_iam_user(ctx, name, internal='internal' in tags),
         'name': name,
         'image_prefix': prefix,
@@ -83,7 +83,7 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
     ec2 = boto3.resource('ec2')
     # Find the security group for the nodes.
     for sg in ec2.security_groups.all():
-        if sg.group_name == 'nodes.uptick.k8s.local':
+        if sg.group_name == 'uptick-db-private':
             break
     else:
         raise Exception('Unable to find security group.')
@@ -100,9 +100,9 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
         MasterUsername=name,
         MasterUserPassword=password,
         BackupRetentionPeriod=backup,
-        DBSubnetGroupName='uptick.k8s.local',
+        DBSubnetGroupName='uptick-db-private',
         VpcSecurityGroupIds=[sg_id],
-        PubliclyAccessible=True,
+        PubliclyAccessible=False,
         Tags=[
             {
                 'Key': 'group',
@@ -124,12 +124,11 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
     dbname = result['DBName']
     endpoint = result['Endpoint']['Address']
     port = result['Endpoint']['Port']
+    database_url = f'postgres://{user}:{password}@{endpoint}:{port}/{dbname}'
     print('ok')
     if show:
-        print(f'postgres://{user}:{password}@{endpoint}:{port}/{dbname}')
-    return {
-        'database_url': f'postgres://{user}:{password}@{endpoint}:{port}/{dbname}'
-    }
+        print(database_url)
+    return database_url
 
 
 @task
