@@ -246,11 +246,10 @@ def create_app_configs(context):
 @task
 def delete_tenant(ctx):
     """ We're scared of automating this atm, so just print steps to fully deleting a tenant. """
-    print(progress("\t- Kube: Delete deployments and ingress -- confirm that deployment deletion has cleaned up correspondning replicasets and pods."))
+    print(progress("\t- Delete customer folder in uptick-cluster to remove the deployment from k8s."))
     print(progress("\t- Route53: Delete RecordSets (x3 inc archiver)"))
     print(progress("\t- RDS: Delete Database (and Subnet if it DB wasn't using a shared one)"))
-    print(progress("\t- IAM: Delete User"))
+    print(progress("\t- IAM: Delete User (and related Group if legacy customer)"))
     print(progress("\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder"))
     print(progress("\t- SES: Delete Rule Sets (SES Oregon -> Active Rule Set)"))
     print(progress("\t- Delete Authorized URI Redirect in the Google API console under API OAuth client Credentials."))
-    print(progress("\t- Delete customer folder in uptick cluster."))
