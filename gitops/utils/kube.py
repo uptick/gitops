@@ -149,7 +149,7 @@ def get_client(name):
     return boto3.Session(
         aws_access_key_id=os.environ['BACKUPS_AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['BACKUPS_AWS_SECRET_ACCESS_KEY']
-    ).client('name')
+    ).client(name)
 
 
 @contextmanager
