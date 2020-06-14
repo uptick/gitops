@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   web:
     build: .
@@ -7,5 +7,6 @@ services:
     volumes:
       - ./common:/app/common
       - ./gitops_server:/app/gitops_server
+      - ./tests:/app/tests
     env_file:
       - secrets.env

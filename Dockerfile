@@ -51,7 +51,6 @@ RUN    apk add --no-cache --update --virtual build-dependencies \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 COPY common /app/common
 COPY gitops_server /app/gitops_server
-COPY tests /app/tests
 
 COPY cluster.key /app
 ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
