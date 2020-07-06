@@ -28,7 +28,7 @@ def list_backups(ctx, app):
 
 
 @task
-def restore_backup(ctx, app_name, index):
+def restore_backup(ctx, app_name, index, cleanup=True):
     """ Restore backed up database. """
     kube.confirm_database(app_name)
     backups = kube.get_backups('workforce', app_name)
@@ -39,7 +39,7 @@ def restore_backup(ctx, app_name, index):
         'app': app_name,
     }
     app = get_app_details(app_name, load_secrets=False)
-    asyncio.run(kube._run_job('jobs/restore-job.yml', values, context=app['cluster'], namespace='workforce'))
+    asyncio.run(kube._run_job('jobs/restore-job.yml', values, context=app['cluster'], namespace='workforce', cleanup=cleanup))
 
 
 @task
