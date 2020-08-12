@@ -33,4 +33,4 @@ def migrate(ctx, filter, exclude='', cleanup=True, sequential=False, interactive
 
         eg. inv migrate workforce,sandbox
     """
-    return command(ctx, filter, f'python manage.py migrate', exclude=exclude, cleanup=cleanup, sequential=sequential, interactive=interactive)
+    return command(ctx, filter, 'python manage.py migrate', exclude=exclude, cleanup=cleanup, sequential=sequential, interactive=interactive)

@@ -211,8 +211,10 @@ def create_archiver_ses(ctx, name, create_legacy_route=True):
 @task
 def run_new_tenant_checks(ctx, name):
     print(progress('Running new tenant checks ... '), end='', flush=True)
+    if not Path('apps').exists():
+        raise Exception("Could not find an 'apps' directory. Are you in a cluster repo?")
     if Path(f'apps/{name}').exists():
-        raise Exception('Tenant directory already exists')
+        raise Exception("Tenant directory already exists!")
     print('ok')
 
 
@@ -256,3 +258,4 @@ def delete_tenant(ctx):
     print(progress("\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder"))
     print(progress("\t- SES: Delete Rule Sets (SES Oregon -> Active Rule Set)"))
     print(progress("\t- Delete Authorized URI Redirect in the Google API console under API OAuth client Credentials."))
+    print(progress("\t- Delete Papertrail systems."))
