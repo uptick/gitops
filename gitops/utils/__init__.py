@@ -1,6 +1,7 @@
 import json
 import random
 import string
+from configparser import ConfigParser
 from invoke import run
 
 CACHE = {}
@@ -23,3 +24,17 @@ def get_account_id():
         caller_identity = run('aws sts get-caller-identity', hide=True).stdout.strip()
         CACHE['ACCOUNT_ID'] = json.loads(caller_identity)['Account']
     return CACHE['ACCOUNT_ID']
+
+
+class GitopsConfigParser(ConfigParser):
+    def getlist(self, section, option, *args, **kwargs):
+        value = self.get(section, option, *args, **kwargs)
+        return list(filter(None, (x.strip() for x in value.splitlines())))
+
+
+_config = GitopsConfigParser()
+_config.read('setup.cfg')
+
+if not _config.has_section('gitops'):
+    _config.add_section('gitops')
+config = _config['gitops']

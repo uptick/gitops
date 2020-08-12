@@ -2,10 +2,10 @@ import asyncio
 from colorama import Fore
 from invoke import run, task
 
+from .utils import config
 from .utils.apps import get_apps, update_app
 from .utils.async_runner import run_tasks_async_with_progress
 from .utils.cli import colourise, progress, success, success_negative, warning
-from .utils.config import options
 from .utils.exceptions import AppOperationAborted
 from .utils.images import colour_image, get_image, get_latest_image
 from .utils.kube import run_job
@@ -178,7 +178,7 @@ def _getenv(env_or_secrets, filter, exclude, filter_values):
 
 def _sort_envs(envs):
     sorted_envs = {}
-    for e in options.getlist('env_order', fallback=''):
+    for e in config.getlist('env_order', fallback=''):
         if e in envs:
             sorted_envs[e] = envs.pop(e)
     for e in sorted(envs):
