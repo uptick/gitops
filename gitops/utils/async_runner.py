@@ -1,6 +1,7 @@
 import asyncio
 import curses
-from .cli import success, warning, progress
+
+from .cli import progress, success, warning
 
 
 def init_curses(num_tasks):
