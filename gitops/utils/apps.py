@@ -1,12 +1,11 @@
 import os
-from pathlib import Path
-
 from colorama import Fore
+from pathlib import Path
 from tabulate import tabulate
 
 from common.app import App
 
-import gitops.utils.yaml as yaml
+from gitops.utils import yaml as yaml
 
 from . import get_account_id
 from .cli import colourise, confirm, warning

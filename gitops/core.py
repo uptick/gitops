@@ -5,6 +5,7 @@ from invoke import run, task
 from .utils.apps import get_apps, update_app
 from .utils.async_runner import run_tasks_async_with_progress
 from .utils.cli import colourise, progress, success, success_negative, warning
+from .utils.config import options
 from .utils.exceptions import AppOperationAborted
 from .utils.images import colour_image, get_image, get_latest_image
 from .utils.kube import run_job
@@ -148,65 +149,81 @@ def untag(ctx, filter, tag, exclude=''):
 
 
 @task
-def getenv(ctx, filter, exclude='', keys='', **kwargs):
+def getenv(ctx, filter, exclude='', keys=''):
     """ Get one or more env vars on selected app(s).
     """
-    _getenv('environment', filter, exclude, keys, **kwargs)
+    _getenv('environment', filter, exclude, keys)
 
 
 @task
-def getsecrets(ctx, filter, exclude='', keys='', **kwargs):
+def getsecrets(ctx, filter, exclude='', keys=''):
     """ Get one or more secrets on selected app(s).
     """
-    _getenv('secrets', filter, exclude, keys, **kwargs)
+    _getenv('secrets', filter, exclude, keys)
 
 
-def _getenv(value_type, filter, exclude, filter_values, **kwargs):
+def _getenv(env_or_secrets, filter, exclude, filter_values):
     filter_values = filter_values.split(',') if filter_values else ''
     apps = get_apps(filter=filter, exclude=exclude, mode='SILENT')
     for app in apps:
         print('-' * 20, progress(app['name']), sep='\n')
-        values = app.get(value_type)
+        values = app.get(env_or_secrets)
         if type(values) == dict:
             filtered_values = {k: v for k, v in values.items() if k in filter_values} if filter_values else values
             for k, v in filtered_values.items():
                 print(f"{k}={v}")
         else:
-            print(warning(f'No {value_type} set.'))
+            print(warning(f'No {env_or_secrets} set.'))
+
+
+def _sort_envs(envs):
+    sorted_envs = {}
+    for e in options.getlist('env_order', fallback=''):
+        if e in envs:
+            sorted_envs[e] = envs.pop(e)
+    for e in sorted(envs):
+        sorted_envs[e] = envs[e]
+    return sorted_envs
 
 
 @task
-def setenv(ctx, filter, exclude='', **kwargs):
+def setenv(ctx, filter, envs, exclude=''):
     """ Set one or more env vars on selected app(s).
-        However, please make more broad-reaching environment changes at the chart level though.
+
+        eg. inv setenv customer,sandbox BG_RUNNER=DRAMATIQ,BUMP=2
+
+        NOTE: More broad-reaching environment changes should be made at the chart level.
     """
-    # TODO: FINISH THIS - get kwargs coming in from invoke.
-    raise NotImplementedError
+    splitenvs = envs.split(',')   # pardon the pun.
+    formatted_splitenvs = '\n'.join(splitenvs)
     try:
-        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(kwargs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(formatted_splitenvs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}")
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        update_app(app['name'], environment={**app['environment'], **kwargs})
+        update_app(app['name'], environment=_sort_envs({**dict(tuple(e.split('=')) for e in splitenvs), **app['environment']}))
     print(success('Done!'))
 
 
 @task
-def unsetenv(ctx, filter, exclude='', **kwargs):
+def unsetenv(ctx, filter, envs, exclude=''):
     """ Clears one or more env vars on selected app(s).
-        However, please make more broad-reaching environment changes at the chart level though.
+
+        eg. inv unsetenv customer,sandbox BG_RUNNER,BUMP
+
+        NOTE: More broad-reaching environment changes should be made at the chart level.
     """
-    # TODO: FINISH THIS - get kwargs coming in from invoke.
-    raise NotImplementedError
+    splitenvs = envs.split(',')   # pardon the pun.
+    formatted_splitenvs = '\n'.join(splitenvs)
     try:
-        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(kwargs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be removed from the following apps:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(formatted_splitenvs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be removed from the following apps:', Fore.LIGHTBLUE_EX)}")
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
     for app in apps:
         environment = app['environment']
-        for k in kwargs:
-            del app[k]
-        update_app(app['name'], environment={environment})
+        for e in splitenvs:
+            del environment[e]
+        update_app(app['name'], environment=_sort_envs(environment))
     print(success('Done!'))
