@@ -4,7 +4,7 @@
 [![Test](https://github.com/uptick/gitops/workflows/Test/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ATest)
 [![Lint](https://github.com/uptick/gitops/workflows/Lint/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ALint)
 
-Manage multiple apps across one one or more k8s clusters.
+Manage multiple apps across one or more k8s clusters.
 
 ## Overview
 
