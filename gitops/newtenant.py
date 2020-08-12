@@ -233,7 +233,6 @@ def create_app_configs(context):
         'image-tag': image_tag,
     }
     secrets = {
-        'extends': '../secrets.yml',
         'secrets': {
             'AWS_ACCESS_KEY_ID': context['aws_key'],
             'AWS_SECRET_ACCESS_KEY': context['aws_secret'],
