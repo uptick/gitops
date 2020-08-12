@@ -19,6 +19,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install deps
-        run: pip install requests-oauthlib
+        run: pip install tabulate boto3 boto invoke humanize colorama pyyaml==5.1.2
       - name: Run tests...
         run: python setup.py test
