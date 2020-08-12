@@ -19,6 +19,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install deps
-        run: pip install tabulate boto3 boto invoke humanize colorama pyyaml==5.1.2
+        run: |
+          pip install tabulate boto3 boto invoke humanize colorama
+          pip install -r requirements.txt
       - name: Run tests...
         run: python setup.py test
