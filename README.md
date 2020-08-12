@@ -1,6 +1,10 @@
 # GitOps
+[![PyPI version](https://badge.fury.io/py/gitops.svg)](https://pypi.org/project/gitops/)
+[![versions](https://img.shields.io/pypi/pyversions/gitops.svg)](https://pypi.org/project/gitops/)
+[![Test](https://github.com/uptick/gitops/workflows/Test/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ATest)
+[![Lint](https://github.com/uptick/gitops/workflows/Lint/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ALint)
 
-Continuous delivery for your cluster.
+Manage multiple apps across one one or more k8s clusters.
 
 ## Overview
 

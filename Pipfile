@@ -16,7 +16,6 @@ isort = "*"
 ipdb = "*"
 asynctest = "*"
 python-dotenv = "*"
-bumpversion = "*"
 
 [requires]
 python_version = "3.8"
