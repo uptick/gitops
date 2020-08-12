@@ -3,7 +3,7 @@ from colorama import Fore
 from pathlib import Path
 from tabulate import tabulate
 
-from common.app import App
+from common.app import DEPLOYMENT_ATTRIBUTES, App
 
 from gitops.utils import yaml as yaml
 
@@ -35,8 +35,8 @@ def update_app(app_name, **kwargs):
     with open(filename, 'r') as f:
         data = yaml.safe_load(f)
     for k, v in kwargs.items():
-        if k not in data:
-            print(warning(f"Key '{k}' is not a recognised config attribute for {app_name}."))
+        if k not in DEPLOYMENT_ATTRIBUTES:
+            print(warning(f"Key '{k}' is not a recognised deployment attribute for {app_name}."))
         data[k] = v
     with open(filename, 'w') as f:
         yaml.dump(data, f, default_flow_style=False)

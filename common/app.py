@@ -4,6 +4,13 @@ from base64 import b64encode
 
 from .utils import load_yaml
 
+DEPLOYMENT_ATTRIBUTES = [
+    'tags',
+    'image-tag',
+    'containers',
+    'environment',
+]
+
 
 class App:
     def __init__(self, name, path=None, deployments={}, secrets={}, load_secrets=True, account_id=''):

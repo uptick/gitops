@@ -187,14 +187,14 @@ def _sort_envs(envs):
 
 
 @task
-def setenv(ctx, filter, envs, exclude=''):
+def setenv(ctx, filter, values, exclude=''):
     """ Set one or more env vars on selected app(s).
 
         eg. inv setenv customer,sandbox BG_RUNNER=DRAMATIQ,BUMP=2
 
         NOTE: More broad-reaching environment changes should be made at the chart level.
     """
-    splitenvs = envs.split(',')   # pardon the pun.
+    splitenvs = values.split(',')   # pardon the pun.
     formatted_splitenvs = '\n'.join(splitenvs)
     try:
         apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(formatted_splitenvs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be added to the following apps:', Fore.LIGHTBLUE_EX)}")
@@ -202,19 +202,23 @@ def setenv(ctx, filter, envs, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        update_app(app['name'], environment=_sort_envs({**dict(tuple(e.split('=')) for e in splitenvs), **app['environment']}))
+        update_app(app['name'], environment=_sort_envs({**dict(tuple(e.split('=')) for e in splitenvs), **app.get('environment', {})}))
+    commit_message = f"Set env var(s) '{values}' on {filter}"
+    if exclude:
+        commit_message += f" (except {exclude})"
+    run(f'git commit -am "{commit_message}."')
     print(success('Done!'))
 
 
 @task
-def unsetenv(ctx, filter, envs, exclude=''):
-    """ Clears one or more env vars on selected app(s).
+def unsetenv(ctx, filter, values, exclude=''):
+    """ Unset one or more env vars on selected app(s).
 
         eg. inv unsetenv customer,sandbox BG_RUNNER,BUMP
 
         NOTE: More broad-reaching environment changes should be made at the chart level.
     """
-    splitenvs = envs.split(',')   # pardon the pun.
+    splitenvs = values.split(',')   # pardon the pun.
     formatted_splitenvs = '\n'.join(splitenvs)
     try:
         apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The env var(s)', Fore.LIGHTBLUE_EX)}\n{colourise(formatted_splitenvs, Fore.LIGHTYELLOW_EX)}\n{colourise('will be removed from the following apps:', Fore.LIGHTBLUE_EX)}")
@@ -222,8 +226,12 @@ def unsetenv(ctx, filter, envs, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        environment = app['environment']
+        environment = app.get('environment', {})
         for e in splitenvs:
             del environment[e]
         update_app(app['name'], environment=_sort_envs(environment))
+    commit_message = f"Unset env var(s) '{values}' on {filter}"
+    if exclude:
+        commit_message += f" (except {exclude})"
+    run(f'git commit -am "{commit_message}."')
     print(success('Done!'))
