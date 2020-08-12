@@ -1,2 +1,2 @@
 name = 'gitops'
-__version__ = '0.3.10'
+__version__ = '0.3.11'
