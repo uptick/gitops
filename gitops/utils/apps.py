@@ -15,7 +15,7 @@ from .tags import colour_tags, validate_tags
 
 
 def get_app_details(app_name, load_secrets=True):
-    account_id = get_account_id() if load_secrets else 'UNKOWN'
+    account_id = get_account_id() if load_secrets else 'UNKNOWN'
     try:
         app = App(app_name, path=f'apps/{app_name}', load_secrets=load_secrets, account_id=account_id)
     except FileNotFoundError:
@@ -37,7 +37,11 @@ def update_app(app_name, **kwargs):
     for k, v in kwargs.items():
         if k not in DEPLOYMENT_ATTRIBUTES:
             print(warning(f"Key '{k}' is not a recognised deployment attribute for {app_name}."))
-        data[k] = v
+        if v in [[], {}]:
+            if k in data:
+                del data[k]
+        else:
+            data[k] = v
     with open(filename, 'w') as f:
         yaml.dump(data, f, default_flow_style=False)
 
