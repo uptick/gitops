@@ -63,6 +63,14 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
 
 
 @task
-def download_backup(ctx, app, index, path=None, datestamp=False):
+def download_backup(ctx, app, index=None, path=None, datestamp=False):
     """ Download production or staging backup. """
+    if not index:
+        backups = kube.get_backups('workforce', app)
+        if not backups:
+            print(warning(f'No backups found for {app}'))
+            return
+        index = len(backups)
+        print(progress('No index specified. Downloading latest backup: ' + backups[-1][3]))
+
     kube.download_backup('workforce', app, index, path, datestamp=datestamp)
