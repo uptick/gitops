@@ -148,15 +148,15 @@ def untag(ctx, filter, tag, exclude=''):
     print(success('Done!'))
 
 
-@task
-def getenv(ctx, filter, exclude='', keys=''):
+@task  # TODO: want `keys` to be optional-positional: https://github.com/pyinvoke/invoke/issues/159
+def getenv(ctx, filter, keys='', exclude=''):
     """ Get one or more env vars on selected app(s).
     """
     _getenv('environment', filter, exclude, keys)
 
 
-@task
-def getsecrets(ctx, filter, exclude='', keys=''):
+@task  # TODO: want `keys` to be optional-positional: https://github.com/pyinvoke/invoke/issues/159
+def getsecrets(ctx, filter, keys='', exclude=''):
     """ Get one or more secrets on selected app(s).
     """
     _getenv('secrets', filter, exclude, keys)
@@ -228,7 +228,8 @@ def unsetenv(ctx, filter, values, exclude=''):
     for app in apps:
         environment = app.get('environment', {})
         for e in splitenvs:
-            del environment[e]
+            if e in environment:
+                del environment[e]
         update_app(app['name'], environment=_sort_envs(environment))
     commit_message = f"Unset env var(s) '{values}' on {filter}"
     if exclude:
