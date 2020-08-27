@@ -59,7 +59,7 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
     }
     create_app_configs(context)
     try:
-        create_archiver_ses(ctx, name)
+        create_emailarchiver(ctx, name)
     except Exception:
         print(warning('Failed to create archiver. Please examine AWS SES.\n'))
     run(f'git add apps/{name}/')
@@ -135,7 +135,7 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
 
 
 @task
-def create_iam_user(ctx, name, internal=False):
+def create_iam_user(ctx, name, internal=False, show=False):
     """ Create an IAM user for a new tenant.
 
     We don't need to create a group, because new customers all use a global S3
@@ -148,27 +148,18 @@ def create_iam_user(ctx, name, internal=False):
     group = 'servers-internal' if internal else 'servers-customer'
     user.add_group(GroupName=group)
     access_key = user.create_access_key_pair()
-    print('ok')
-    return {
+    access_key_dict = {
         'aws_key': access_key.id,
         'aws_secret': access_key.secret
     }
+    print('ok')
+    if show:
+        print(access_key_dict)
+    return access_key_dict
 
 
 @task
-def create_archiver_ses(ctx, name, create_legacy_route=True):
-    if create_legacy_route:
-        domain_name = name
-        root_domain = 'onuptick.com'
-        conn = boto.connect_route53()
-        zone = conn.get_zone(f'{root_domain}.')
-        endpoint = '10 inbound-smtp.us-west-2.amazonaws.com'
-        hostname = f'{domain_name}.archiver.{zone.name}'
-        try:
-            zone.add_mx(hostname, endpoint)
-        except Exception:
-            pass
-
+def create_emailarchiver(ctx, name):
     RULESET_NAME = 'document-archiver'  # you can only have one ruleset active
     conn = boto3.client('ses', region_name='us-west-2')  # amazon ses is not available in AU, us-west-2 is closest
     rule_dict = {
@@ -176,7 +167,6 @@ def create_archiver_ses(ctx, name, create_legacy_route=True):
         'Enabled': True,
         'TlsPolicy': 'Optional',
         'Recipients': [
-            f'{name}.archiver.onuptick.com',  # if create_legacy_route
             f'{name}@emailarchiver.onuptick.com',
         ],
         'Actions': [
@@ -251,8 +241,8 @@ def create_app_configs(context):
 def delete_tenant(ctx):
     """ We're scared of automating this atm, so just print steps to fully deleting a tenant. """
     print(progress("\t- Delete customer folder in uptick-cluster to remove the deployment from k8s."))
-    print(progress("\t- Route53: Delete RecordSets (x3 inc archiver)"))
-    print(progress("\t- RDS: Delete Database (and Subnet if it DB wasn't using a shared one)"))
+    print(progress("\t- Route53: Delete RecordSets (x3 inc legacy archiver)"))
+    print(progress("\t- RDS: Delete Database (and Subnet if DB wasn't using a shared one)"))
     print(progress("\t- IAM: Delete User (and related Group if legacy customer)"))
     print(progress("\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder"))
     print(progress("\t- SES: Delete Rule Sets (SES Oregon -> Active Rule Set)"))
