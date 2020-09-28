@@ -1,7 +1,6 @@
 from invoke import run, task
 from pathlib import Path
 
-import boto
 import boto3
 
 from .utils import gen_secret, yaml
