@@ -1,6 +1,7 @@
 import json
 import os
 from base64 import b64encode
+from typing import Dict, Optional
 
 from .utils import load_yaml
 
@@ -13,20 +14,26 @@ DEPLOYMENT_ATTRIBUTES = [
 
 
 class App:
-    def __init__(self, name, path=None, deployments={}, secrets={}, load_secrets=True, account_id=''):
+    def __init__(self,
+        name: str,
+        path: Optional[str] = None,
+        deployments: Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
+        load_secrets: bool = True,
+        account_id: str = ''
+    ):
         self.name = name
         self.path = path
         self.account_id = account_id
+        self.deployments = deployments or {}
+        self.secrets = secrets or {}
         if path:
             self.deployments = load_yaml(os.path.join(path, 'deployment.yml'))
             if load_secrets:
                 self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
             else:
-                self.secrets = secrets
-        else:
-            self.deployments = deployments
-            self.secrets = secrets
-        self.make_values()
+                self.secrets = secrets or {}
+        self.values = self._make_values()
 
     def __eq__(self, other):
         return (
@@ -38,10 +45,9 @@ class App:
     def is_inactive(self):
         return 'inactive' in self.values.get('tags', [])
 
-    def make_values(self):
-        self.values = {
+    def _make_values(self) -> Dict:
+        values = {
             **self.deployments,
-            'image': self.make_image(self.deployments),
             'secrets': {
                 **{
                     k: b64encode(v.encode()).decode()
@@ -49,18 +55,21 @@ class App:
                 }
             }
         }
+
+        image = self._make_image(self.deployments)
+        if image:
+            values['image'] = image
+
         # Don't include the `images` key. It will only cause everything to be
         # redeployed when any group changes.
-        try:
-            del self.values['images']
-        except KeyError:
-            pass
+        values.pop('images', None)
+        return values
 
-    def make_image(self, details):
-        if 'image-tag' in details:
-            return self.deployments['images']['template'].format(
+    def _make_image(self, deployment_config: Dict):
+        if 'image-tag' in deployment_config:
+            return deployment_config['images']['template'].format(
                 account_id=self.account_id,
-                tag=details['image-tag'],
+                tag=deployment_config['image-tag'],
             )
         else:
-            return details.get('image')
+            return deployment_config.get('image')

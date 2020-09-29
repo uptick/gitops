@@ -7,8 +7,8 @@ from .utils import create_test_yaml
 
 class MakeImageTests(TestCase):
     def test_direct_image(self):
-        app = App('test')
-        self.assertEqual(app.make_image({'image': 'I0'}), 'I0')
+        app = App('test', deployments={'image': 'I0'})
+        self.assertEqual(app.values['image'], 'I0')
 
     def test_image_tag(self):
         app = App(
@@ -16,10 +16,17 @@ class MakeImageTests(TestCase):
             deployments={
                 'images': {
                     'template': 'image-template-{tag}'
-                }
+                },
+                'image-tag': 'I0'
             }
         )
-        self.assertEqual(app.make_image({'image-tag': 'I0'}), 'image-template-I0')
+        self.assertEqual(app.values['image'], 'image-template-I0')
+
+    def test_no_image_tag_is_valid(self):
+        app = App(
+            'test',
+        )
+        self.assertIsNone(app.values.get('image'))
 
     def test_image_tag_from_yaml(self):
         path = create_test_yaml()
