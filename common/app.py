@@ -1,7 +1,7 @@
 import json
 import os
 from base64 import b64encode
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from .utils import load_yaml
 
@@ -67,6 +67,25 @@ class App:
             )
         else:
             return deployment_config.get('image')
+
+    @property
+    def image(self) -> str:
+        return self.values.get('image', "")
+
+    @property
+    def image_tag(self) -> str:
+        """ """
+        return self.image.split(':')[-1]
+
+    @property
+    def cluster(self) -> str:
+        """ """
+        return self.values.get('cluster')
+
+    @property
+    def tags(self) -> List[str]:
+        """ """
+        return self.values.get('tags', [])
 
 
 class Chart:

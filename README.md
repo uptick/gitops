@@ -23,6 +23,8 @@ Secrets should be placed in `secrets.env`. The example file `secrets.example.env
 
 Gitops has a helm chart defining its deployment. Invoke scripts are provided to make deployment painless. See `tasks.py`.
 
+Add `export GITOPS_APPS_DIRECTORY=~/<cluster-apps-folder>` to invoke gitops from any directory.
+
 ## Roadmap
 
  * Handle failure on initial application deployment.
