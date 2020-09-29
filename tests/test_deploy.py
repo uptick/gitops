@@ -1,6 +1,8 @@
 from asynctest import TestCase
 from asynctest.mock import patch
 
+from common.app import App
+
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
@@ -16,7 +18,7 @@ class DeployTests(TestCase):
     @patch('gitops_server.deploy.post')
     @patch('gitops_server.deploy.Deployer.load_app_definitions', mock_load_app_definitions)
     @patch('gitops_server.deploy.temp_repo')
-    async def test_deployer(self, temp_repo_mock, post_mock, run_mock):
+    async def test_deployer_git(self, temp_repo_mock, post_mock, run_mock):
         """Fake a deploy to two servers, bumping fg from 2 to 4."""
         run_mock.return_value = {'exit_code': 0, 'output': ''}
         temp_repo_mock.return_value.__aenter__.return_value = 'mock-repo'
@@ -56,3 +58,37 @@ class DeployTests(TestCase):
                 check,
                 post_mock.call_args_list[where][0][0],
             )
+
+    @patch('gitops_server.deploy.run')
+    @patch('gitops_server.deploy.post')
+    @patch('gitops_server.deploy.Deployer.load_app_definitions', mock_load_app_definitions)
+    @patch('gitops_server.deploy.temp_repo')
+    async def test_deployer_update_helm_app(self, temp_repo_mock, post_mock, run_mock):
+        helm_app = App(
+            'helm_app',
+            deployments={
+                'chart': {
+                    'type': 'helm',
+                    'helm_repo_url': 'https://helm.charts',
+                    'helm_chart': 'brigade/brigade',
+                    'helm_repo': 'brigade',
+                },
+                'namespace': 'mynamespace',
+                'tags': ['tag1', 'tag2'],
+                'cluster': 'UNKNOWN',
+            }
+        )
+
+        deployer = Deployer()
+        await deployer.update_app_deployment(helm_app)
+
+        self.assertEqual(run_mock.call_count, 2)
+        self.assertEqual(
+            run_mock.call_args_list[0][0][0],
+            'helm repo add brigade https://helm.charts'
+        )
+        self.assertRegex(
+            run_mock.call_args_list[1][0][0],
+            r'helm upgrade --install -f .+\.yml'
+            r' --namespace=mynamespace helm_app brigade/brigade'
+        )

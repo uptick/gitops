@@ -75,11 +75,16 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
         if not entry.is_dir():
             continue
         app = get_app_details(entry.name, load_secrets=load_secrets)
+
         pseudotags = [
             app['name'],
-            app['image'].split(':')[-1].split('-')[0],
             app['cluster'],
         ]
+
+        image = app['image'].split(':')[-1].split('-')[0] if app.get('image', '') else None
+        if image:
+            pseudotags.append(image)
+
         tags = set(app['tags'] + pseudotags)
         existing_tags |= tags
         if filter <= tags and not exclude & tags:
