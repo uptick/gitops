@@ -56,7 +56,10 @@ def get_latest_image(prefix):
     return latest_image_tag
 
 
-def colour_image(image_tag):
+def colour_image(image_tag: str):
+    if not image_tag:
+        return image_tag
+
     bits = image_tag.split('-')
     bits[0] = colourise(bits[0], color_hash(bits[1]))
     return '-'.join(bits)

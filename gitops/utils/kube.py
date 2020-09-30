@@ -19,21 +19,23 @@ from invoke.exceptions import UnexpectedExit
 import boto3
 import humanize
 
+from common.app import App
+
+from gitops.utils.apps import APPS_PATH
 from gitops.utils.async_runner import async_run
 
 from .exceptions import CommandError
 
 
-async def run_job(app, command, cleanup=True, sequential=True):
+async def run_job(app: App, command, cleanup=True, sequential=True):
     job_id = make_key(4).lower()
-    app_name = app['name']
     values = {
-        'name': f'{app_name}-command-{job_id}',
-        'app': app_name,
+        'name': f'{app.name}-command-{job_id}',
+        'app': app.name,
         'command': str(shlex.split(command)),
-        'image': app['image'],
+        'image': app.image,
     }
-    return await _run_job('jobs/command-job.yml', values, context=app['cluster'], namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
+    return await _run_job('jobs/command-job.yml', values, context=app.cluster, namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
 
 
 def list_backups(product, prefix):
@@ -183,7 +185,7 @@ async def _run_job(path, values={}, context='', namespace='default', attach=Fals
     name = values['name']
     logs = ''
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
-        resource = open(path, 'r').read()
+        resource = open(APPS_PATH / ".." / path, 'r').read()
         for k, v in values.items():
             resource = resource.replace('{{ %s }}' % k, v)
         tmp.write(resource)

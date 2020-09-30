@@ -2,6 +2,7 @@ import os
 from colorama import Fore
 from pathlib import Path
 from tabulate import tabulate
+from typing import List
 
 from common.app import DEPLOYMENT_ATTRIBUTES, App
 
@@ -13,11 +14,13 @@ from .exceptions import AppDoesNotExist, AppOperationAborted
 from .images import colour_image
 from .tags import colour_tags, validate_tags
 
+APPS_PATH = Path(os.environ.get('GITOPS_APPS_DIRECTORY', 'apps'))
 
-def get_app_details(app_name, load_secrets=True):
+
+def get_app_details(app_name: str, load_secrets: bool = True) -> App:
     account_id = get_account_id() if load_secrets else 'UNKNOWN'
     try:
-        app = App(app_name, path=f'apps/{app_name}', load_secrets=load_secrets, account_id=account_id)
+        app = App(app_name, path=APPS_PATH / app_name, load_secrets=load_secrets, account_id=account_id)
     except FileNotFoundError:
         # Check if apps dir doesn't exist, or just that one app
         if os.path.exists("apps"):
@@ -25,13 +28,11 @@ def get_app_details(app_name, load_secrets=True):
         else:
             raise AppDoesNotExist()
 
-    values = app.values
-    values['name'] = app_name
-    return values
+    return app
 
 
 def update_app(app_name, **kwargs):
-    filename = Path('apps') / app_name / 'deployment.yml'
+    filename = APPS_PATH / app_name / 'deployment.yml'
     with open(filename, 'r') as f:
         data = yaml.safe_load(f)
     for k, v in kwargs.items():
@@ -68,19 +69,22 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
     apps = []
     existing_tags = set()
     try:
-        directory = sorted(Path('apps').iterdir())
+        directory = sorted(APPS_PATH.iterdir())
     except FileNotFoundError:
         raise AppDoesNotExist()
     for entry in directory:
         if not entry.is_dir():
             continue
         app = get_app_details(entry.name, load_secrets=load_secrets)
+
         pseudotags = [
-            app['name'],
-            app['image'].split(':')[-1].split('-')[0],
-            app['cluster'],
+            app.name,
+            app.cluster
         ]
-        tags = set(app['tags'] + pseudotags)
+        if app.image:
+            pseudotags.append(app.image.split('-')[0])
+
+        tags = set(app.tags + pseudotags)
         existing_tags |= tags
         if filter <= tags and not exclude & tags:
             apps.append(app)
@@ -101,7 +105,7 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
     return apps
 
 
-def preview_apps(apps):
+def preview_apps(apps: List[App]):
     """ Produce a summary of apps, their tags, and their expected images & replicas.
         May not necessarily reflect actual app statuses if recent changes haven't yet been pushed to
         the remote, or the deployment has failed.
@@ -109,12 +113,12 @@ def preview_apps(apps):
     table = []
     for app in apps:
         table.append([
-            colourise(app['name'], Fore.RED, lambda _: 'inactive' in app['tags']),
-            colour_image(app['image'].split(':')[-1]),
-            app['cluster'],
-            colourise(app.get('containers', {}).get('fg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
-            colourise(app.get('containers', {}).get('bg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
-            colour_tags(app['tags']),
+            colourise(app.name, Fore.RED, lambda _: 'inactive' in app.tags),
+            colour_image(app.image_tag),
+            app.cluster,
+            colourise(app.values.get('containers', {}).get('fg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
+            colourise(app.values.get('containers', {}).get('bg', {}).get('replicas', '-'), Fore.LIGHTBLACK_EX, lambda r: r == '-'),
+            colour_tags(app.tags),
         ])
     # Sort table by app tags. TODO: Do we want this over alphabetical app sorting..?
     # table = sorted(table, key=lambda x: x[4])

@@ -3,6 +3,8 @@ import logging
 import os
 import tempfile
 
+from common.app import App
+
 from . import ACCOUNT_ID, CLUSTER_NAME
 from .app_definitions import AppDefinitions
 from .git import temp_repo
@@ -50,9 +52,9 @@ class Deployer:
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
-        self.current_app_definitions = await self.load_app_definitions(url, after)
+        self.current_app_definitions = await self.load_app_definitions(url, sha=after)
         # TODO: Handle case where there is no previous commit.
-        self.previous_app_definitions = await self.load_app_definitions(url, before)
+        self.previous_app_definitions = await self.load_app_definitions(url, sha=before)
 
     async def deploy(self):
         added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
@@ -72,35 +74,51 @@ class Deployer:
             await post_result(self.current_app_definitions.name, result)
         for app_name in removed_apps:
             app = self.previous_app_definitions.apps[app_name]
-            result = await self.update_app_deployment(app, uninstall=True)
+            result = await self.uninstall_app(app)
             result['app'] = app_name
             results[app_name] = result
             await post_result(self.current_app_definitions.name, result)
         await post_result_summary(self.current_app_definitions.name, results)
 
-    async def update_app_deployment(self, app, uninstall=False):
-        if uninstall:
-            logger.info(f'Uninstalling app {app.name!r}.')
-            return await run(f"helm uninstall {app.name} -n {app.values['namespace']}", catch=True)
+    async def uninstall_app(self, app: App):
+        logger.info(f'Uninstalling app {app.name!r}.')
+        return await run(f"helm uninstall {app.name} -n {app.values['namespace']}", catch=True)
 
+    async def update_app_deployment(self, app: App):
         logger.info(f'Deploying app {app.name!r}.')
-        repo, sha = app.values['chart'], None
-        if '@' in repo:
-            repo, sha = repo.split('@')
-        async with temp_repo(repo, 'chart', sha=sha) as repo:
-            await run(f'cd {repo}; helm dependency build')
+
+        if app.chart.type == "git":
+            async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
+                await run(f'cd {chart_folder_path}; helm dependency build')
+                with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
+                    cfg.write(json.dumps(app.values).encode())
+                    cfg.flush()
+                    os.fsync(cfg.fileno())
+                    return await run((
+                        'helm upgrade'
+                        ' --install'
+                        f' -f {cfg.name}'
+                        f" --namespace={app.values['namespace']}"
+                        f' {app.name}'
+                        f' {chart_folder_path}'
+                    ), catch=True)
+        elif app.chart.type == "helm":
             with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
                 cfg.write(json.dumps(app.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
+                await run(f'helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}')
                 return await run((
                     'helm upgrade'
                     ' --install'
                     f' -f {cfg.name}'
                     f" --namespace={app.values['namespace']}"
                     f' {app.name}'
-                    f' {repo}'
+                    f' {app.chart.helm_chart}'
                 ), catch=True)
+        else:
+            logger.warning("Local is not implemented yet")
+            return
 
     def calculate_app_deltas(self):
         cur = self.current_app_definitions.apps.keys()
@@ -121,9 +139,9 @@ class Deployer:
                 updated.add(app_name)
         return added, updated, removed
 
-    async def load_app_definitions(self, url, sha):
+    async def load_app_definitions(self, url: str, sha: str):
         logger.info(f'Loading app definitions at "{sha}".')
-        async with temp_repo(url, 'app_definitions', sha=sha) as repo:
+        async with temp_repo(url, sha=sha) as repo:
             app_definitions = AppDefinitions(get_repo_name_from_url(url))
             app_definitions.from_path(repo)
             return app_definitions

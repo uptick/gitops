@@ -33,7 +33,7 @@ def sync_run(command, catch=False):
         )
     except subprocess.CalledProcessError as e:
         if not catch:
-            raise
+            raise e
         exit_code = e.returncode
         output = e.output
     return {
