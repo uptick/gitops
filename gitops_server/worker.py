@@ -37,7 +37,7 @@ class Worker:
             try:
                 await self.process_work()
             except Exception as e:
-                logger.error(str(e))
+                logger.error(str(e), exc_info=True)
 
     async def process_work(self):
         work = await self.queue.get()

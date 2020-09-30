@@ -20,4 +20,4 @@ async def post(message):
     async with aiorequests.post(url, data) as response:
         if response.status >= 300:
             logger.error('Failed to post a message to slack (see below):')
-            logger.error(f'{message}')
+            logger.error(f'{message}', exc_info=True)
