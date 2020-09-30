@@ -87,7 +87,7 @@ class Deployer:
     async def update_app_deployment(self, app: App):
         logger.info(f'Deploying app {app.name!r}.')
 
-        if app.chart.is_git():
+        if app.chart.type == "git":
             async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
                 await run(f'cd {chart_folder_path}; helm dependency build')
                 with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
@@ -102,7 +102,7 @@ class Deployer:
                         f' {app.name}'
                         f' {chart_folder_path}'
                     ), catch=True)
-        elif app.chart.is_helm():
+        elif app.chart.type == "helm":
             with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
                 cfg.write(json.dumps(app.values).encode())
                 cfg.flush()

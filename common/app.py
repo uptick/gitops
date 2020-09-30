@@ -18,15 +18,15 @@ class App:
         self.name = name
         self.path = path
         self.account_id = account_id
-        self.deployments = deployments or {}
-        self.secrets = secrets or {}
+        deployments = deployments or {}
+        secrets = secrets or {}
         if path:
-            self.deployments = load_yaml(os.path.join(path, 'deployment.yml'))
+            deployments = load_yaml(os.path.join(path, 'deployment.yml'))
             if load_secrets:
-                self.secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
+                secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
             else:
-                self.secrets = secrets or {}
-        self.values = self._make_values()
+                secrets = secrets or {}
+        self.values = self._make_values(deployments, secrets)
         self.chart = Chart(self.values['chart'])
 
     def __eq__(self, other):
@@ -39,18 +39,18 @@ class App:
     def is_inactive(self):
         return 'inactive' in self.values.get('tags', [])
 
-    def _make_values(self) -> Dict:
+    def _make_values(self, deployments: Dict, secrets: Dict) -> Dict:
         values = {
-            **self.deployments,
+            **deployments,
             'secrets': {
                 **{
                     k: b64encode(v.encode()).decode()
-                    for k, v in self.secrets.items()
+                    for k, v in secrets.items()
                 }
             }
         }
 
-        image = self._make_image(self.deployments)
+        image = self._make_image(deployments)
         if image:
             values['image'] = image
 
@@ -128,12 +128,3 @@ class Chart:
 
         if self.git_repo_url and '@' in self.git_repo_url:
             self.git_repo_url, self.git_sha = self.git_repo_url.split('@')
-
-    def is_git(self):
-        return self.type == "git"
-
-    def is_helm(self):
-        return self.type == "helm"
-
-    def is_local(self):
-        return self.type == "local"

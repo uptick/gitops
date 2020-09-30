@@ -69,7 +69,6 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
     apps = []
     existing_tags = set()
     try:
-        print(APPS_PATH)
         directory = sorted(APPS_PATH.iterdir())
     except FileNotFoundError:
         raise AppDoesNotExist()

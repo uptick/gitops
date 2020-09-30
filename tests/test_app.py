@@ -50,7 +50,6 @@ class TestChart(TestCase):
         self.assertEqual(chart.type, 'git')
         self.assertEqual(chart.git_repo_url, 'https://github.com/uptick/workforce')
         self.assertIsNone(chart.git_sha)
-        self.assertTrue(chart.is_git())
 
     def test_git_repo_url_sha_is_parsed_properly(self):
         chart = Chart('https://github.com/uptick/workforce@123')
@@ -58,7 +57,6 @@ class TestChart(TestCase):
         self.assertEqual(chart.type, 'git')
         self.assertEqual(chart.git_repo_url, 'https://github.com/uptick/workforce')
         self.assertEqual(chart.git_sha, '123')
-        self.assertTrue(chart.is_git())
 
     def test_git_repo_config_is_parsed_properly(self):
         chart = Chart({
@@ -69,7 +67,6 @@ class TestChart(TestCase):
         self.assertEqual(chart.type, 'git')
         self.assertEqual(chart.git_repo_url, 'https://github.com/uptick/workforce')
         self.assertEqual(chart.git_sha, '123')
-        self.assertTrue(chart.is_git())
 
     def test_helm_repo_is_parsed_properly(self):
         chart = Chart({
@@ -80,7 +77,6 @@ class TestChart(TestCase):
         })
 
         self.assertEqual(chart.type, 'helm')
-        self.assertTrue(chart.is_helm())
         self.assertEqual(chart.helm_repo_url, 'https://brigade')
         self.assertEqual(chart.helm_chart, 'brigade/brigade')
 
@@ -91,5 +87,4 @@ class TestChart(TestCase):
         })
 
         self.assertEqual(chart.type, 'local')
-        self.assertTrue(chart.is_local())
         self.assertEqual(chart.path, '.')
