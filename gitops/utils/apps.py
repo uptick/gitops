@@ -47,7 +47,7 @@ def update_app(app_name, **kwargs):
         yaml.dump(data, f, default_flow_style=False)
 
 
-def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, message=None, load_secrets=True):
+def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, message=None, load_secrets=True) -> List[App]:
     """ Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
         `exclude`. The incoming filter and exclude params may come in as a list or commastring.
         For the purpose of this filtering, app names and image tag prefixes are also considered as

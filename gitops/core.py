@@ -46,8 +46,8 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        app_name = app['name']
-        prev_image_tag = app['image-tag']
+        app_name = app.name
+        prev_image_tag = app.image_tag
         if image_tag is None:
             if prefix is None:
                 new_image_prefix = prev_image_tag.split('-')[0]
@@ -96,7 +96,7 @@ def command(ctx, filter, command, exclude='', cleanup=True, sequential=True, int
             print(asyncio.run(run_job(app, command, cleanup=cleanup, sequential=sequential)))
     else:
         # Build list of coroutines, and execute them all at once
-        jobs = [(run_job(app, command, cleanup=cleanup, sequential=sequential), app['name']) for app in apps]
+        jobs = [(run_job(app, command, cleanup=cleanup, sequential=sequential), app.name) for app in apps]
         asyncio.run(run_tasks_async_with_progress(jobs))
 
     print(success('Done!'))
@@ -117,7 +117,7 @@ def tag(ctx, filter, tag, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        update_app(app['name'], tags=sort_tags(set(app['tags']) | {tag}))
+        update_app(app.name, tags=sort_tags(set(app.tags) | {tag}))
     commit_message = f"Add tag '{tag}' to {filter}"
     if exclude:
         commit_message += f" (except {exclude})"
@@ -140,7 +140,7 @@ def untag(ctx, filter, tag, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        update_app(app['name'], tags=sort_tags(set(app['tags']) - {tag}))
+        update_app(app.name, tags=sort_tags(set(app.tags) - {tag}))
     commit_message = f"Remove tag '{tag}' from {filter}"
     if exclude:
         commit_message += f" (except {exclude})"
@@ -166,8 +166,8 @@ def _getenv(env_or_secrets, filter, exclude, filter_values):
     filter_values = filter_values.split(',') if filter_values else ''
     apps = get_apps(filter=filter, exclude=exclude, mode='SILENT')
     for app in apps:
-        print('-' * 20, progress(app['name']), sep='\n')
-        values = app.get(env_or_secrets)
+        print('-' * 20, progress(app.name), sep='\n')
+        values = app.values.get(env_or_secrets)
         if type(values) == dict:
             filtered_values = {k: v for k, v in values.items() if k in filter_values} if filter_values else values
             for k, v in filtered_values.items():
@@ -202,7 +202,7 @@ def setenv(ctx, filter, values, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        update_app(app['name'], environment=_sort_envs({**dict(tuple(e.split('=')) for e in splitenvs), **app.get('environment', {})}))
+        update_app(app.name, environment=_sort_envs({**dict(tuple(e.split('=')) for e in splitenvs), **app.values.get('environment', {})}))
     commit_message = f"Set env var(s) '{values}' on {filter}"
     if exclude:
         commit_message += f" (except {exclude})"
@@ -226,11 +226,11 @@ def unsetenv(ctx, filter, values, exclude=''):
         print(success_negative('Aborted.'))
         return
     for app in apps:
-        environment = app.get('environment', {})
+        environment = app.values.get('environment', {})
         for e in splitenvs:
             if e in environment:
                 del environment[e]
-        update_app(app['name'], environment=_sort_envs(environment))
+        update_app(app.name, environment=_sort_envs(environment))
     commit_message = f"Unset env var(s) '{values}' on {filter}"
     if exclude:
         commit_message += f" (except {exclude})"
