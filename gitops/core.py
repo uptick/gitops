@@ -236,3 +236,20 @@ def unsetenv(ctx, filter, values, exclude=''):
         commit_message += f" (except {exclude})"
     run(f'git commit -am "{commit_message}."')
     print(success('Done!'))
+
+
+@task
+def redeploy(ctx, filter, exclude=''):
+    """ Redeploys the following apps by rexecuting the latest helm chart"""
+    try:
+        apps = get_apps(
+            filter=filter,
+            exclude=exclude,
+            message=f"{colourise('The following apps will be redeployed:', Fore.LIGHTBLUE_EX)}",
+        )
+    except AppOperationAborted:
+        print(success_negative('Aborted.'))
+        return
+
+    # async output is by nature interactive
+    print(success('Done!'))
