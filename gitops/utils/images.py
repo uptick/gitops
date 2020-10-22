@@ -61,8 +61,11 @@ def colour_image(image_tag: str):
         return image_tag
 
     bits = image_tag.split('-')
-    bits[0] = colourise(bits[0], color_hash(bits[1]))
-    return '-'.join(bits)
+    if len(bits) > 1:
+        bits[0] = colourise(bits[0], color_hash(bits[1]))
+        return '-'.join(bits)
+    else:
+        return colourise(bits[0], color_hash(bits[0]))
 
 
 def color_hash(bit):

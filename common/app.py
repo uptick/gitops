@@ -66,25 +66,26 @@ class App:
                 tag=deployment_config['image-tag'],
             )
         else:
-            return deployment_config.get('image')
+            return deployment_config.get('image', "")
 
     @property
     def image(self) -> str:
-        return self.values.get('image', "")
+        image = self.values.get('image', "")
+        if isinstance(image, dict):
+            return f"{image['repository']}:{image.get('tag','latest')}"
+        else:
+            return image
 
     @property
     def image_tag(self) -> str:
-        """ """
         return self.image.split(':')[-1]
 
     @property
     def cluster(self) -> str:
-        """ """
         return self.values.get('cluster')
 
     @property
     def tags(self) -> List[str]:
-        """ """
         return self.values.get('tags', [])
 
 
