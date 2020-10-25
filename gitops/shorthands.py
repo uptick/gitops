@@ -10,6 +10,17 @@ UNSAFE_MANAGE_PY = 'env DJANGO_ALLOW_ASYNC_UNSAFE=true ./manage.py'
 
 
 @task
+def bash(ctx, app, cleanup=True):
+    """ Brings up bash shell for selected app.
+
+        eg. inv bash aesg
+    """
+    app = get_app_details(app)
+    asyncio.run(run_job(app, 'bash', cleanup=cleanup))
+    print(success('Done!'))
+
+
+@task
 def mcommand(ctx, filter, mcommand, exclude='', cleanup=True, sequential=False):
     """ Run django management command on selected app(s).
 
