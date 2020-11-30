@@ -57,10 +57,6 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
         'tags': tags,
     }
     create_app_configs(context)
-    try:
-        create_emailarchiver(ctx, name)
-    except Exception:
-        print(warning('Failed to create archiver. Please examine AWS SES.\n'))
     run(f'git add apps/{name}/')
     run(f'git commit -m "Spin up new app: {name}."')
     print(success('Done!'))
@@ -158,46 +154,6 @@ def create_iam_user(ctx, name, internal=False, show=False):
 
 
 @task
-def create_emailarchiver(ctx, name):
-    RULESET_NAME = 'document-archiver'  # you can only have one ruleset active
-    conn = boto3.client('ses', region_name='us-west-2')  # amazon ses is not available in AU, us-west-2 is closest
-    rule_dict = {
-        'Name': f'customer-{name}',
-        'Enabled': True,
-        'TlsPolicy': 'Optional',
-        'Recipients': [
-            f'{name}@emailarchiver.onuptick.com',
-        ],
-        'Actions': [
-            {'S3Action': {
-                'BucketName': 'uptick-customer-emailarchiver',
-                'ObjectKeyPrefix': f'{name}/',
-            }},
-            {'AddHeaderAction': {
-                'HeaderName': 'Customer-Server-Slug',
-                'HeaderValue': f'{name}',
-            }},
-            {'AddHeaderAction': {
-                'HeaderName': 'Customer-Bucket-Prefix',
-                'HeaderValue': f'{name}',
-            }},
-            {'LambdaAction': {
-                'FunctionArn': 'arn:aws:lambda:us-west-2:305686791668:function:customer-archiver',
-                'InvocationType': 'Event',
-            }},
-        ],
-        'ScanEnabled': True
-    }
-
-    response = conn.create_receipt_rule(
-        RuleSetName=RULESET_NAME,
-        Rule=rule_dict,
-    )
-
-    return response
-
-
-@task
 def run_new_tenant_checks(ctx, name):
     print(progress('Running new tenant checks ... '), end='', flush=True)
     if not Path('apps').exists():
@@ -240,7 +196,7 @@ def create_app_configs(context):
 def delete_tenant(ctx):
     """ We're scared of automating this atm, so just print steps to fully deleting a tenant. """
     print(progress("\t- Delete customer folder in uptick-cluster to remove the deployment from k8s."))
-    print(progress("\t- Route53: Delete RecordSets (x3 inc legacy archiver)"))
+    print(progress("\t- Route53: Delete RecordSets"))
     print(progress("\t- RDS: Delete Database (and Subnet if DB wasn't using a shared one)"))
     print(progress("\t- IAM: Delete User (and related Group if legacy customer)"))
     print(progress("\t- S3: Archive and Delete Bucket/Folder; Delete correspondence folder"))
