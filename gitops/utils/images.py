@@ -7,6 +7,7 @@ import boto3
 from .cli import colourise
 
 PREFIX_CACHE = {}
+BATCH_SIZE = 100
 
 
 def get_image(tag):
@@ -15,7 +16,7 @@ def get_image(tag):
     raise NotImplementedError
 
 
-def get_latest_image(prefix):
+def get_latest_image(prefix: str) -> str:
     """ Finds latest image in ECR with the given prefix. """
     with suppress(KeyError):
         return PREFIX_CACHE[prefix]
@@ -37,21 +38,27 @@ def get_latest_image(prefix):
         next_token = results.get('nextToken')
         if not next_token:
             break
+
     if not image_tags:
         print(f'No images with tag "{prefix}-*".')
         PREFIX_CACHE[prefix] = None
         return None
-    results = ecr.describe_images(
-        repositoryName='uptick',
-        imageIds=[{'imageTag': t} for t in image_tags],
-        filter={'tagStatus': 'TAGGED'}
-    )
-    results = [
-        (i['imagePushedAt'], i['imageTags'][0])
-        for i in results['imageDetails']
-    ]
-    results = sorted(results, key=lambda x: x[0], reverse=True)
-    latest_image_tag = results[0][1]
+
+    # ECR allows us to fetch 100 image details at a time.
+    results = []
+    for i in range(0, len(image_tags), BATCH_SIZE):
+        batch_image_tags = image_tags[i:i + BATCH_SIZE]
+        ecr_response = ecr.describe_images(
+            repositoryName='uptick',
+            imageIds=[{'imageTag': t} for t in batch_image_tags],
+            filter={'tagStatus': 'TAGGED'}
+        )
+        results += [
+            (i['imagePushedAt'], i['imageTags'][0])
+            for i in ecr_response['imageDetails']
+        ]
+
+    latest_image_tag = sorted(results, key=lambda x: x[0], reverse=True)[0][1]
     PREFIX_CACHE[prefix] = latest_image_tag
     return latest_image_tag
 
