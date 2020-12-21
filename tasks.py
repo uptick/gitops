@@ -50,7 +50,7 @@ def deploy(ctx):
     run((
         'helm upgrade'
         ' gitops'
-        ' chart'
+        ' charts/gitop'
         ' --install'
         ' --wait'
         ' --namespace default'
