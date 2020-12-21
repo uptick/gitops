@@ -1,2 +1,7 @@
 environment: {}
 secrets: {}
+
+ingress:
+
+    ## Additional annotations to add to the ingress
+    annotations: {}

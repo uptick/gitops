@@ -8,6 +8,7 @@ metadata:
   annotations:
     certmanager.k8s.io/cluster-issuer: http-issuer
     ingress.kubernetes.io/ssl-redirect: "true"
+    {{ toYaml .Values.ingress.annotations | indent 4}}
 spec:
   tls:
   - secretName: gitops-cert-key
