@@ -63,8 +63,12 @@ class Deployer:
             return
         logger.info(f'Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)}, R{list(removed_apps)}')
         await post_init_summary(self.current_app_definitions.name, self.pusher, added_apps=added_apps, updated_apps=updated_apps, removed_apps=removed_apps)
-        # TODO move to function
-        await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --role-arn {ROLE_ARN} --alias {CLUSTER_NAME}')
+        try:
+            await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --role-arn {ROLE_ARN} --alias {CLUSTER_NAME}')
+        except Exception:
+            # In the new cluster, we use cluster role binding to allow creation of stuff in workforce namespace.
+            # TODO remove the above line once we migrate to the new cluster
+            pass
         results = {}
         for app_name in (added_apps | updated_apps):
             app = self.current_app_definitions.apps[app_name]
