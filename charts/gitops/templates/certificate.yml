@@ -1,3 +1,4 @@
+{{- if .Values.certificate.install }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -9,3 +10,4 @@ spec:
     kind: Issuer
   dnsNames:
   - gitops.{{ .Values.domain }}
+{{- end }}

@@ -24,5 +24,10 @@ async def webhook(request):
     return json({}, status=200)
 
 
+@app.get('/')
+async def index(request):
+    return json({}, status=200)
+
+
 def main():
     app.run(host='0.0.0.0', port=8000)

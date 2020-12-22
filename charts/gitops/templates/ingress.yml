@@ -6,7 +6,9 @@ metadata:
   labels:
     app: gitops
   annotations:
+    {{- if .Values.certificate.install }}
     certmanager.k8s.io/cluster-issuer: http-issuer
+    {{- end }}
     ingress.kubernetes.io/ssl-redirect: "true"
     {{- range $key, $value := .Values.ingress.annotations }}
     {{ $key }}: {{ $value | quote }}
