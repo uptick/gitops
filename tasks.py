@@ -1,10 +1,10 @@
 import json
 import os
-import yaml
 from base64 import b64encode
-from invoke import run, task
 
+import yaml
 from dotenv import load_dotenv
+from invoke import run, task
 
 
 @task
@@ -26,19 +26,19 @@ def build(ctx):
     Uses the short hash code for the Git repo to identify this build. This
     allows for easier rollback.
     """
-    local = get_local_image()
+    local = get_latest_image()
     print(f'Building container ({local}) ... ', flush=True)
     run(f'docker build -t {local} .')
 
 
 @task
-def push(ctx):
-    local = get_local_image()
-    remote = get_remote_image()
-    print(f'Pushing to ECR ({local}) ... ', flush=True)
+def push(ctx, tag=None):
+    local = get_latest_image()
+    remote = get_remote_image(tag)
     password = run('aws ecr get-login-password', hide=True, warn=False).stdout.strip()
     run(f'docker login -u AWS -p {password} https://{get_repo_uri()}', hide=True)
-    run(f'docker tag {local} {remote}', hide=True)
+    run(f'docker tag {local} {remote}', hide=False)
+    print(f'Pushing to ECR ({remote}) ... ', flush=True)
     run(f'docker push {remote}', pty=True)
 
 
@@ -76,7 +76,7 @@ def logs(ctx):
     run(f'kubectl -n default logs -f {name}', pty=True)
 
 
-def get_tag():
+def get_commit_tag():
     return run('git rev-parse --short HEAD', hide=True).stdout.strip()
 
 
@@ -89,12 +89,13 @@ def get_repo_uri():
     return f'{get_account_id()}.dkr.ecr.ap-southeast-2.amazonaws.com'
 
 
-def get_local_image():
-    return f'uptick/gitops:{get_tag()}'
+def get_latest_image() -> str:
+    return get_remote_image(tag="latest")
 
 
-def get_remote_image():
-    return f'{get_repo_uri()}/gitops:{get_tag()}'
+def get_remote_image(tag=None) -> str:
+    tag = tag or get_commit_tag()
+    return f'{get_repo_uri()}/gitops:{tag}'
 
 
 def get_secret(name):
