@@ -1,10 +1,10 @@
 import json
 import os
-from base64 import b64encode
-
 import yaml
-from dotenv import load_dotenv
+from base64 import b64encode
 from invoke import run, task
+
+from dotenv import load_dotenv
 
 
 @task
