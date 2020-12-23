@@ -29,9 +29,9 @@ jobs:
       - name: Pull latest image. Build
         env:
           latest_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:latest
-          current_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:${{github.ref}}
+          current_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:${{github.event.ref}}
         run: |
-          echo ${{secrets.CLUSTER_KEY}} | base64 -D > cluster.key
+          echo ${{secrets.CLUSTER_KEY}} | base64 -d > cluster.key
           docker pull $latest_image
           docker build -t $latest_image --cache-from $latest_image .
           docker tag  $latest_image $current_image
