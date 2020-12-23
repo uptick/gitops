@@ -38,28 +38,28 @@ jobs:
           docker push $latest_image
           docker push $current_image
 
-  publish_helm_chart:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Publish Helm charts
-        uses: stefanprodan/helm-gh-pages@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # publish_helm_chart:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Publish Helm charts
+  #       uses: stefanprodan/helm-gh-pages@master
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
-  publish_to_pypi:
-    name: Publishes tag to pypi
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Build package
-        run: python3 -m pip install --user --upgrade twine setuptools wheel &&  python3 setup.py sdist bdist_wheel
-      - name: Upload package
-        run: python3 -m twine upload dist/* --non-interactive
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+  # publish_to_pypi:
+  #   name: Publishes tag to pypi
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Install Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.8
+  #     - name: Build package
+  #       run: python3 -m pip install --user --upgrade twine setuptools wheel &&  python3 setup.py sdist bdist_wheel
+  #     - name: Upload package
+  #       run: python3 -m twine upload dist/* --non-interactive
+  #       env:
+  #         TWINE_USERNAME: __token__
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
