@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Pull latest image. Build
+        # if: startsWith(github.ref, 'refs/tags')
         env:
           latest_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:latest
           current_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:${{github.event.ref}}
@@ -34,9 +35,10 @@ jobs:
           echo ${{secrets.CLUSTER_KEY}} | base64 -d > cluster.key
           docker pull $latest_image
           docker build -t $latest_image --cache-from $latest_image .
-          docker tag  $latest_image $current_image
           docker push $latest_image
-          docker push $current_image
+
+        # docker tag  $latest_image $current_image
+        # docker push $current_image
 
   # publish_helm_chart:
   #   runs-on: ubuntu-latest
