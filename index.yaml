@@ -3,11 +3,11 @@ entries:
   gitops:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-01-05T04:16:11.568580749Z"
+    created: "2021-01-05T04:53:45.845332839Z"
     description: GitOps Server Helm chart.
-    digest: ceb780263770450ad1b5723d511152a8921b9b737c29042b7cf2d79e16f4a855
+    digest: 7bf414a52dc83180685a38d1d551441d5db7d8c1b51310ed81fc32a568cec923
     name: gitops
     urls:
     - https://uptick.github.io/gitops/gitops-0.1.0.tgz
     version: 0.1.0
-generated: "2021-01-05T04:16:11.568118928Z"
+generated: "2021-01-05T04:53:45.844800436Z"
