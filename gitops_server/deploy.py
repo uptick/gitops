@@ -63,7 +63,6 @@ class Deployer:
             return
         logger.info(f'Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)}, R{list(removed_apps)}')
         await post_init_summary(self.current_app_definitions.name, self.pusher, added_apps=added_apps, updated_apps=updated_apps, removed_apps=removed_apps)
-        await run(f'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name {CLUSTER_NAME} --alias {CLUSTER_NAME}')
         results = {}
         for app_name in (added_apps | updated_apps):
             app = self.current_app_definitions.apps[app_name]

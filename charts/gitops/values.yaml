@@ -5,6 +5,5 @@ certificate:
   install: true
 
 ingress:
-
     ## Additional annotations to add to the ingress
     annotations: {}

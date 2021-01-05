@@ -25,6 +25,24 @@ Gitops has a helm chart defining its deployment. Invoke scripts are provided to 
 
 Add `export GITOPS_APPS_DIRECTORY=~/<cluster-apps-folder>` to invoke gitops from any directory.
 
+Ensure that gitops has `edit` access to the namespace it is deploying to. An example RoleBinding is:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitops-role-binding
+  namespace: workforce
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: gitops
+```
+
 ## Roadmap
 
  * Handle failure on initial application deployment.
