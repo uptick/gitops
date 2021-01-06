@@ -25,26 +25,22 @@ class DeployTests(TestCase):
         deployer = Deployer()
         await deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
         await deployer.deploy()
-        self.assertEqual(run_mock.call_count, 5)
+        self.assertEqual(run_mock.call_count, 4)
         self.assertEqual(
             run_mock.call_args_list[0][0][0],
-            'aws eks update-kubeconfig --kubeconfig /root/.kube/config --region ap-southeast-2 --name None --role-arn arn:aws:iam::None:role/GitopsAccess --alias None',
-        )
-        self.assertEqual(
-            run_mock.call_args_list[1][0][0],
             'cd mock-repo; helm dependency build'
         )
         self.assertRegex(
-            run_mock.call_args_list[2][0][0],
+            run_mock.call_args_list[1][0][0],
             r'helm upgrade --install -f .+\.yml'
             r' --namespace=mynamespace sample-app-\d mock-repo'
         )
         self.assertEqual(
-            run_mock.call_args_list[3][0][0],
+            run_mock.call_args_list[2][0][0],
             'cd mock-repo; helm dependency build'
         )
         self.assertRegex(
-            run_mock.call_args_list[4][0][0],
+            run_mock.call_args_list[3][0][0],
             r'helm upgrade --install -f .+\.yml'
             r' --namespace=mynamespace sample-app-\d mock-repo'
         )
