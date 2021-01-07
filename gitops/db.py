@@ -1,5 +1,10 @@
 import asyncio
-from invoke import task
+import base64
+import os
+import random
+from invoke import run, task
+
+import dsnparse
 
 from .utils import kube
 from .utils.apps import get_app_details
@@ -74,3 +79,52 @@ def download_backup(ctx, app, index=None, path=None, datestamp=False):
         print(progress('No index specified. Downloading latest backup: ' + backups[-1][3]))
 
     kube.download_backup('workforce', app, index, path, datestamp=datestamp)
+
+
+@task
+def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availability_zone=None):
+    """ Creates a proxy to RDS"""
+    app = get_app_details(app_name, load_secrets=True)
+    database_url = base64.b64decode(app.values['secrets']['DATABASE_URL'].encode('ascii')).decode('ascii')
+    database_dsn = dsnparse.parse(database_url)
+
+    if not local_port:
+        local_port = random.randint(1000, 9999)
+
+    modified_dsn = dsnparse.parse(database_url)
+    modified_dsn.hostname = 'localhost'
+    modified_dsn.port = local_port
+
+    bastion_instance_id = bastion_instance_id or os.environ.get("GITOPS_BASTION_INSTANCE_ID")
+    if not bastion_instance_id:
+        raise Exception("Please set GITOPS_BASTION_INSTANCE_ID environment variable for db proxy to work.")
+
+    aws_availability_zone = aws_availability_zone or os.environ.get("GITOPS_AWS_AVAILABILITY_ZONE")
+    if not aws_availability_zone:
+        raise Exception("Please set GITOPS_AWS_AVAILABILITY_ZONE environment variable for db proxy to work.")
+
+    print(progress(f"Creating a proxy to the RDS instance of: {app.name} "))
+
+    # Create a temporary ssh key
+    run("echo -e 'y\n' | ssh-keygen -t rsa -f /tmp/temp -N '' >/dev/null 2>&1")
+
+    # Send ssh key to bastion. These only last 60 seconds
+    run(f"""aws ec2-instance-connect send-ssh-public-key \
+            --instance-id {bastion_instance_id}\
+            --availability-zone  {aws_availability_zone} \
+            --instance-os-user ec2-user \
+            --ssh-public-key file:///tmp/temp.pub
+    """)
+
+    print(progress(f"Connect to the db using: psql {modified_dsn.geturl()}"))
+
+    # Create ssh tunnel
+    cmd = f"""ssh -i /tmp/temp \
+            -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port} \
+            -o "UserKnownHostsFile=/dev/null" \
+            -o "StrictHostKeyChecking=no" \
+            -o "ServerAliveInterval=60" \
+            -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region={aws_availability_zone[:-1]}" \
+            ec2-user@{bastion_instance_id}
+    """
+    run(cmd)
