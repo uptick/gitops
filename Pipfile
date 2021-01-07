@@ -9,6 +9,7 @@ pyyaml = ">=5.1.2"
 docker-compose = "*"
 sanic = "*"
 aiorequests = "*"
+dsnparse = "*"
 
 [dev-packages]
 flake8 = "*"
