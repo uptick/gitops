@@ -18,6 +18,7 @@ ipdb = "*"
 asynctest = "*"
 python-dotenv = "*"
 bumpversion = "*"
+twine = "*"
 
 [requires]
 python_version = "3.8"
