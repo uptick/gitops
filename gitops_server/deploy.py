@@ -16,7 +16,7 @@ ROLE_ARN = f'arn:aws:iam::{ACCOUNT_ID}:role/GitopsAccess'
 logger = logging.getLogger('gitops')
 
 
-async def post_init_summary(source, username, added_apps, updated_apps, removed_apps):
+async def post_init_summary(source, username, added_apps, updated_apps, removed_apps, commit_message):
     deltas = ''
     for typ, d in [('Adding', added_apps), ('Updating', updated_apps), ('Removing', removed_apps)]:
         if d:
@@ -24,6 +24,7 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
     await post(
         f"A deployment from `{source}` has been initiated by *{username}* for cluster `{CLUSTER_NAME}`"
         f", the following apps will be updated:{deltas}"
+        f"\nCommit Message: {commit_message}"
     )
 
 
@@ -49,6 +50,7 @@ class Deployer:
     async def from_push_event(self, push_event):
         url = push_event['repository']['clone_url']
         self.pusher = push_event['pusher']['name']
+        self.commit_message = push_event.get('head_commit', {}).get('message')
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
@@ -62,7 +64,14 @@ class Deployer:
             logger.info('No deltas; aborting.')
             return
         logger.info(f'Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)}, R{list(removed_apps)}')
-        await post_init_summary(self.current_app_definitions.name, self.pusher, added_apps=added_apps, updated_apps=updated_apps, removed_apps=removed_apps)
+        await post_init_summary(
+            self.current_app_definitions.name,
+            self.pusher,
+            added_apps=added_apps,
+            updated_apps=updated_apps,
+            removed_apps=removed_apps,
+            commit_message=commit_message,
+        )
         results = {}
         for app_name in (added_apps | updated_apps):
             app = self.current_app_definitions.apps[app_name]
