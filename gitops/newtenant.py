@@ -63,11 +63,6 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
     print(warning('Type `git push` to complete the deployment of this app.'))
     print(progress('You may want to run migrations after this, or copy an existing database across!'))
     print(progress('If you do the former, remember to run reset_support_account at the end.'))
-    print(warning(
-        f'Remember to add "{name}" as a new Authorized URI Redirect in the Google API console '
-        'under API OAuth client Credentials. Link can be found here: '
-        'https://console.developers.google.com/apis/credentials?project=support-account--1554422451604'
-    ))
 
 
 @task
