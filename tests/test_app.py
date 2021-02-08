@@ -74,11 +74,13 @@ class TestChart(TestCase):
             'helm_repo': 'brigade',
             'helm_repo_url': 'https://brigade',
             'helm_chart': 'brigade/brigade',
+            'version': '1.3.2'
         })
 
         self.assertEqual(chart.type, 'helm')
         self.assertEqual(chart.helm_repo_url, 'https://brigade')
         self.assertEqual(chart.helm_chart, 'brigade/brigade')
+        self.assertEqual(chart.version, '1.3.2')
 
     def test_local_repo_is_parsed_properly(self):
         chart = Chart({

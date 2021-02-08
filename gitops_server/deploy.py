@@ -122,6 +122,7 @@ class Deployer:
                     f" --namespace={app.values['namespace']}"
                     f' {app.name}'
                     f' {app.chart.helm_chart}'
+                    f' --version={app.chart.version}' if app.chart.version else ''
                 ), catch=True)
         else:
             logger.warning("Local is not implemented yet")

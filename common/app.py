@@ -123,6 +123,7 @@ class Chart:
             self.helm_repo = definition.get('helm_repo')
             self.helm_repo_url = definition.get('helm_repo_url')
             self.helm_chart = definition.get('helm_chart')
+            self.version = definition.get('version')
             self.path = definition.get('path')
         else:
             raise Exception("Chart definition must be either a dict or string. Instead it is: {definition}")
