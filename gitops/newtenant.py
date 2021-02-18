@@ -103,7 +103,7 @@ def create_database(ctx, name, storage=10, backup=7, show=False, cross_account_b
         DBSubnetGroupName='uptick-db-private',
         VpcSecurityGroupIds=[sg_id],
         PubliclyAccessible=False,
-        Tags=[{'Key': k, 'Value': v} for k,v in tags.items()]
+        Tags=[{'Key': k, 'Value': v} for k, v in tags.items()]
     )
     print('ok')
     print(progress('Waiting for DB to go live ... '), end='', flush=True)

@@ -116,12 +116,12 @@ class Deployer:
                 os.fsync(cfg.fileno())
                 chart_version_arguments = f' --version={app.chart.version}' if app.chart.version else ''
                 await run(f'helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}')
-                await run(('helm upgrade --install'
+                await run(
+                    'helm upgrade --install'
                     f' -f {cfg.name}'
                     f" --namespace={app.values['namespace']}"
                     f' {app.name}'
-                    f' {app.chart.helm_chart} {chart_version_arguments}'
-                ), catch=True)
+                    f' {app.chart.helm_chart} {chart_version_arguments}', catch=True)
                 return
         else:
             logger.warning("Local is not implemented yet")
