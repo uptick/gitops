@@ -49,7 +49,7 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
         db_name = db_name.replace('-', '')
     tags = tags.split(',') if tags else []
     context = {
-        'database_url': create_database(ctx, db_name),
+        'database_url': create_database(ctx, db_name, cross_account_backup_enabled='production' in tags),
         **create_iam_user(ctx, name, internal='internal' in tags),
         'name': name,
         'image_prefix': prefix,
@@ -66,7 +66,7 @@ def new_tenant(ctx, name, db_name=None, tags='', prefix='unset'):
 
 
 @task
-def create_database(ctx, name, storage=10, backup=7, show=False):
+def create_database(ctx, name, storage=10, backup=7, show=False, cross_account_backup_enabled=False):
     """ Create an RDS database for a new tenant.
     """
     print(progress('Creating database ... '), end='', flush=True)
@@ -81,8 +81,15 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
     else:
         raise Exception('Unable to find security group.')
     sg_id = sg.id
+
     # Create the database.
     rds = boto3.client('rds')
+    tags = {
+        'group': 'workforce'
+    }
+    if cross_account_backup_enabled:
+        tags['uptick/backup-enabled'] = 'true'
+
     rds.create_db_instance(
         DBName=instance_name,
         DBInstanceIdentifier=instance_name,
@@ -96,12 +103,7 @@ def create_database(ctx, name, storage=10, backup=7, show=False):
         DBSubnetGroupName='uptick-db-private',
         VpcSecurityGroupIds=[sg_id],
         PubliclyAccessible=False,
-        Tags=[
-            {
-                'Key': 'group',
-                'Value': 'workforce'
-            }
-        ]
+        Tags=[{'Key': k, 'Value': v} for k, v in tags.items()]
     )
     print('ok')
     print(progress('Waiting for DB to go live ... '), end='', flush=True)
