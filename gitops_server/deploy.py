@@ -70,7 +70,7 @@ class Deployer:
             added_apps=added_apps,
             updated_apps=updated_apps,
             removed_apps=removed_apps,
-            commit_message=commit_message,
+            commit_message=self.commit_message,
         )
         results = {}
         for app_name in (added_apps | updated_apps):
@@ -114,16 +114,15 @@ class Deployer:
                 cfg.write(json.dumps(app.values).encode())
                 cfg.flush()
                 os.fsync(cfg.fileno())
+                chart_version_arguments = f' --version={app.chart.version}' if app.chart.version else ''
                 await run(f'helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}')
-                return await run((
-                    'helm upgrade'
-                    ' --install'
+                await run(('helm upgrade --install'
                     f' -f {cfg.name}'
                     f" --namespace={app.values['namespace']}"
                     f' {app.name}'
-                    f' {app.chart.helm_chart}'
-                    f' --version={app.chart.version}' if app.chart.version else ''
+                    f' {app.chart.helm_chart} {chart_version_arguments}'
                 ), catch=True)
+                return
         else:
             logger.warning("Local is not implemented yet")
             return
