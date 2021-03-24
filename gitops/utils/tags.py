@@ -24,8 +24,6 @@ TAG_COLOURS = {
 
     'enterprise': Fore.WHITE,
     'dedicated': Fore.WHITE,
-    'preview': Fore.WHITE,
-    'onboarding': Fore.WHITE,
 
     'fast_release': Fore.YELLOW,
     'slow_release': Fore.MAGENTA,

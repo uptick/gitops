@@ -10,6 +10,7 @@ DEPLOYMENT_ATTRIBUTES = [
     'image-tag',
     'containers',
     'environment',
+    'cluster',
 ]
 
 

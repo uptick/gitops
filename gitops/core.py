@@ -236,3 +236,23 @@ def unsetenv(ctx, filter, values, exclude=''):
         commit_message += f" (except {exclude})"
     run(f'git commit -am "{commit_message}."')
     print(success('Done!'))
+
+
+@task
+def setcluster(ctx, filter, cluster, exclude=''):
+    """ Move selected app(s) to given cluster.
+
+        eg. inv setcluster customer,sandbox eks-prod
+    """
+    try:
+        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The following apps will be moved to the ', Fore.LIGHTBLUE_EX)} {colourise(cluster, Fore.LIGHTYELLOW_EX)} {colourise('cluster:', Fore.LIGHTBLUE_EX)}")
+    except AppOperationAborted:
+        print(success_negative('Aborted.'))
+        return
+    for app in apps:
+        update_app(app.name, cluster=cluster)
+    commit_message = f"Move {filter} to cluster '{cluster}'"
+    if exclude:
+        commit_message += f" (except {exclude})"
+    run(f'git commit -am "{commit_message}."')
+    print(success('Done!'))
