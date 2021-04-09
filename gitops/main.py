@@ -2,7 +2,7 @@ from invoke import Collection, Program, Task
 
 import pkg_resources
 
-from . import core, db, newtenant, shorthands
+from . import core, db, shorthands
 
 version = pkg_resources.require("gitops")[0].version
 
@@ -19,6 +19,5 @@ for core_ns in [core, shorthands]:
 
 # Namespace the rarer ones.
 namespace.add_collection(db)
-namespace.add_collection(newtenant)
 
 program = Program(namespace=namespace, version=version)
