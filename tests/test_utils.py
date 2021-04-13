@@ -32,6 +32,7 @@ spec:
         stdin: true
 """
 
+
 class TestRenderTemplate(TestCase):
     def test_render_template_with_app_values(self):
         values = {
@@ -70,6 +71,7 @@ spec:
         tty: true
         stdin: true
 """)
+
     def test_render_template_with_extra_labels(self):
         values = {
             "name": "name",
@@ -87,7 +89,6 @@ kind: Job
 metadata:
   name: name
   labels:
-    uptick/fargate: "true"
     app: app
 spec:
   backoffLimit: 1
@@ -98,6 +99,7 @@ spec:
     metadata:
       name: name
       labels:
+        uptick/fargate: "true"
         app: app
     spec:
       restartPolicy: Never

@@ -189,17 +189,18 @@ def make_key(length=64):
 
 
 def render_template(template: str, values: Dict, extra_labels: Dict) -> str:
-    """Given a yaml of a K8s Job, replace template values and add extra labels"""
-        # Replace keys using our templating language
+    """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
     extra_labels = extra_labels or {}
     values = values or {}
+
+    # Replace keys using our templating language
     for k, v in values.items():
         template = template.replace('{{ %s }}' % k, v)
+
     job_json = yaml.load(template)
-    job_json['metadata'] = job_json.get('metadata', {})
-    job_json['metadata']['labels'] = job_json['metadata'].get('labels', {})
-    for k,v in extra_labels.items():
-        job_json['metadata']['labels'][k] = v
+    # Adding extra labels to k8s job pod spec
+    for k, v in extra_labels.items():
+        job_json['spec']['template']['metadata']['labels'][k] = v
     return yaml.dump(job_json)
 
 
@@ -208,9 +209,9 @@ async def _run_job(path, values: Dict = None, context='', namespace='default', a
     logs = ''
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
         # Generate yaml template to render
-        resource = render_template(open(APPS_PATH / ".." / path, 'r').read(), values, extra_labels)
-
-        tmp.write(resource)
+        rendered_template = render_template(open(APPS_PATH / ".." / path, 'r').read(), values, extra_labels)
+        tmp.write(rendered_template)
+        print(rendered_template)
         tmp.flush()
         await async_run(f'kubectl create --context {context} -n {namespace} -f {tmp.name}')
         cmd = (

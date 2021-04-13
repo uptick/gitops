@@ -9,7 +9,12 @@ from dotenv import load_dotenv
 
 @task
 def test(ctx, pty=True):
-    run('docker-compose run --service-ports --rm web python -m unittest -v')
+    run('python -m unittest -v')
+
+
+@task
+def lint(ctx, pty=True):
+    run('flake8')
 
 
 @task
