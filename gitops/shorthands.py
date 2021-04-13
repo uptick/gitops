@@ -21,12 +21,12 @@ def bash(ctx, app, cleanup=True):
 
 
 @task
-def mcommand(ctx, filter, mcommand, exclude='', cleanup=True, sequential=False):
+def mcommand(ctx, filter, mcommand, exclude='', cleanup=True, sequential=False, fargate=False):
     """ Run django management command on selected app(s).
 
         eg. inv mcommand customer,sandbox -e aesg showmigrations
     """
-    return command(ctx, filter, f'{UNSAFE_MANAGE_PY} {mcommand}', exclude=exclude, cleanup=cleanup, sequential=sequential)
+    return command(ctx, filter, f'{UNSAFE_MANAGE_PY} {mcommand}', exclude=exclude, cleanup=cleanup, sequential=sequential, fargate=fargate)
 
 
 @task(aliases=['sp'])
@@ -41,9 +41,9 @@ def shell_plus(ctx, app, cleanup=True):
 
 
 @task
-def migrate(ctx, filter, exclude='', cleanup=True, sequential=False, interactive=True):
+def migrate(ctx, filter, exclude='', cleanup=True, sequential=False, interactive=True, fargate=False):
     """ Runs migrations for selected app.
 
         eg. inv migrate workforce,sandbox
     """
-    return command(ctx, filter, f'{UNSAFE_MANAGE_PY} migrate', exclude=exclude, cleanup=cleanup, sequential=sequential, interactive=interactive)
+    return command(ctx, filter, f'{UNSAFE_MANAGE_PY} migrate', exclude=exclude, cleanup=cleanup, sequential=sequential, interactive=interactive, fargate=fargate)

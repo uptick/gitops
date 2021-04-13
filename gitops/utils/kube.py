@@ -8,6 +8,7 @@ import sys
 import tempfile
 import textwrap
 import time
+import yaml
 from base64 import b64encode
 from colorama import Fore
 from contextlib import contextmanager
@@ -15,6 +16,7 @@ from datetime import datetime
 from functools import wraps
 from invoke import run, task
 from invoke.exceptions import UnexpectedExit
+from typing import Dict
 
 import boto3
 import humanize
@@ -27,7 +29,7 @@ from gitops.utils.async_runner import async_run
 from .exceptions import CommandError
 
 
-async def run_job(app: App, command, cleanup=True, sequential=True):
+async def run_job(app: App, command, cleanup=True, sequential=True, fargate=False):
     job_id = make_key(4).lower()
     values = {
         'name': f'{app.name}-command-{job_id}',
@@ -35,7 +37,12 @@ async def run_job(app: App, command, cleanup=True, sequential=True):
         'command': str(shlex.split(command)),
         'image': app.image,
     }
-    return await _run_job('jobs/command-job.yml', values, context=app.cluster, namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential)
+    extra_labels = {}
+    if fargate:
+        extra_labels = {
+            "uptick/fargate": "true"
+        }
+    return await _run_job('jobs/command-job.yml', values, context=app.cluster, namespace='workforce', attach=True, cleanup=cleanup, sequential=sequential, extra_labels=extra_labels)
 
 
 def list_backups(product, prefix):
@@ -181,14 +188,30 @@ def make_key(length=64):
     )
 
 
-async def _run_job(path, values={}, context='', namespace='default', attach=False, cleanup=True, sequential=True):
+def render_template(template: str, values: Dict, extra_labels: Dict) -> str:
+    """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
+    extra_labels = extra_labels or {}
+    values = values or {}
+
+    # Replace keys using our templating language
+    for k, v in values.items():
+        template = template.replace('{{ %s }}' % k, v)
+
+    job_json = yaml.load(template)
+    # Adding extra labels to k8s job pod spec
+    for k, v in extra_labels.items():
+        job_json['spec']['template']['metadata']['labels'][k] = v
+    return yaml.dump(job_json)
+
+
+async def _run_job(path, values: Dict = None, context='', namespace='default', attach=False, cleanup=True, sequential=True, extra_labels: Dict = None):
     name = values['name']
     logs = ''
     with tempfile.NamedTemporaryFile('wt', suffix='.yml') as tmp:
-        resource = open(APPS_PATH / ".." / path, 'r').read()
-        for k, v in values.items():
-            resource = resource.replace('{{ %s }}' % k, v)
-        tmp.write(resource)
+        # Generate yaml template to render
+        rendered_template = render_template(open(APPS_PATH / ".." / path, 'r').read(), values, extra_labels)
+        tmp.write(rendered_template)
+        print(rendered_template)
         tmp.flush()
         await async_run(f'kubectl create --context {context} -n {namespace} -f {tmp.name}')
         cmd = (
