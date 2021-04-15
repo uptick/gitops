@@ -211,7 +211,6 @@ async def _run_job(path, values: Dict = None, context='', namespace='default', a
         # Generate yaml template to render
         rendered_template = render_template(open(APPS_PATH / ".." / path, 'r').read(), values, extra_labels)
         tmp.write(rendered_template)
-        print(rendered_template)
         tmp.flush()
         await async_run(f'kubectl create --context {context} -n {namespace} -f {tmp.name}')
         cmd = (

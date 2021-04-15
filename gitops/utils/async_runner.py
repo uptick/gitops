@@ -28,8 +28,8 @@ def addstr(win_info, x, y, text, color=0):
     win.refresh(0, 0, 0, 0, height - 1, width - 1)
 
 
-async def run_tasks_async_with_progress(tasks):
-    sem = asyncio.Semaphore(10)
+async def run_tasks_async_with_progress(tasks, max_concurrency=10):
+    sem = asyncio.Semaphore(max_concurrency)
     win_info = init_curses(len(tasks) + 1)
     addstr(win_info, 0, 0, f'Your command is now running on the following {len(tasks)} servers (may extend off bottom of terminal):')
     # Ugly.

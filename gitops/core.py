@@ -97,7 +97,7 @@ def command(ctx, filter, command, exclude='', cleanup=True, sequential=True, int
     else:
         # Build list of coroutines, and execute them all at once
         jobs = [(run_job(app, command, cleanup=cleanup, sequential=sequential, fargate=fargate), app.name) for app in apps]
-        asyncio.run(run_tasks_async_with_progress(jobs))
+        asyncio.run(run_tasks_async_with_progress(jobs, max_concurrency=100 if fargate else 10))
 
     print(success('Done!'))
 
