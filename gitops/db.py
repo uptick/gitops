@@ -2,8 +2,6 @@ import asyncio
 import base64
 import os
 import random
-import sys
-import tempfile
 from invoke import run, task
 
 import dsnparse
@@ -127,7 +125,7 @@ def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availabi
             --availability-zone  {aws_availability_zone} \
             --instance-os-user ec2-user \
             --ssh-public-key file:///tmp/temp.pub
-    """, hide = True)
+    """, hide=True)
     proxy_dsn = modified_dsn.geturl()
     print(progress(f"Connect to the db using: {proxy_dsn}\n"))
     if file:
