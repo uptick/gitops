@@ -2,6 +2,8 @@ import asyncio
 import base64
 import os
 import random
+import sys
+import tempfile
 from invoke import run, task
 
 import dsnparse
@@ -82,11 +84,22 @@ def download_backup(ctx, app, index=None, path=None, datestamp=False):
 
 
 @task
-def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availability_zone=None):
-    """ Creates a proxy to RDS"""
-    app = get_app_details(app_name, load_secrets=True)
-    database_url = base64.b64decode(app.values['secrets']['DATABASE_URL'].encode('ascii')).decode('ascii')
-    database_dsn = dsnparse.parse(database_url)
+def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availability_zone=None, file=None):
+    """ Creates a proxy to RDS. Can supply either the app name or a DSN
+
+    Usage: gitops db.proxy app_name
+    or     gitops db.proxy postgres://...:...@5432/db
+           gitops db.proxy app_name --file=/tmp/address will write the proxy url to the file
+    """
+    try:
+        database_url = app_name
+        database_dsn = dsnparse.parse(database_url)
+        app_name = database_dsn.user
+    except ValueError:
+        # app_name was not a valid dsn
+        app = get_app_details(app_name, load_secrets=True)
+        database_url = base64.b64decode(app.values['secrets']['DATABASE_URL'].encode('ascii')).decode('ascii')
+        database_dsn = dsnparse.parse(database_url)
 
     if not local_port:
         local_port = random.randint(1000, 9999)
@@ -103,7 +116,7 @@ def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availabi
     if not aws_availability_zone:
         raise Exception("Please set GITOPS_AWS_AVAILABILITY_ZONE environment variable for db proxy to work.")
 
-    print(progress(f"Creating a proxy to the RDS instance of: {app.name} "))
+    print(progress(f"Creating a proxy to the RDS instance of: {app_name} "))
 
     # Create a temporary ssh key
     run("echo -e 'y\n' | ssh-keygen -t rsa -f /tmp/temp -N '' >/dev/null 2>&1")
@@ -114,10 +127,13 @@ def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availabi
             --availability-zone  {aws_availability_zone} \
             --instance-os-user ec2-user \
             --ssh-public-key file:///tmp/temp.pub
-    """)
-
-    print(progress(f"Connect to the db using: psql {modified_dsn.geturl()}"))
-
+    """, hide = True)
+    proxy_dsn = modified_dsn.geturl()
+    print(progress(f"Connect to the db using: {proxy_dsn}\n"))
+    if file:
+        print(f"Outputing the proxy url to `{file}`")
+        with open(file, "w") as fout:
+            fout.write(proxy_dsn)
     # Create ssh tunnel
     cmd = f"""ssh -i /tmp/temp \
             -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port} \
@@ -127,4 +143,8 @@ def proxy(ctx, app_name, local_port=None, bastion_instance_id=None, aws_availabi
             -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region={aws_availability_zone[:-1]}" \
             ec2-user@{bastion_instance_id}
     """
-    run(cmd)
+    try:
+        run(cmd, hide=True)
+    finally:
+        if file:
+            os.remove(file)
