@@ -45,7 +45,7 @@ class TestRenderTemplate(TestCase):
 
         rendered_template = kube.render_template(template, values, None)
 
-        assert yaml.load(rendered_template) == yaml.load("""
+        assert yaml.safe_load(rendered_template) == yaml.safe_load("""
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -83,7 +83,7 @@ spec:
 
         rendered_template = kube.render_template(template, values, extra_labels={"uptick/fargate": "true"})
 
-        assert yaml.load(rendered_template) == yaml.load("""
+        assert yaml.safe_load(rendered_template) == yaml.safe_load("""
 apiVersion: batch/v1
 kind: Job
 metadata:

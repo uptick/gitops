@@ -197,7 +197,7 @@ def render_template(template: str, values: Dict, extra_labels: Dict) -> str:
     for k, v in values.items():
         template = template.replace('{{ %s }}' % k, v)
 
-    job_json = yaml.load(template)
+    job_json = yaml.safe_load(template)
     # Adding extra labels to k8s job pod spec
     for k, v in extra_labels.items():
         job_json['spec']['template']['metadata']['labels'][k] = v
