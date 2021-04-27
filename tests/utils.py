@@ -11,11 +11,12 @@ async def mock_load_app_definitions(self, url, sha):
         fg = 4
     else:
         fg = 2
-    app_definitions = AppDefinitions('mock-repo')
-    app_definitions.apps = {
-        'sample-app-1': App('sample-app-1', path=create_test_yaml(fg=fg)),
-        'sample-app-2': App('sample-app-2', path=create_test_yaml(fg=fg)),
-    }
+    app_definitions = AppDefinitions('mock-repo',
+        apps={
+            'sample-app-1': App('sample-app-1', path=create_test_yaml(fg=fg)),
+            'sample-app-2': App('sample-app-2', path=create_test_yaml(fg=fg)),
+        }
+    )
     return app_definitions
 
 
