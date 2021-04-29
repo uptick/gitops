@@ -82,6 +82,13 @@ class App:
         return self.image.split(':')[-1]
 
     @property
+    def image_prefix(self) -> str:
+        """Gets the image prefix portion of {prefix}-{git hash}
+
+        eg: qa-server-12345 -> qa-server"""
+        return self.image_tag.rsplit('-', 1)[0]
+
+    @property
     def cluster(self) -> str:
         return self.values.get('cluster')
 

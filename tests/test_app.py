@@ -23,6 +23,19 @@ class MakeImageTests(TestCase):
         )
         self.assertEqual(app.values['image'], 'image-template-I0')
 
+    def test_image_prefix_is_parsed_properly(self):
+        app = App(
+            'test',
+            deployments={
+                'images': {
+                    'template': 'docker.io/uptick:{tag}'
+                },
+                'chart': 'https://uptick.com/uptick/workforce',
+                'image-tag': 'qa-server-1asd1'
+            }
+        )
+        self.assertEqual(app.image_prefix, 'qa-server')
+
     def test_no_image_tag_is_valid(self):
         app = App(
             'test',

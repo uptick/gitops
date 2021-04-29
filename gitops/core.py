@@ -50,7 +50,7 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
         prev_image_tag = app.image_tag
         if image_tag is None:
             if prefix is None:
-                new_image_prefix = prev_image_tag.split('-')[0]
+                new_image_prefix = app.image_prefix
             else:
                 new_image_prefix = prefix
             new_image_tag = get_latest_image(new_image_prefix)

@@ -82,7 +82,7 @@ def get_apps(filter=[], exclude=[], mode='PROMPT', autoexclude_inactive=True, me
             app.cluster
         ]
         if app.image:
-            pseudotags.append(app.image_tag.split('-')[0])
+            pseudotags.append(app.image_prefix)
 
         tags = set(app.tags + pseudotags)
         existing_tags |= tags
