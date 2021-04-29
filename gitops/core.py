@@ -245,7 +245,7 @@ def setcluster(ctx, filter, cluster, exclude=''):
         eg. inv setcluster customer,sandbox eks-prod
     """
     try:
-        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The following apps will be moved to the ', Fore.LIGHTBLUE_EX)} {colourise(cluster, Fore.LIGHTYELLOW_EX)} {colourise('cluster:', Fore.LIGHTBLUE_EX)}")
+        apps = get_apps(filter=filter, exclude=exclude, message=f"{colourise('The following apps will be moved to the', Fore.LIGHTBLUE_EX)} {colourise(cluster, Fore.LIGHTYELLOW_EX)} {colourise('cluster:', Fore.LIGHTBLUE_EX)}")
     except AppOperationAborted:
         print(success_negative('Aborted.'))
         return
