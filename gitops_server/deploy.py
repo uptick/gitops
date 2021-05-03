@@ -46,17 +46,35 @@ async def post_result_summary(source, results):
     )
 
 
+async def load_app_definitions(url: str, sha: str) -> AppDefinitions:
+    logger.info(f'Loading app definitions at "{sha}".')
+    async with temp_repo(url, sha=sha) as repo:
+        app_definitions = AppDefinitions(get_repo_name_from_url(url))
+        app_definitions.from_path(repo)
+        return app_definitions
+
+
 class Deployer:
-    async def from_push_event(self, push_event):
+    def __init__(self, pusher: str, commit_message: str, current_app_definitions: AppDefinitions, previous_app_definitions: AppDefinitions):
+        self.pusher = pusher
+        self.commit_message = commit_message
+        self.current_app_definitions = current_app_definitions
+        self.previous_app_definitions = previous_app_definitions
+
+    @classmethod
+    async def from_push_event(cls, push_event):
         url = push_event['repository']['clone_url']
-        self.pusher = push_event['pusher']['name']
-        self.commit_message = push_event.get('head_commit', {}).get('message')
+        pusher = push_event['pusher']['name']
+        commit_message = push_event.get('head_commit', {}).get('message')
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event['before']
         after = push_event['after']
-        self.current_app_definitions = await self.load_app_definitions(url, sha=after)
+        current_app_definitions = await load_app_definitions(url, sha=after)
         # TODO: Handle case where there is no previous commit.
-        self.previous_app_definitions = await self.load_app_definitions(url, sha=before)
+        previous_app_definitions = await load_app_definitions(url, sha=before)
+        return cls(
+            pusher, commit_message, current_app_definitions, previous_app_definitions
+        )
 
     async def deploy(self):
         added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
@@ -145,10 +163,3 @@ class Deployer:
                     continue
                 updated.add(app_name)
         return added, updated, removed
-
-    async def load_app_definitions(self, url: str, sha: str):
-        logger.info(f'Loading app definitions at "{sha}".')
-        async with temp_repo(url, sha=sha) as repo:
-            app_definitions = AppDefinitions(get_repo_name_from_url(url))
-            app_definitions.from_path(repo)
-            return app_definitions

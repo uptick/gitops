@@ -5,7 +5,7 @@ from common.app import App
 from gitops_server.app_definitions import AppDefinitions
 
 
-async def mock_load_app_definitions(self, url, sha):
+async def mock_load_app_definitions(url, sha):
     # Set different fg amounts for different sha's to mock a change to app_definitions
     if sha == 'bef04e58a0001234567890123456789012345678':
         fg = 4

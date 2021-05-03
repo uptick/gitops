@@ -44,8 +44,7 @@ class Worker:
         ref = work.get('ref')
         logger.info(f'Have a push to "{ref}".')
         if ref == 'refs/heads/master':
-            deployer = Deployer()
-            await deployer.from_push_event(work)
+            deployer = await Deployer.from_push_event(work)
             await deployer.deploy()
 
 

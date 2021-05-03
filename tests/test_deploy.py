@@ -3,6 +3,7 @@ from asynctest.mock import patch
 
 from common.app import App
 
+from gitops_server.app_definitions import AppDefinitions
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
@@ -16,14 +17,13 @@ from .utils import mock_load_app_definitions
 class DeployTests(TestCase):
     @patch('gitops_server.deploy.run')
     @patch('gitops_server.deploy.post')
-    @patch('gitops_server.deploy.Deployer.load_app_definitions', mock_load_app_definitions)
+    @patch('gitops_server.deploy.load_app_definitions', mock_load_app_definitions)
     @patch('gitops_server.deploy.temp_repo')
     async def test_deployer_git(self, temp_repo_mock, post_mock, run_mock):
         """Fake a deploy to two servers, bumping fg from 2 to 4."""
         run_mock.return_value = {'exit_code': 0, 'output': ''}
         temp_repo_mock.return_value.__aenter__.return_value = 'mock-repo'
-        deployer = Deployer()
-        await deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
+        deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
         await deployer.deploy()
         self.assertEqual(run_mock.call_count, 4)
         self.assertEqual(
@@ -57,7 +57,7 @@ class DeployTests(TestCase):
 
     @patch('gitops_server.deploy.run')
     @patch('gitops_server.deploy.post')
-    @patch('gitops_server.deploy.Deployer.load_app_definitions', mock_load_app_definitions)
+    @patch('gitops_server.deploy.load_app_definitions', mock_load_app_definitions)
     @patch('gitops_server.deploy.temp_repo')
     async def test_deployer_update_helm_app(self, temp_repo_mock, post_mock, run_mock):
         helm_app = App(
@@ -75,7 +75,7 @@ class DeployTests(TestCase):
             }
         )
 
-        deployer = Deployer()
+        deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
         await deployer.update_app_deployment(helm_app)
 
         self.assertEqual(run_mock.call_count, 2)
