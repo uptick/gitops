@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import AsyncGenerator, Optional
 
 from .utils import run
 
@@ -23,7 +23,7 @@ async def clone_repo(git_repo_url: str, path: str, sha: Optional[str] = None):
 
 
 @asynccontextmanager
-async def temp_repo(git_repo_url: str, sha: Optional[str] = None) -> str:
+async def temp_repo(git_repo_url: str, sha: Optional[str] = None) -> AsyncGenerator[str, None]:
     """Checks out a git_repo_url to a temporary folder location. Returns temporary folder location"""
     with tempfile.TemporaryDirectory() as temporary_folder_path:
         await clone_repo(git_repo_url, path=temporary_folder_path, sha=sha)

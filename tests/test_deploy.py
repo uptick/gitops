@@ -3,7 +3,6 @@ from asynctest.mock import patch
 
 from common.app import App
 
-from gitops_server.app_definitions import AppDefinitions
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
@@ -56,10 +55,11 @@ class DeployTests(TestCase):
             )
 
     @patch('gitops_server.deploy.run')
-    @patch('gitops_server.deploy.post')
+    @patch('gitops_server.deploy.post_result')
     @patch('gitops_server.deploy.load_app_definitions', mock_load_app_definitions)
     @patch('gitops_server.deploy.temp_repo')
     async def test_deployer_update_helm_app(self, temp_repo_mock, post_mock, run_mock):
+        run_mock.return_value = {'exit_code': 0, 'output': ''}
         helm_app = App(
             'helm_app',
             deployments={
@@ -88,3 +88,4 @@ class DeployTests(TestCase):
             r'helm upgrade --install -f .+\.yml'
             r' --namespace=mynamespace helm_app brigade/brigade'
         )
+        self.assertEqual(post_mock.call_count, 1)

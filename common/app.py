@@ -19,14 +19,12 @@ class App:
         self.name = name
         self.path = path
         self.account_id = account_id
-        deployments = deployments or {}
-        secrets = secrets or {}
         if path:
             deployments = load_yaml(os.path.join(path, 'deployment.yml'))
             if load_secrets:
                 secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
-            else:
-                secrets = secrets or {}
+        deployments = deployments or {}
+        secrets = secrets or {}
         self.values = self._make_values(deployments, secrets)
         self.chart = Chart(self.values['chart'])
 
@@ -90,7 +88,7 @@ class App:
 
     @property
     def cluster(self) -> str:
-        return self.values.get('cluster')
+        return self.values.get('cluster', "")
 
     @property
     def tags(self) -> List[str]:

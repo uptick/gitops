@@ -3,10 +3,12 @@ import logging
 import subprocess
 from functools import partial
 
+from .types import RunOutput
+
 logger = logging.getLogger('gitops')
 
 
-async def run(command, catch=False):
+async def run(command, catch=False) -> RunOutput:
     """ Run a shell command.
 
     Runs the command in an asyncio executor to keep things async. Will
@@ -22,7 +24,7 @@ async def run(command, catch=False):
     return await loop.run_in_executor(None, call)
 
 
-def sync_run(command, catch=False):
+def sync_run(command, catch=False) -> RunOutput:
     logger.info(f'Running "{command}".')
     exit_code = 0
     try:
@@ -36,10 +38,10 @@ def sync_run(command, catch=False):
             raise e
         exit_code = e.returncode
         output = e.output
-    return {
-        'exit_code': exit_code,
-        'output': output.decode()
-    }
+    return RunOutput(
+        exit_code=exit_code,
+        output=output.decode()
+    )
 
 
 def get_repo_name_from_url(url):

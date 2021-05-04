@@ -1,25 +1,21 @@
 import os
 import yaml
+from typing import Dict
 
 
-def load_yaml(path, default_value=None):
-    try:
-        with open(path, 'r') as file:
-            return resolve_values(yaml.safe_load(file), path)
-    except Exception:
-        if default_value is not None:
-            return default_value
-        raise
+def load_yaml(path) -> Dict:
+    with open(path, 'r') as file:
+        return resolve_values(yaml.safe_load(file), path)
 
 
-def resolve_values(values, path):
+def resolve_values(values, path) -> Dict:
     if 'extends' not in values:
         return values
     parent_values = load_yaml(os.path.join(os.path.dirname(path), values['extends']))
     return deep_merge(parent_values, values)
 
 
-def deep_merge(parent, child):
+def deep_merge(parent: Dict, child: Dict) -> Dict:
     """ Deeply merge two dictionaries.
 
     Dictionary entries will be followed and merged, anything else will be
