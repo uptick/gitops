@@ -109,7 +109,7 @@ class Deployer:
     async def uninstall_app(self, app: App) -> UpdateAppResult:
         async with self.semaphore:
             logger.info(f'Uninstalling app {app.name!r}.')
-            result = await run(f"helm uninstall {app.name} -n {app.values['namespace']}", catch=True)
+            result = await run(f"helm uninstall {app.name} -n {app.values['namespace']}", suppress_errors=True)
             update_result = UpdateAppResult(app_name=app.name, **result)
             await post_result(self.current_app_definitions.name, update_result)
         return update_result
@@ -131,7 +131,7 @@ class Deployer:
                             f" --namespace={app.values['namespace']}"
                             f' {app.name}'
                             f' {chart_folder_path}'
-                        ), catch=True)
+                        ), suppress_errors=True)
             elif app.chart.type == "helm":
                 with tempfile.NamedTemporaryFile(suffix='.yml') as cfg:
                     cfg.write(json.dumps(app.values).encode())
@@ -144,7 +144,7 @@ class Deployer:
                         f' -f {cfg.name}'
                         f" --namespace={app.values['namespace']}"
                         f' {app.name}'
-                        f' {app.chart.helm_chart} {chart_version_arguments}', catch=True)
+                        f' {app.chart.helm_chart} {chart_version_arguments}', suppress_errors=True)
             else:
                 logger.warning("Local is not implemented yet")
                 return None
