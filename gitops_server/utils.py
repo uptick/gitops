@@ -1,45 +1,41 @@
 import asyncio
 import logging
-import subprocess
-from functools import partial
+
+from .types import RunOutput
 
 logger = logging.getLogger('gitops')
 
 
-async def run(command, catch=False):
+async def run(command, suppress_errors=False) -> RunOutput:
     """ Run a shell command.
 
     Runs the command in an asyncio executor to keep things async. Will
-    optionally prevent raising an exception on failure with `catch`. Returns a
-    dictionary containing `exit_code` and `output`.
+    optionally prevent raising an exception on failure with `suppress_errors`.
     """
-    loop = asyncio.get_event_loop()
-    call = partial(
-        sync_run,
-        command,
-        catch=catch
-    )
-    return await loop.run_in_executor(None, call)
-
-
-def sync_run(command, catch=False):
-    logger.info(f'Running "{command}".')
     exit_code = 0
-    try:
-        output = subprocess.check_output(
-            command,
-            shell=True,
-            stderr=subprocess.STDOUT
+    logger.info(f'Running "{command}".')
+    proc = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE)
+
+    stdout, stderr = await proc.communicate()
+    exit_code = proc.returncode
+    if exit_code == 0:
+        return RunOutput(
+            exit_code=exit_code,
+            output=stdout.decode()
         )
-    except subprocess.CalledProcessError as e:
-        if not catch:
-            raise e
-        exit_code = e.returncode
-        output = e.output
-    return {
-        'exit_code': exit_code,
-        'output': output.decode()
-    }
+    else:
+        # Something went wrong.
+        if not suppress_errors:
+            raise Exception(
+                f"Run: {command} returned with exit code: {exit_code}\n\n{stderr.decode()}"
+            )
+        return RunOutput(
+            exit_code=exit_code,
+            output=stderr.decode()
+        )
 
 
 def get_repo_name_from_url(url):
