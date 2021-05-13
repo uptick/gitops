@@ -52,9 +52,6 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
     """ Copy database between apps. """
     source_app = get_app_details(source, load_secrets=True)
     destination_app = get_app_details(destination, load_secrets=True)
-    if source_app.cluster != destination_app.cluster:
-        print(warning(f"Source ({source!r} on {source_app.cluster!r}) and destination ({destination!r} on {destination_app.cluster!r}) apps must belong to the same cluster."))
-        return
     kube.confirm_database(destination)
     values = {
         'name': f'copy-db-{source}-{destination}',
