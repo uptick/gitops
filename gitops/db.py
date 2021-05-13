@@ -50,8 +50,8 @@ def restore_backup(ctx, app_name, index, cleanup=True):
 @task
 def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
     """ Copy database between apps. """
-    source_app = get_app_details(source, load_secrets=False)
-    destination_app = get_app_details(destination, load_secrets=False)
+    source_app = get_app_details(source, load_secrets=True)
+    destination_app = get_app_details(destination, load_secrets=True)
     if source_app.cluster != destination_app.cluster:
         print(warning(f"Source ({source!r} on {source_app.cluster!r}) and destination ({destination!r} on {destination_app.cluster!r}) apps must belong to the same cluster."))
         return
@@ -60,6 +60,8 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
         'name': f'copy-db-{source}-{destination}',
         'source': source,
         'destination': destination,
+        'SOURCE_DATABASE_URL_ENCODED': source_app.values['secrets']['DATABASE_URL'],
+        'DESTINATION_DATABASE_URL_ENCODED': destination_app.values['secrets']['DATABASE_URL'],
         'skip_backup': 'skip' if skip_backup else ''
     }
     asyncio.run(kube._run_job('jobs/copy-db-job.yml', values, context=source_app.cluster, namespace='workforce', cleanup=cleanup))
