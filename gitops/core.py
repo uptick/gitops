@@ -3,7 +3,7 @@ from colorama import Fore
 from invoke import run, task
 
 from .utils import config
-from .utils.apps import get_apps, update_app
+from .utils.apps import APPS_PATH, get_apps, update_app
 from .utils.async_runner import run_tasks_async_with_progress
 from .utils.cli import colourise, progress, success, success_negative, warning
 from .utils.exceptions import AppOperationAborted
@@ -22,11 +22,12 @@ def summary(ctx, filter='', exclude=''):
 
 
 @task
-def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inactive=True, interactive=True):
+def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inactive=True, interactive=True, push=False):
     """ Bump image tag on selected app(s).
         Provide `image_tag` to set to a specific image tag, or provide `prefix` to use latest image
         with the given prefix.
         Otherwise, the latest tag with the same prefix as the app's current tag will be used.
+        Provide `push` to automatically push the commit (and retry on conflict.)
     """
     prompt_message = 'The following apps will have their image bumped'
     if image_tag:
@@ -68,7 +69,11 @@ def bump(ctx, filter, exclude='', image_tag=None, prefix=None, autoexclude_inact
         commit_message += f" to use {image_tag}"
     if prefix:
         commit_message += f" to use prefix {prefix}"
-    run(f'git commit -am "{commit_message}."')
+    run(f'cd {APPS_PATH}; git commit -am "{commit_message}."')
+
+    if push:
+        git_push(APPS_PATH)
+
     print(success('Done!'))
 
 
@@ -256,3 +261,16 @@ def setcluster(ctx, filter, cluster, exclude=''):
         commit_message += f" (except {exclude})"
     run(f'git commit -am "{commit_message}."')
     print(success('Done!'))
+
+
+def git_push(cluster_path: str, retry: int = 3):
+    """Git pushes in a directory and retries if commits already exist"""
+    print(progress(f"Pushing changes to {cluster_path}"))
+    attempts = 0
+    while attempts <= retry:
+        result = run(f"cd {cluster_path}; git push", warn=True)
+        if result.exited == 1 and 'remote contains work' in result.stderr:
+            attempts += 1
+            run(f"cd {cluster_path}; git pull --rebase=true")
+        else:
+            break
