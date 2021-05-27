@@ -1,8 +1,8 @@
+from unittest.mock import patch
+
 from asynctest import TestCase
-from asynctest.mock import patch
 
 from common.app import App
-
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
@@ -13,7 +13,7 @@ from .utils import mock_load_app_definitions
 # Provide x with a valid diff
 
 
-class DeployTests(TestCase):
+class TestDeploy(TestCase):
     @patch('gitops_server.deploy.run')
     @patch('gitops_server.deploy.post')
     @patch('gitops_server.deploy.load_app_definitions', mock_load_app_definitions)

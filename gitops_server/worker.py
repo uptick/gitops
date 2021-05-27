@@ -1,10 +1,11 @@
 import asyncio
 import logging
 
-from .app import app
+from gitops_server.main import app
+
 from .deploy import Deployer
 
-logger = logging.getLogger('gitops')
+logger = logging.getLogger('gitops_worker')
 
 
 class Worker:
@@ -56,12 +57,14 @@ def get_worker():
 worker = None
 
 
-@app.listener('before_server_start')
-async def setup(app, loop):
+@app.on_event("startup")
+async def startup_event():
     """ Prepare the worker.
 
     Creates a new worker object and launches it as a future task.
     """
+    loop = asyncio.get_running_loop()
+    logger.info("Starting up worker")
     global worker
     worker = Worker(loop)
     worker.task = asyncio.ensure_future(worker.run(), loop=loop)

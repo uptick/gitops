@@ -1,7 +1,7 @@
 import logging
 import os
 
-import aiorequests
+import httpx
 
 logger = logging.getLogger('gitops')
 
@@ -17,7 +17,8 @@ async def post(message):
     data = {
         'text': message
     }
-    async with aiorequests.post(url, data) as response:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, data=data)
         if response.status >= 300:
             logger.error('Failed to post a message to slack (see below):')
             logger.error(f'{message}', exc_info=True)

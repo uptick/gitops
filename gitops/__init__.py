@@ -1,2 +1,5 @@
-name = 'gitops'
-__version__ = '0.5.3'
+import importlib.metadata
+
+_DISTRIBUTION_METADATA = importlib.metadata.metadata('gitops')
+
+__version__ = _DISTRIBUTION_METADATA['Version']
