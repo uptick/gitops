@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from gitops_server.main import app
+from gitops_server.app import app
 
 from .deploy import Deployer
 
@@ -52,7 +52,6 @@ class Worker:
 def get_worker():
     global worker
     return worker
-
 
 worker = None
 

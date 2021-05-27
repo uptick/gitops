@@ -4,16 +4,18 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from . import settings
+from gitops_server import settings
+from gitops_server.app import app
+from gitops_server.logging_config import *  # noqa
+from gitops_server.worker import get_worker  # noqa
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gitops")
 
-app = FastAPI()
 
-# Start bg worker and monkeypatches
-from gitops_server.logging_config import *  # noqa
-from gitops_server.worker import get_worker  # noqa
+@app.get("/test")
+def index():
+    return {"ello": "world"}
 
 
 @app.get("/")
