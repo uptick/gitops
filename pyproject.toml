@@ -21,7 +21,8 @@ httpx = {version = "^0.18.1", optional = true}
 uvicorn = {version = "^0.13.4", optional = true}
 
 [tool.poetry.dev-dependencies]
-flake8 = "*"
+#Flake 9 is flake 8 with pyproject support =_=.
+flake9 = "^3.8.3"
 isort = "*"
 ipdb = "*"
 asynctest = "*"
@@ -30,7 +31,6 @@ pytest = "*"
 pytest-asyncio = "^0.15.1"
 requests = "^2.25.1"
 pre-commit = "^2.13.0"
-flake9 = "^3.8.3"
 
 [tool.poetry.scripts]
 gitops = 'gitops.main:program.run'

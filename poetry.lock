@@ -54,20 +54,20 @@ python-versions = "*"
 
 [[package]]
 name = "boto3"
-version = "1.17.81"
+version = "1.17.82"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = ">=1.20.81,<1.21.0"
+botocore = ">=1.20.82,<1.21.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.4.0,<0.5.0"
 
 [[package]]
 name = "botocore"
-version = "1.20.81"
+version = "1.20.82"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -170,19 +170,6 @@ description = "A platform independent file lock."
 category = "dev"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "flake8"
-version = "3.8.4"
-description = "the modular source code checker: pep8 pyflakes and co"
-category = "dev"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-
-[package.dependencies]
-mccabe = ">=0.6.0,<0.7.0"
-pycodestyle = ">=2.6.0a1,<2.7.0"
-pyflakes = ">=2.2.0,<2.3.0"
 
 [[package]]
 name = "flake9"
@@ -782,7 +769,7 @@ server = ["fastapi", "uvicorn", "httpx"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "37e9cde32dda6426d61917603ed6c5fd3fd8f9f8e8c1a35584c540bc632ebb19"
+content-hash = "3507dd5178cc3a85035daa959b7caef979b77ce72f99952e78ce2d0bd23ab931"
 
 [metadata.files]
 appdirs = [
@@ -810,12 +797,12 @@ backcall = [
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
 ]
 boto3 = [
-    {file = "boto3-1.17.81-py2.py3-none-any.whl", hash = "sha256:6b7bd46fa58a1dbba63c20def8cd9180a15324a0db2dbef32373f60f4ac2a283"},
-    {file = "boto3-1.17.81.tar.gz", hash = "sha256:86bdd024447b14fd20b40e4fdf9ce9466df27b63335526a13444df8e6ecf0c6b"},
+    {file = "boto3-1.17.82-py2.py3-none-any.whl", hash = "sha256:c75465a1780c2fd3908528d68f51f640cc608419e0f7f63ff33b592276a50bae"},
+    {file = "boto3-1.17.82.tar.gz", hash = "sha256:3434dba6fe38c7c22e1068804706c31e8a5ea907cb40bbbe4521603dd9bf1d77"},
 ]
 botocore = [
-    {file = "botocore-1.20.81-py2.py3-none-any.whl", hash = "sha256:4e2ce4e4bb1e9b9cc2227b8cde22d710218c43f290babfc0479c3e738fde083b"},
-    {file = "botocore-1.20.81.tar.gz", hash = "sha256:c33bc3f964dcd147e93d52973763a4f1ae28c9c76670656f7acef45c469eebb0"},
+    {file = "botocore-1.20.82-py2.py3-none-any.whl", hash = "sha256:c72908e231358a242b802f5ca522da03471cb8429a2ac545a9f8a94939c80c2f"},
+    {file = "botocore-1.20.82.tar.gz", hash = "sha256:eed482adab95e0653225f919fbab5d4061ef8bae82e311853e44f00d1820350f"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -855,10 +842,6 @@ fastapi = [
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
     {file = "filelock-3.0.12.tar.gz", hash = "sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59"},
-]
-flake8 = [
-    {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},
-    {file = "flake8-3.8.4.tar.gz", hash = "sha256:aadae8761ec651813c24be05c6f7b4680857ef6afaae4651a4eccaef97ce6c3b"},
 ]
 flake9 = [
     {file = "flake9-3.8.3.post2-py3-none-any.whl", hash = "sha256:47dced969a802a8892740bcaa35ae07232709b2ade803c45f48dd03ccb7f825f"},
