@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import logging
 
-from fastapi import Header, HTTPException, Request
+from fastapi import HTTPException, Request
 
 from gitops_server import settings
 from gitops_server.app import app
@@ -19,11 +19,12 @@ def index():
 
 
 @app.post("/webhook")
-async def webhook(request: Request, x_hub_signature: str = Header("")):
+async def webhook(request: Request):
     """ Fulfil a git webhook request"""
     digest = get_digest(await request.body())
+    signature = request.headers['X-Hub-Signature']
 
-    validate_signature(x_hub_signature, digest)
+    validate_signature(signature, digest)
 
     json = await request.json()
 
