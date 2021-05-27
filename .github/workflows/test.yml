@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.7, 3.8]
+        python: [3.9]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -20,7 +20,6 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install deps
         run: |
-          pip install tabulate boto3 boto invoke humanize colorama wheel
-          pip install -r requirements.txt
+          poetry install -E server
       - name: Run tests...
-        run: python setup.py test
+        run: poetry run py.test

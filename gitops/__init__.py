@@ -1,5 +1,5 @@
 import importlib.metadata
 
-_DISTRIBUTION_METADATA = importlib.metadata.metadata('gitops')
+_DISTRIBUTION_METADATA = importlib.metadata.metadata("gitops")
 
-__version__ = _DISTRIBUTION_METADATA['Version']
+__version__ = _DISTRIBUTION_METADATA["Version"]

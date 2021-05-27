@@ -31,6 +31,7 @@ pytest = "*"
 pytest-asyncio = "^0.15.1"
 requests = "^2.25.1"
 pre-commit = "^2.13.0"
+mypy = "^0.812"
 
 [tool.poetry.scripts]
 gitops = 'gitops.main:program.run'
@@ -50,7 +51,7 @@ target-version = ['py38']
 experimental_string_processing = true
 
 [tool.flake8]
-ignore = ['E501', 'W503', 'B006', 'B008']
+ignore = 'E501,W503,B006,B008'
 max-line-length = 100
 
 [tool.isort]

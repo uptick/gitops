@@ -22,7 +22,7 @@ def index():
 async def webhook(request: Request):
     """ Fulfil a git webhook request"""
     digest = get_digest(await request.body())
-    signature = request.headers['X-Hub-Signature']
+    signature = request.headers["X-Hub-Signature"]
 
     validate_signature(signature, digest)
 
@@ -39,16 +39,10 @@ def get_digest(data: bytes) -> str:
 
     Uses the environment variable `GITHUB_WEBHOOK_KEY` as the secret hash key.
     """
-    return hmac.new(
-        settings.GITHUB_WEBHOOK_KEY.encode(), data, hashlib.sha1
-    ).hexdigest()
+    return hmac.new(settings.GITHUB_WEBHOOK_KEY.encode(), data, hashlib.sha1).hexdigest()
 
 
 def validate_signature(signature: str, digest: str):
     parts = signature.split("=")
-    if (
-        not len(parts) == 2
-        or parts[0] != "sha1"
-        or not hmac.compare_digest(parts[1], digest)
-    ):
+    if not len(parts) == 2 or parts[0] != "sha1" or not hmac.compare_digest(parts[1], digest):
         raise HTTPException(400, "Invalid digest, aborting")

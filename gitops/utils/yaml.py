@@ -2,8 +2,9 @@
 # This code has been pinched from: https://github.com/wimglenn/oyaml/blob/master/oyaml.py
 # It tweaks the yaml package to make it preserve ordering when dumping dicts.
 #############
-import yaml as pyyaml
 from collections import OrderedDict
+
+import yaml as pyyaml
 
 
 def map_representer(dumper, data):

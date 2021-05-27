@@ -31,13 +31,21 @@ def addstr(win_info, x, y, text, color=0):
 async def run_tasks_async_with_progress(tasks, max_concurrency=10):
     sem = asyncio.Semaphore(max_concurrency)
     win_info = init_curses(len(tasks) + 1)
-    addstr(win_info, 0, 0, f'Your command is now running on the following {len(tasks)} servers (may extend off bottom of terminal):')
+    addstr(
+        win_info,
+        0,
+        0,
+        f"Your command is now running on the following {len(tasks)} servers (may extend off bottom"
+        " of terminal):",
+    )
     # Ugly.
     just = len(max(tasks, key=lambda x: len(x[1]))[1]) + 1
-    tasks = [print_async_complete(task, num + 1, just, win_info, sem) for num, task in enumerate(tasks)]
+    tasks = [
+        print_async_complete(task, num + 1, just, win_info, sem) for num, task in enumerate(tasks)
+    ]
     # Can reverse tasks with [::-1] if we prefer them to run bottom to top on output.
     outputs = await asyncio.gather(*tasks, return_exceptions=True)
-    addstr(win_info, 0, 0, 'Done. Press enter to print the outputs of the commands.')
+    addstr(win_info, 0, 0, "Done. Press enter to print the outputs of the commands.")
     curses.echo()
     curses.nocbreak()
     input()
@@ -53,19 +61,17 @@ async def print_async_complete(task, position, just, win_info, sem):
         await sem.acquire()
         output += await cor
     except Exception as e:
-        addstr(win_info, position, just, '✗', curses.color_pair(1))
-        output += f'Exception: {str(e)}'
+        addstr(win_info, position, just, "✗", curses.color_pair(1))
+        output += f"Exception: {str(e)}"
     else:
-        addstr(win_info, position, just, '✔', curses.color_pair(2))
+        addstr(win_info, position, just, "✔", curses.color_pair(2))
     sem.release()
     return output
 
 
 async def async_run(cmd):
     proc = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
 
     stdout, stderr = await proc.communicate()
@@ -73,9 +79,9 @@ async def async_run(cmd):
         stdout,
         stderr,
         (
-            success('[stdout]\n')
-            + f'{stdout.decode()}\n'
-            + warning('[stderr]\n')
-            + f'{stderr.decode()}\n'
-        )
+            success("[stdout]\n")
+            + f"{stdout.decode()}\n"
+            + warning("[stderr]\n")
+            + f"{stderr.decode()}\n"
+        ),
     )

@@ -6,27 +6,35 @@ from typing import Dict, List, Optional, Union
 from .utils import load_yaml
 
 DEPLOYMENT_ATTRIBUTES = [
-    'tags',
-    'image-tag',
-    'containers',
-    'environment',
-    'cluster',
+    "tags",
+    "image-tag",
+    "containers",
+    "environment",
+    "cluster",
 ]
 
 
 class App:
-    def __init__(self, name: str, path: Optional[str] = None, deployments: Optional[Dict] = None, secrets: Optional[Dict] = None, load_secrets: bool = True, account_id: str = ''):
+    def __init__(
+        self,
+        name: str,
+        path: Optional[str] = None,
+        deployments: Optional[Dict] = None,
+        secrets: Optional[Dict] = None,
+        load_secrets: bool = True,
+        account_id: str = "",
+    ):
         self.name = name
         self.path = path
         self.account_id = account_id
         if path:
-            deployments = load_yaml(os.path.join(path, 'deployment.yml'))
+            deployments = load_yaml(os.path.join(path, "deployment.yml"))
             if load_secrets:
-                secrets = load_yaml(os.path.join(path, 'secrets.yml')).get('secrets', {})
+                secrets = load_yaml(os.path.join(path, "secrets.yml")).get("secrets", {})
         deployments = deployments or {}
         secrets = secrets or {}
         self.values = self._make_values(deployments, secrets)
-        self.chart = Chart(self.values['chart'])
+        self.chart = Chart(self.values["chart"])
 
     def __eq__(self, other):
         return (
@@ -36,40 +44,35 @@ class App:
         )
 
     def is_inactive(self):
-        return 'inactive' in self.values.get('tags', [])
+        return "inactive" in self.values.get("tags", [])
 
     def _make_values(self, deployments: Dict, secrets: Dict) -> Dict:
         values = {
             **deployments,
-            'secrets': {
-                **{
-                    k: b64encode(v.encode()).decode()
-                    for k, v in secrets.items()
-                }
-            }
+            "secrets": {**{k: b64encode(v.encode()).decode() for k, v in secrets.items()}},
         }
 
         image = self._make_image(deployments)
         if image:
-            values['image'] = image
+            values["image"] = image
 
         # Don't include the `images` key. It will only cause everything to be
         # redeployed when any group changes.
-        values.pop('images', None)
+        values.pop("images", None)
         return values
 
     def _make_image(self, deployment_config: Dict):
-        if 'image-tag' in deployment_config:
-            return deployment_config['images']['template'].format(
+        if "image-tag" in deployment_config:
+            return deployment_config["images"]["template"].format(
                 account_id=self.account_id,
-                tag=deployment_config['image-tag'],
+                tag=deployment_config["image-tag"],
             )
         else:
-            return deployment_config.get('image', "")
+            return deployment_config.get("image", "")
 
     @property
     def image(self) -> str:
-        image = self.values.get('image', "")
+        image = self.values.get("image", "")
         if isinstance(image, dict):
             return f"{image['repository']}:{image.get('tag','latest')}"
         else:
@@ -77,22 +80,22 @@ class App:
 
     @property
     def image_tag(self) -> str:
-        return self.image.split(':')[-1]
+        return self.image.split(":")[-1]
 
     @property
     def image_prefix(self) -> str:
         """Gets the image prefix portion of {prefix}-{git hash}
 
         eg: qa-server-12345 -> qa-server"""
-        return self.image_tag.rsplit('-', 1)[0]
+        return self.image_tag.rsplit("-", 1)[0]
 
     @property
     def cluster(self) -> str:
-        return self.values.get('cluster', "")
+        return self.values.get("cluster", "")
 
     @property
     def tags(self) -> List[str]:
-        return self.values.get('tags', [])
+        return self.values.get("tags", [])
 
 
 class Chart:
@@ -116,6 +119,7 @@ class Chart:
     If a dictionary is not passed, it is assumed to be a git repo. eg:
       chart: https://github.com/uptick/workforce
     """
+
     def __init__(self, definition: Union[Dict, str]):
         if isinstance(definition, str):
             # for backwards compat, any chart definition which is a string, is a git repo
@@ -123,16 +127,18 @@ class Chart:
             self.git_sha = None
             self.git_repo_url = definition
         elif isinstance(definition, dict):
-            self.type = definition['type']
-            self.git_sha = definition.get('git_sha')
-            self.git_repo_url = definition.get('git_repo_url')
-            self.helm_repo = definition.get('helm_repo')
-            self.helm_repo_url = definition.get('helm_repo_url')
-            self.helm_chart = definition.get('helm_chart')
-            self.version = definition.get('version')
-            self.path = definition.get('path')
+            self.type = definition["type"]
+            self.git_sha = definition.get("git_sha")
+            self.git_repo_url = definition.get("git_repo_url")
+            self.helm_repo = definition.get("helm_repo")
+            self.helm_repo_url = definition.get("helm_repo_url")
+            self.helm_chart = definition.get("helm_chart")
+            self.version = definition.get("version")
+            self.path = definition.get("path")
         else:
-            raise Exception("Chart definition must be either a dict or string. Instead it is: {definition}")
+            raise Exception(
+                "Chart definition must be either a dict or string. Instead it is: {definition}"
+            )
 
-        if self.git_repo_url and '@' in self.git_repo_url:
-            self.git_repo_url, self.git_sha = self.git_repo_url.split('@')
+        if self.git_repo_url and "@" in self.git_repo_url:
+            self.git_repo_url, self.git_sha = self.git_repo_url.split("@")

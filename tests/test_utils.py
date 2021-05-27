@@ -1,6 +1,4 @@
-
 import yaml
-
 from asynctest import TestCase
 
 import gitops.utils.kube as kube
@@ -40,12 +38,13 @@ class TestRenderTemplate(TestCase):
             "app": "app",
             "image": "image",
             "command": "command",
-            "extra": "extra"
+            "extra": "extra",
         }
 
         rendered_template = kube.render_template(template, values, None)
 
-        assert yaml.safe_load(rendered_template) == yaml.safe_load("""
+        assert yaml.safe_load(rendered_template) == yaml.safe_load(
+            """
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -70,7 +69,8 @@ spec:
         command: command
         tty: true
         stdin: true
-""")
+"""
+        )
 
     def test_render_template_with_extra_labels(self):
         values = {
@@ -78,12 +78,15 @@ spec:
             "app": "app",
             "image": "image",
             "command": "command",
-            "extra": "extra"
+            "extra": "extra",
         }
 
-        rendered_template = kube.render_template(template, values, extra_labels={"uptick/fargate": "true"})
+        rendered_template = kube.render_template(
+            template, values, extra_labels={"uptick/fargate": "true"}
+        )
 
-        assert yaml.safe_load(rendered_template) == yaml.safe_load("""
+        assert yaml.safe_load(rendered_template) == yaml.safe_load(
+            """
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -109,4 +112,5 @@ spec:
         command: command
         tty: true
         stdin: true
-""")
+"""
+        )
