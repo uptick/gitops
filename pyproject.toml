@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "gitops"
+version = "0.6.0"
+description = "Manage multiple apps across one or more k8s clusters."
+authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
+license = "BSD"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+# CLI requirements
+invoke = "*"
+pyyaml = ">=5.1.2"
+dsnparse = "*"
+colorama = "^0.4.4"
+boto3 = "*"
+humanize = "^3.5.0"
+tabulate = "^0.8.9"
+# Server requirements
+fastapi = {version = "*", optional = true}
+httpx = {version = "^0.18.1", optional = true}
+uvicorn = {version = "^0.13.4", optional = true}
+
+[tool.poetry.dev-dependencies]
+flake8 = "*"
+isort = "*"
+ipdb = "*"
+asynctest = "*"
+python-dotenv = "*"
+pytest = "*"
+pytest-asyncio = "^0.15.1"
+requests = "^2.25.1"
+pre-commit = "^2.13.0"
+
+[tool.poetry.scripts]
+gitops = 'gitops.main:program.run'
+
+# Use this to seperate our CLI and Server requirements. poetry install -E server
+[tool.poetry.extras]
+server = ["fastapi", "uvicorn", "httpx"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+##### Tooling configuraiton
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39']
+experimental_string_processing = true
+
+[tool.isort]
+profile = 'black'
+multi_line_output = 3
