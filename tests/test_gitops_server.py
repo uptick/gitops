@@ -13,8 +13,9 @@ from .webhook_sample_data import headers, payload
 client = TestClient(app)
 
 
-def test_read_main():
+def test_get_on_index_returns_200():
     response = client.get('/')
+
     assert response.status_code == 200
 
 
