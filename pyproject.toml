@@ -50,7 +50,7 @@ target-version = ['py38']
 experimental_string_processing = true
 
 [tool.flake8]
-ignore = ['E501', 'W503']
+ignore = ['E501', 'W503', 'B006', 'B008']
 max-line-length = 100
 
 [tool.isort]

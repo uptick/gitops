@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import logging
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import Header, HTTPException, Request
 
 from gitops_server import settings
 from gitops_server.app import app
@@ -11,11 +11,6 @@ from gitops_server.worker import get_worker  # noqa
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gitops")
-
-
-@app.get("/test")
-def index():
-    return {"ello": "world"}
 
 
 @app.get("/")

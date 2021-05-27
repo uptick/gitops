@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from common.app import App
 
-from . import ACCOUNT_ID, CLUSTER_NAME
+from . import settings
 from .app_definitions import AppDefinitions
 from .git import temp_repo
 from .slack import post
@@ -15,7 +15,7 @@ from .types import UpdateAppResult
 from .utils import get_repo_name_from_url, run
 
 BASE_REPO_DIR = '/var/gitops/repos'
-ROLE_ARN = f'arn:aws:iam::{ACCOUNT_ID}:role/GitopsAccess'
+ROLE_ARN = f'arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess'
 logger = logging.getLogger('gitops')
 
 
@@ -25,7 +25,7 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
         if d:
             deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in sorted(d))}"
     await post(
-        f"A deployment from `{source}` has been initiated by *{username}* for cluster `{CLUSTER_NAME}`"
+        f"A deployment from `{source}` has been initiated by *{username}* for cluster `{settings.CLUSTER_NAME}`"
         f", the following apps will be updated:{deltas}"
         f"\nCommit Message: {commit_message}"
     )
@@ -34,7 +34,7 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
 async def post_result(source: str, result: UpdateAppResult):
     if result['exit_code'] != 0:
         await post(
-            f"Failed to deploy app `{result['app_name']}` from `{source}` for cluster `{CLUSTER_NAME}`:"
+            f"Failed to deploy app `{result['app_name']}` from `{source}` for cluster `{settings.CLUSTER_NAME}`:"
             f"\n>>>{result['output']}"
         )
 
@@ -43,7 +43,7 @@ async def post_result_summary(source: str, results: List[UpdateAppResult]):
     n_success = sum([r['exit_code'] == 0 for r in results])
     n_failed = sum([r['exit_code'] != 0 for r in results])
     await post(
-        f"Deployment from `{source}` for `{CLUSTER_NAME}` results summary:\n"
+        f"Deployment from `{source}` for `{settings.CLUSTER_NAME}` results summary:\n"
         f"\t• {n_success} succeeded\n"
         f"\t• {n_failed} failed"
     )

@@ -53,6 +53,7 @@ def get_worker():
     global worker
     return worker
 
+
 worker = None
 
 
