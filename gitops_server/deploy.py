@@ -5,7 +5,7 @@ import os
 import tempfile
 from typing import List, Optional
 
-from common.app import App
+from gitops.common.app import App
 
 from . import settings
 from .app_definitions import AppDefinitions

@@ -5,7 +5,7 @@ from typing import List, Union
 from colorama import Fore
 from tabulate import tabulate
 
-from common.app import DEPLOYMENT_ATTRIBUTES, App
+from gitops.common.app import DEPLOYMENT_ATTRIBUTES, App
 from gitops.utils import yaml as yaml
 
 from . import get_account_id

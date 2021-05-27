@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from common.app import App, Chart
+from gitops.common.app import App, Chart
 
 from .utils import create_test_yaml
 

@@ -21,7 +21,7 @@ from colorama import Fore
 from invoke import run, task
 from invoke.exceptions import UnexpectedExit
 
-from common.app import App
+from gitops.common.app import App
 from gitops.utils.apps import APPS_PATH
 from gitops.utils.async_runner import async_run
 

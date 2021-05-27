@@ -35,11 +35,12 @@ RUN pip3 install poetry
 COPY pyproject.toml poetry.lock /app
 RUN poetry install -E server --no-dev
 
-COPY common /app/common
+COPY gitops /app/gitops
 COPY gitops_server /app/gitops_server
 
 COPY cluster.key /app
 ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
+ENV PYTHONPATH="$PYTHONPATH:/app"
 
 
 CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8000", "gitops_server.main:app"]

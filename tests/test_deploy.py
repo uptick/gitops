@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from asynctest import TestCase
 
-from common.app import App
+from gitops.common.app import App
 from gitops_server.deploy import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD

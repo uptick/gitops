@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Dict, Optional
 
-from common.app import App
+from gitops.common.app import App
 from gitops_server import settings
 
 logger = logging.getLogger("gitops")

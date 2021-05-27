@@ -1,6 +1,6 @@
 import yaml
 
-from common.app import App
+from gitops.common.app import App
 from gitops_server.app_definitions import AppDefinitions
 
 
