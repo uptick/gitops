@@ -18,7 +18,7 @@ from .utils.cli import progress, warning
 #####################
 @task
 def backup(ctx, app_name):
-    """ Backup production or staging database. """
+    """Backup production or staging database."""
     values = {"name": f"{app_name}-backup", "app": app_name}
     app = get_app_details(app_name, load_secrets=False)
     asyncio.run(
@@ -39,7 +39,7 @@ def list_backups(ctx, app):
 
 @task
 def restore_backup(ctx, app_name, index, cleanup=True):
-    """ Restore backed up database. """
+    """Restore backed up database."""
     kube.confirm_database(app_name)
     backups = kube.get_backups("workforce", app_name)
     backup = backups[int(index) - 1]
@@ -62,7 +62,7 @@ def restore_backup(ctx, app_name, index, cleanup=True):
 
 @task
 def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
-    """ Copy database between apps. """
+    """Copy database between apps."""
     source_app = get_app_details(source, load_secrets=True)
     destination_app = get_app_details(destination, load_secrets=True)
     kube.confirm_database(destination)
@@ -89,7 +89,7 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
 
 @task
 def download_backup(ctx, app, index=None, path=None, datestamp=False):
-    """ Download production or staging backup. """
+    """Download production or staging backup."""
     if not index:
         backups = kube.get_backups("workforce", app)
         if not backups:

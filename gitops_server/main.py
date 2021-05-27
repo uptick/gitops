@@ -20,7 +20,7 @@ def index():
 
 @app.post("/webhook")
 async def webhook(request: Request):
-    """ Fulfil a git webhook request"""
+    """Fulfil a git webhook request"""
     digest = get_digest(await request.body())
     signature = request.headers["X-Hub-Signature"]
 

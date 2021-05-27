@@ -147,7 +147,7 @@ def command(
 
 @task
 def tag(ctx, filter, tag, exclude=""):
-    """ Set a tag on selected app(s). """
+    """Set a tag on selected app(s)."""
     try:
         apps = get_apps(
             filter=filter,
@@ -173,7 +173,7 @@ def tag(ctx, filter, tag, exclude=""):
 
 @task
 def untag(ctx, filter, tag, exclude=""):
-    """ Unset a tag from selected app(s). """
+    """Unset a tag from selected app(s)."""
     try:
         apps = get_apps(
             filter=filter,

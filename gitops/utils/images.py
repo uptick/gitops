@@ -11,13 +11,13 @@ BATCH_SIZE = 100
 
 
 def get_image(tag):
-    """ Finds a specific image in ECR. """
+    """Finds a specific image in ECR."""
     # TODO
     raise NotImplementedError
 
 
 def get_latest_image(prefix: str) -> str:
-    """ Finds latest image in ECR with the given prefix. """
+    """Finds latest image in ECR with the given prefix."""
     with suppress(KeyError):
         return PREFIX_CACHE[prefix]
 

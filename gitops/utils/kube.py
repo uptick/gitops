@@ -52,7 +52,7 @@ async def run_job(app: App, command, cleanup=True, sequential=True, fargate=Fals
 
 
 def list_backups(product, prefix):
-    """ List application backups. """
+    """List application backups."""
     backups = get_backups(product, prefix)
     for ii, backup in enumerate(reversed(backups)):
         index = len(backups) - ii
