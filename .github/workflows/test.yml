@@ -20,6 +20,6 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install deps
         run: |
-          poetry install -E server
+          pip install poetry && poetry install -E server
       - name: Run tests...
         run: poetry run py.test

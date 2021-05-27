@@ -6,7 +6,7 @@ on:
   pull_request: ~
 
 jobs:
-  flake8:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,21 +15,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - name: Install deps
-        run: pip install flake8
-      - name: Flake8
-        run: flake8
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+      - run: pip install poetry
+      - run: poetry install -E server
+      - run: poetry run pre-commit run --all-files
 
-  isort:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install deps
-        run: pip install isort
-      - name: Isort
-        run: isort --diff --check-only .
