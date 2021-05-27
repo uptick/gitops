@@ -12,6 +12,7 @@ from .webhook_sample_data import headers, payload
 
 client = TestClient(app)
 
+
 def test_read_main():
     response = client.get('/')
     assert response.status_code == 200
@@ -28,7 +29,6 @@ def test_webhook_returns_200_if_hmac_is_correct():
 
         assert response.status_code == 200
         get_worker_mock.assert_called()
-
 
 
 @patch('gitops_server.main.settings.GITHUB_WEBHOOK_KEY', 'test_key')

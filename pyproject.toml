@@ -30,6 +30,7 @@ pytest = "*"
 pytest-asyncio = "^0.15.1"
 requests = "^2.25.1"
 pre-commit = "^2.13.0"
+flake9 = "^3.8.3"
 
 [tool.poetry.scripts]
 gitops = 'gitops.main:program.run'
@@ -45,8 +46,12 @@ build-backend = "poetry.core.masonry.api"
 ##### Tooling configuraiton
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39']
+target-version = ['py38']
 experimental_string_processing = true
+
+[tool.flake8]
+ignore = ['E501', 'W503']
+max-line-length = 100
 
 [tool.isort]
 profile = 'black'

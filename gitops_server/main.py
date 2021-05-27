@@ -12,8 +12,8 @@ logger = logging.getLogger("gitops")
 app = FastAPI()
 
 # Start bg worker and monkeypatches
-from gitops_server.logging_config import *
-from gitops_server.worker import get_worker
+from gitops_server.logging_config import *  # noqa
+from gitops_server.worker import get_worker  # noqa
 
 
 @app.get("/")

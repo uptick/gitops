@@ -1,7 +1,8 @@
 # Sample data obtained from https://github.com/uptick/uptick-cluster/settings/hooks/292837673
 import json
 
-payload = json.loads("""
+payload = json.loads(
+    """
 {
   "ref": "refs/heads/master",
   "before": "2a2afbf3a9d8dc3a055b07aa4459bc8f16f06546",
@@ -204,20 +205,23 @@ payload = json.loads("""
       "apps/qa-wf-3853/deployment.yml"
     ]
   }
-}""")
+}"""
+)
 
 
 headers = {
-"Request URL": "https://gitops.theo.onuptick.com:",
-"Request method": "POST",
-"Accept": "*/*",
-"content-type": "application/json",
-"User-Agent": "GitHub-Hookshot/28aa328",
-"X-GitHub-Delivery": "6a2cf12e-beac-11eb-82d5-391a0234a3d4",
-"X-GitHub-Event": "push",
-"X-GitHub-Hook-ID": "292837673",
-"X-GitHub-Hook-Installation-Target-ID": "139318783",
-"X-GitHub-Hook-Installation-Target-Type": "repository",
-"X-Hub-Signature": "sha1=12ff19806fc71191137bc1749f7574c228a0a9c3",
-"X-Hub-Signature-256": "sha256=37c6aa3564905378207c2eb9b29aac5f3ea1803ec0225f983911cc20f7d2e384",
+    "Request URL": "https://gitops.theo.onuptick.com:",
+    "Request method": "POST",
+    "Accept": "*/*",
+    "content-type": "application/json",
+    "User-Agent": "GitHub-Hookshot/28aa328",
+    "X-GitHub-Delivery": "6a2cf12e-beac-11eb-82d5-391a0234a3d4",
+    "X-GitHub-Event": "push",
+    "X-GitHub-Hook-ID": "292837673",
+    "X-GitHub-Hook-Installation-Target-ID": "139318783",
+    "X-GitHub-Hook-Installation-Target-Type": "repository",
+    "X-Hub-Signature": "sha1=12ff19806fc71191137bc1749f7574c228a0a9c3",
+    "X-Hub-Signature-256": (
+        "sha256=37c6aa3564905378207c2eb9b29aac5f3ea1803ec0225f983911cc20f7d2e384"
+    ),
 }
