@@ -6,3 +6,5 @@ dist
 **.pyc
 cluster.key
 secrets.env
+**/.mypy_cache
+**/.pytest_cache

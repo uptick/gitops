@@ -3,32 +3,35 @@ from colorama import Fore
 from .cli import colourise
 
 TAG_ORDER = [
-    'workforce', 'maintenance', 'compliance',
-    'customer', 'internal',
-    'sandbox', 'production',
-    'enterprise', 'dedicated', 'preview', 'onboardng',
-    'fast_release', 'slow_release',
-    'inactive',
+    "workforce",
+    "maintenance",
+    "compliance",
+    "customer",
+    "internal",
+    "sandbox",
+    "production",
+    "enterprise",
+    "dedicated",
+    "preview",
+    "onboardng",
+    "fast_release",
+    "slow_release",
+    "inactive",
 ]
 
 TAG_COLOURS = {
-    'workforce': Fore.LIGHTGREEN_EX,
-    'maintenance': Fore.LIGHTMAGENTA_EX,
-    'compliance': Fore.BLUE,
-
-    'customer': Fore.LIGHTBLUE_EX,
-    'internal': Fore.LIGHTCYAN_EX,
-
-    'sandbox': Fore.LIGHTYELLOW_EX,
-    'production': Fore.LIGHTRED_EX,
-
-    'enterprise': Fore.WHITE,
-    'dedicated': Fore.WHITE,
-
-    'fast_release': Fore.YELLOW,
-    'slow_release': Fore.MAGENTA,
-
-    'inactive': Fore.RED,
+    "workforce": Fore.LIGHTGREEN_EX,
+    "maintenance": Fore.LIGHTMAGENTA_EX,
+    "compliance": Fore.BLUE,
+    "customer": Fore.LIGHTBLUE_EX,
+    "internal": Fore.LIGHTCYAN_EX,
+    "sandbox": Fore.LIGHTYELLOW_EX,
+    "production": Fore.LIGHTRED_EX,
+    "enterprise": Fore.WHITE,
+    "dedicated": Fore.WHITE,
+    "fast_release": Fore.YELLOW,
+    "slow_release": Fore.MAGENTA,
+    "inactive": Fore.RED,
 }
 
 
@@ -46,7 +49,7 @@ def colour_tag(tag):
 
 
 def colour_tags(tags):
-    return ', '.join(map(colour_tag, tags))
+    return ", ".join(map(colour_tag, tags))
 
 
 def sort_tags(tags):

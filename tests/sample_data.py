@@ -14,20 +14,22 @@ SAMPLE_GITHUB_PAYLOAD = {
             "distinct": True,
             "message": "bump test-app-1",
             "timestamp": "2019-07-18T15:07:37+10:00",
-            "url": "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00",
+            "url": (
+                "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00"
+            ),
             "author": {
                 "name": "Author Fullname",
                 "email": "author@example.com",
-                "username": "authorusername"
+                "username": "authorusername",
             },
             "committer": {
                 "name": "Author Fullname",
                 "email": "author@example.com",
-                "username": "authorusername"
+                "username": "authorusername",
             },
             "added": [],
             "removed": [],
-            "modified": ["apps/test-app-1/deployment.yml"]
+            "modified": ["apps/test-app-1/deployment.yml"],
         }
     ],
     "head_commit": {
@@ -40,16 +42,16 @@ SAMPLE_GITHUB_PAYLOAD = {
         "author": {
             "name": "Author Fullname",
             "email": "author@example.com",
-            "username": "authorusername"
+            "username": "authorusername",
         },
         "committer": {
             "name": "Author Fullname",
             "email": "author@example.com",
-            "username": "authorusername"
+            "username": "authorusername",
         },
         "added": [],
         "removed": [],
-        "modified": ["apps/test-app-1/deployment.yml"]
+        "modified": ["apps/test-app-1/deployment.yml"],
     },
     "repository": {
         "id": 123123123,
@@ -77,7 +79,7 @@ SAMPLE_GITHUB_PAYLOAD = {
             "events_url": "https://api.github.com/users/user/events{/privacy}",
             "received_events_url": "https://api.github.com/users/user/received_events",
             "type": "Organization",
-            "site_admin": False
+            "site_admin": False,
         },
         "html_url": "https://github.com/user/mock-repo",
         "description": "Kubernetes cluster configuration.",
@@ -85,7 +87,9 @@ SAMPLE_GITHUB_PAYLOAD = {
         "url": "https://github.com/user/mock-repo",
         "forks_url": "https://api.github.com/repos/user/mock-repo/forks",
         "keys_url": "https://api.github.com/repos/user/mock-repo/keys{/key_id}",
-        "collaborators_url": "https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}",
+        "collaborators_url": (
+            "https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}"
+        ),
         "teams_url": "https://api.github.com/repos/user/mock-repo/teams",
         "hooks_url": "https://api.github.com/repos/user/mock-repo/hooks",
         "issue_events_url": "https://api.github.com/repos/user/mock-repo/issues/events{/number}",
@@ -115,7 +119,9 @@ SAMPLE_GITHUB_PAYLOAD = {
         "issues_url": "https://api.github.com/repos/user/mock-repo/issues{/number}",
         "pulls_url": "https://api.github.com/repos/user/mock-repo/pulls{/number}",
         "milestones_url": "https://api.github.com/repos/user/mock-repo/milestones{/number}",
-        "notifications_url": "https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}",
+        "notifications_url": (
+            "https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}"
+        ),
         "labels_url": "https://api.github.com/repos/user/mock-repo/labels{/name}",
         "releases_url": "https://api.github.com/repos/user/mock-repo/releases{/id}",
         "deployments_url": "https://api.github.com/repos/user/mock-repo/deployments",
@@ -148,12 +154,9 @@ SAMPLE_GITHUB_PAYLOAD = {
         "default_branch": "master",
         "stargazers": 0,
         "master_branch": "master",
-        "organization": "user"
+        "organization": "user",
     },
-    "pusher": {
-        "name": "authorusername",
-        "email": "author@example.com"
-    },
+    "pusher": {"name": "authorusername", "email": "author@example.com"},
     "organization": {
         "login": "user",
         "id": 123123,
@@ -166,7 +169,7 @@ SAMPLE_GITHUB_PAYLOAD = {
         "members_url": "https://api.github.com/orgs/user/members{/member}",
         "public_members_url": "https://api.github.com/orgs/user/public_members{/member}",
         "avatar_url": "",
-        "description": ""
+        "description": "",
     },
     "sender": {
         "login": "authorusername",
@@ -186,6 +189,6 @@ SAMPLE_GITHUB_PAYLOAD = {
         "events_url": "https://api.github.com/users/authorusername/events{/privacy}",
         "received_events_url": "https://api.github.com/users/authorusername/received_events",
         "type": "User",
-        "site_admin": False
-    }
+        "site_admin": False,
+    },
 }

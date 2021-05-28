@@ -14,7 +14,7 @@ class AppDoesNotExist(Exception):
             message = f"There's no app with the name '{app_name}', silly."
         else:
             message = "Could not find an 'apps' directory. Are you in a cluster repo?"
-        self.args = warning(message),
+        self.args = (warning(message),)
         sys.exit(self)
 
 

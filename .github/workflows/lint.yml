@@ -6,7 +6,7 @@ on:
   pull_request: ~
 
 jobs:
-  flake8:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -14,22 +14,11 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
-      - name: Install deps
-        run: pip install flake8
-      - name: Flake8
-        run: flake8
+          python-version: 3.9
+      - run: pip install pre-commit
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-$${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: pre-commit run --all-files
 
-  isort:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install deps
-        run: pip install isort
-      - name: Isort
-        run: isort --diff --check-only .

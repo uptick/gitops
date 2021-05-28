@@ -6,18 +6,20 @@ from typing import AsyncGenerator, Optional
 
 from .utils import run
 
-BASE_REPO_DIR = '/var/gitops/repos'
+BASE_REPO_DIR = "/var/gitops/repos"
 
-logger = logging.getLogger('gitops')
+logger = logging.getLogger("gitops")
 
 
 async def clone_repo(git_repo_url: str, path: str, sha: Optional[str] = None):
     """Shallow Clones a git repo url to path and git-crypt unlocks all encrypted files"""
     logger.info(f'Cloning "{git_repo_url}".')
 
-    url_with_oauth_token = git_repo_url.replace("://", f"://{os.environ['GITHUB_OAUTH_TOKEN'].strip()}@")
+    url_with_oauth_token = git_repo_url.replace(
+        "://", f"://{os.environ['GITHUB_OAUTH_TOKEN'].strip()}@"
+    )
 
-    await run(f'git clone {url_with_oauth_token} {path}; cd {path}; git checkout {sha}')
+    await run(f"git clone {url_with_oauth_token} {path}; cd {path}; git checkout {sha}")
 
     await run(f'cd {path}; git-crypt unlock {os.environ["GIT_CRYPT_KEY_FILE"]}')
 
