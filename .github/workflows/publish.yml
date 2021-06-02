@@ -52,11 +52,8 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Build package
-        run: python3 -m pip install --user --upgrade twine setuptools wheel &&  python3 setup.py sdist bdist_wheel
+        run: python3 -m pip install --user --upgrade poetry
       - name: Upload package
-        run: python3 -m twine upload dist/* --non-interactive
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: poetry publish -u __token__ -p ${{secrets.PYPI_TOKEN}} --build

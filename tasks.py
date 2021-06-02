@@ -3,7 +3,6 @@ import os
 from base64 import b64encode
 
 import yaml
-from dotenv import load_dotenv
 from invoke import run, task
 
 
@@ -14,14 +13,7 @@ def test(ctx, pty=True):
 
 @task
 def lint(ctx, pty=True):
-    run("flake8")
-
-
-@task
-def redeploy(ctx):
-    build(ctx)
-    push(ctx)
-    deploy(ctx)
+    run("pre-commit run --all-files")
 
 
 @task
@@ -45,32 +37,6 @@ def push(ctx, tag=None):
     run(f"docker tag {local} {remote}", hide=False)
     print(f"Pushing to ECR ({remote}) ... ", flush=True)
     run(f"docker push {remote}", pty=True)
-
-
-@task
-def deploy(ctx):
-    load_dotenv("secrets.env")
-    cluster_name = get_cluster_name()
-    cluster_env = cluster_name[
-        4:
-    ]  # Drops the leading 'eks-'  # TODO: adjust this so that gitops doesn't depend on this heuristic.
-    run(
-        "helm upgrade"
-        " gitops"
-        " charts/gitops"
-        " --install"
-        " --wait"
-        " --namespace default"
-        f" --set image={get_remote_image()}"
-        f" --set domain={cluster_env}.onuptick.com"
-        " --set environment.GIT_CRYPT_KEY_FILE=/etc/gitops/git_crypt_key"
-        f" --set environment.CLUSTER_NAME={cluster_name}"
-        f" --set secrets.ACCOUNT_ID={b64encode(get_account_id().encode()).decode()}"
-        f" --set secrets.SLACK_URL={get_secret('SLACK_URL')}"
-        f" --set secrets.GITHUB_OAUTH_TOKEN={get_secret('GITHUB_OAUTH_TOKEN')}"
-        f" --set secrets.GITHUB_WEBHOOK_KEY={get_secret('GITHUB_WEBHOOK_KEY')}"
-        f" --set secrets.GIT_CRYPT_KEY={get_secret_file('GIT_CRYPT_KEY_FILE')}"
-    )
 
 
 @task
