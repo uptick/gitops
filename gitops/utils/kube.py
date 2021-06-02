@@ -18,7 +18,7 @@ import boto3
 import humanize
 import yaml
 from colorama import Fore
-from invoke import run, task
+from invoke import run
 from invoke.exceptions import UnexpectedExit
 
 from gitops.common.app import App
@@ -61,7 +61,7 @@ def list_backups(product, prefix):
 
 
 def download_backup(product, prefix, index, path=None, datestamp=False):
-    s3 = get_client("s3")
+    s3 = boto3.client("s3")
     key = get_backups(product, prefix)[int(index) - 1][3]
     url = s3.generate_presigned_url("get_object", Params={"Bucket": "uptick-backups", "Key": key})
     name = prefix
@@ -105,22 +105,6 @@ def copy_db(ctx, source, destination, context=""):
         )
 
 
-@task
-def create_backup_secrets(ctx, context="", namespace="workforce"):
-    """Create backup job secrets.
-
-    Before running backups certain secret keys need to be available to
-    the job. This creates the secrets on the cluster.
-    """
-    run(
-        "kubectl create secret generic backups-secrets"
-        f" --context {context}"
-        f" -n {namespace}"
-        " --from-literal=AWS_ACCESS_KEY_ID={get_secret('BACKUPS_AWS_ACCESS_KEY_ID')}"
-        " --from-literal=AWS_SECRET_ACCESS_KEY={get_secret('BACKUPS_AWS_SECRET_ACCESS_KEY')}"
-    )
-
-
 def get_backups(product, prefix):
     s3 = boto3.resource("s3")
     bucket = s3.Bucket("uptick-backups")
@@ -151,13 +135,6 @@ def get_secret(name, base64=False):
     else:
         value = shlex.quote(value)
     return value
-
-
-def get_client(name):
-    return boto3.Session(
-        aws_access_key_id=os.environ["BACKUPS_AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["BACKUPS_AWS_SECRET_ACCESS_KEY"],
-    ).client(name)
 
 
 @contextmanager
