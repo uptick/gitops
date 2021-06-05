@@ -103,13 +103,17 @@ def download_backup(ctx, app, index=None, path=None, datestamp=False):
 
 @task
 def proxy(
-    ctx, app_name, local_port=None, bastion_instance_id=None, aws_availability_zone=None, file=None
+    ctx,
+    app_name,
+    local_port=None,
+    bastion_instance_id=None,
+    aws_availability_zone=None,
+    post_cmd="",
 ):
     """Creates a proxy to RDS. Can supply either the app name or a DSN
 
     Usage: gitops db.proxy app_name
     or     gitops db.proxy postgres://...:...@5432/db
-           gitops db.proxy app_name --file=/tmp/address will write the proxy url to the file
     """
     try:
         database_url = app_name
@@ -159,10 +163,6 @@ def proxy(
     )
     proxy_dsn = modified_dsn.geturl()
     print(progress(f"Connect to the db using: {proxy_dsn}\n"))
-    if file:
-        print(f"Outputing the proxy url to `{file}`")
-        with open(file, "w") as fout:
-            fout.write(proxy_dsn)
     # Create ssh tunnel
     cmd = f"""ssh -i /tmp/temp \
             -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port} \
@@ -170,10 +170,17 @@ def proxy(
             -o "StrictHostKeyChecking=no" \
             -o "ServerAliveInterval=60" \
             -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region={aws_availability_zone[:-1]}" \
-            ec2-user@{bastion_instance_id}
-    """
-    try:
+            ec2-user@{bastion_instance_id}"""
+    if post_cmd:
+        run(f"{cmd}& sleep 5 &&  {post_cmd.format(dsn=proxy_dsn)}", pty=True, hide=False, warn=True)
+    else:
         run(cmd, hide=True)
-    finally:
-        if file:
-            os.remove(file)
+
+
+@task
+def pgcli(
+    ctx,
+    app_name,
+):
+    """ Opens pgcli to a remote DB"""
+    proxy(ctx, app_name, post_cmd="pgcli {dsn}")
