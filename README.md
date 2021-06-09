@@ -1,4 +1,4 @@
-# GitOps
+# Gitops
 [![PyPI version](https://badge.fury.io/py/gitops.svg)](https://pypi.org/project/gitops/)
 [![versions](https://img.shields.io/pypi/pyversions/gitops.svg)](https://pypi.org/project/gitops/)
 [![Test](https://github.com/uptick/gitops/workflows/Test/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ATest)
@@ -6,16 +6,34 @@
 
 Manage multiple apps across one or more k8s clusters.
 
+Documentations is still WIP.
+
 ## Overview
 
-Using CI/CD for applications is a wonderful technique to ease the pain of DevOps,wouldn't it be nice to apply the same workflow to cluster provisioning?
+Keeping track of numerous of single-tenanted application deployments can quickly become a handful. Enter Gitops!
 
-GitOps is a two-part system. A library of commands is used to manage a
-single-tenanted cluster within a git repository, and the server component watches
-the repository and provisions the calculated changes.
+The tool has two halves:
+ * Gitops Server - an instance of this gets deployed to each of your kubernetes clusters, listening on changes made to your gitops cluster repo. The server's responsibility is to update the deployments on the cluster it lives on match the app specifications in the repo.
+ * Gitops CLI - this is a tool that you can use to interact comfortably with your cluster repo. It allows listing all deployed applications, what images they're presently running on, and which clusters they live on. It also provides numerous operations that can be applied to one or more apps at a time, such as bumping to a newer version of an image, or running a particular command across your app cohort.
 
-Currently Kubernetes/Helm is the only supported cluster interface. All changes
-to the cluster are performed as applications of Helm charts.
+You can install the CLI tool with: `pip install gitops`
+
+Currently Kubernetes/Helm is the only supported cluster interface. All app deployments are performed as applications of Helm charts.
+
+## So what's a "cluster repo"?
+
+This is a git repository that you set up, where you list out all of your applications and how you want them deployed. It looks like this:
+<pre>
+.
++- apps
+   +- app_0
+      +- deployment.yml
+      +- secrets.yml
+   +- app_1
+      +- deployment.yml
+      +- secrets.yml
++- jobs
+</pre>
 
 ## Installation
 
@@ -42,28 +60,3 @@ subjects:
   name: default
   namespace: gitops
 ```
-
-## Roadmap
-
- * Handle failure on initial application deployment.
- * Better error reporting on failures.
- * Forced redeployment interface.
- * Make kubernetes specific code modular so that we can start to support multiple deployment methods.
- * Invoke commands and other tools should be extracted from the uptick-cluster repo, added here and packaged up. Package should create /usr/bin/gitops to act as a CLI interface. Convert invoke commands to this new interface.
- * Add a command to create a template cluster repo (ala uptick-cluster) and give instructions to push it up and set up a webhook.
-
-Developer experience should look something like:
-```
-pip install gitops
-gitops create-repository
-    -> Creates cluster repo (maybe with examples?)
-    -> Explains or pushes repo up somewhere.
-    -> Explains or sets up a webhook on that repo.
-gitops create-secrets
-    -> Either downloads secrets from AWS using awscli or
-    -> Prompts for each secret individually.
-gitops deploy-server
-    -> helm upgrade gitops chart... (see tasks.py:deploy)
-# Use as normal anywhere you want (like uptick-cluster invoke scripts)
-gitops summary
-gitops bump```
