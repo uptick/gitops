@@ -32,13 +32,13 @@ ENV SHELL=/bin/bash
 WORKDIR /app
 
 RUN pip3 install poetry
-COPY pyproject.toml poetry.lock /app
+COPY pyproject.toml poetry.lock /app/
 RUN poetry install -E server --no-dev
 
-COPY gitops /app/gitops
+COPY gitops /app/gitops/
 COPY gitops_server /app/gitops_server
 
-COPY cluster.key /app
+COPY cluster.key /app/
 ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
 ENV PYTHONPATH="$PYTHONPATH:/app"
 
