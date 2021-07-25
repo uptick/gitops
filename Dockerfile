@@ -11,8 +11,8 @@ FROM python:3.9-slim
 # RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl && \
 # chmod +x /usr/bin/kubectl && \
 # kubectl version --client
-ENV KUBE_LATEST_VERSION v1.12.7
-ENV HELM_VERSION v3.2.1
+ENV KUBE_LATEST_VERSION v1.21.3
+ENV HELM_VERSION v3.6.2
 RUN apt-get update
 RUN apt-get install wget ca-certificates bash git git-crypt -y --no-install-recommends \
     && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
