@@ -1,5 +1,8 @@
 import importlib.metadata
 
-_DISTRIBUTION_METADATA = importlib.metadata.metadata("gitops")
+try:
+    _DISTRIBUTION_METADATA = importlib.metadata.metadata("gitops")
 
-__version__ = _DISTRIBUTION_METADATA["Version"]
+    __version__ = _DISTRIBUTION_METADATA["Version"]
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "unknown"
