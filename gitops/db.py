@@ -182,5 +182,5 @@ def pgcli(
     ctx,
     app_name,
 ):
-    """ Opens pgcli to a remote DB"""
+    """Opens pgcli to a remote DB"""
     proxy(ctx, app_name, post_cmd="pgcli {dsn}")
