@@ -37,13 +37,10 @@ COPY pyproject.toml poetry.lock /app/
 # Install dependencies
 RUN poetry install -E server --no-dev
 
+COPY cluster.key /app/
 COPY gitops /app/gitops/
 COPY gitops_server /app/gitops_server
 
-# Installs current module into libpath
-RUN poetry install -E server --no-dev
-
-COPY cluster.key /app/
 ENV GIT_CRYPT_KEY_FILE=/app/cluster.key
 ENV PYTHONPATH="$PYTHONPATH:/app"
 ENV ACCESS_LOG=""
