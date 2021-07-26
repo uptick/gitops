@@ -75,7 +75,7 @@ class Deployer:
 
         # Max parallel helm installs at a time
         # Kube api may rate limit otherwise
-        self.semaphore = asyncio.Semaphore(str(GITOPS_MAX_PARALLEL_DEPLOYS))
+        self.semaphore = asyncio.Semaphore(int(GITOPS_MAX_PARALLEL_DEPLOYS))
 
     @classmethod
     async def from_push_event(cls, push_event):
@@ -147,7 +147,7 @@ class Deployer:
                         os.fsync(cfg.fileno())
                         result = await run(
                             "helm upgrade"
-                            " --install "
+                            " --install"
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
                             f" {app.name}"
@@ -164,7 +164,7 @@ class Deployer:
                     )
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
-                        "helm upgrade --install "
+                        "helm upgrade --install"
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"
                         f" {app.name}"
