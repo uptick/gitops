@@ -1,20 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gitops-deployment
+  name:  {{ .Release.Name }}
   labels:
-    app: gitops
+    app:  {{ .Release.Name }}
+    service: {{ .Release.Name }}-gitops
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gitops
+      app: {{ .Release.Name }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: gitops
+        app:  {{ .Release.Name }}
+        app.kubernetes.io/name: gitops-server
+        app.kubernetes.io/instance: gitops-server-{{ .Release.Name }}
       annotations:
         checksum/environment: {{ include (print $.Template.BasePath "/environment.yml") . | sha256sum }}
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yml") . | sha256sum }}
@@ -26,27 +29,27 @@ spec:
         - containerPort: 8000
         envFrom:
         - configMapRef:
-            name: gitops-environment
+            name: {{ .Release.Name }}-environment
         env:
           - name: SLACK_URL
             valueFrom:
               secretKeyRef:
-                name: gitops-secrets
+                name: {{ .Release.Name }}-secret
                 key: SLACK_URL
           - name: ACCOUNT_ID
             valueFrom:
               secretKeyRef:
-                name: gitops-secrets
+                name: {{ .Release.Name }}-secret
                 key: ACCOUNT_ID
           - name: GITHUB_OAUTH_TOKEN
             valueFrom:
               secretKeyRef:
-                name: gitops-secrets
+                name: {{ .Release.Name }}-secret
                 key: GITHUB_OAUTH_TOKEN
           - name: GITHUB_WEBHOOK_KEY
             valueFrom:
               secretKeyRef:
-                name: gitops-secrets
+                name: {{ .Release.Name }}-secret
                 key: GITHUB_WEBHOOK_KEY
         volumeMounts:
         - name: git-crypt-key
@@ -55,7 +58,7 @@ spec:
       volumes:
       - name: git-crypt-key
         secret:
-          secretName: gitops-secrets
+          secretName: {{ .Release.Name }}-secret
           items:
           - key: GIT_CRYPT_KEY
             path: git_crypt_key

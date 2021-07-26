@@ -1,10 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: gitops-ingress
+  name: {{ .Release.Name }}-ingress
   namespace: {{ .Release.Namespace }}
   labels:
-    app: gitops
+    app: {{ .Release.Name }}
   annotations:
     {{- if .Values.certificate.install }}
     certmanager.k8s.io/cluster-issuer: http-issuer
@@ -22,4 +22,5 @@ spec:
       paths:
       - backend:
           serviceName: gitops-service
+          serviceName: {{ .Release.Name }}-service
           servicePort: 80

@@ -17,6 +17,7 @@ from .utils import get_repo_name_from_url, run
 BASE_REPO_DIR = "/var/gitops/repos"
 ROLE_ARN = f"arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess"
 logger = logging.getLogger("gitops")
+GITOPS_MAX_PARALLEL_DEPLOYS = os.environ.get("GITOPS_MAX_PARALLEL_DEPLOYS", "5")
 
 
 async def post_init_summary(
@@ -72,8 +73,9 @@ class Deployer:
         self.current_app_definitions = current_app_definitions
         self.previous_app_definitions = previous_app_definitions
 
-        # Max 10 helm installs at a time
-        self.semaphore = asyncio.Semaphore(10)
+        # Max parallel helm installs at a time
+        # Kube api may rate limit otherwise
+        self.semaphore = asyncio.Semaphore(str(GITOPS_MAX_PARALLEL_DEPLOYS))
 
     @classmethod
     async def from_push_event(cls, push_event):
@@ -145,7 +147,7 @@ class Deployer:
                         os.fsync(cfg.fileno())
                         result = await run(
                             "helm upgrade"
-                            " --install"
+                            " --install "
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
                             f" {app.name}"
@@ -162,7 +164,7 @@ class Deployer:
                     )
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
-                        "helm upgrade --install"
+                        "helm upgrade --install "
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"
                         f" {app.name}"

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: gitops-service
+  name: {{ .Release.Name }}-service
 spec:
   selector:
-    app: gitops
+    app: {{ .Release.Name }}
   ports:
   - name: "http"
     protocol: TCP

@@ -2,7 +2,7 @@
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: gitops-cert
+  name:  {{ .Release.Name }}-cert
 spec:
   secretName: gitops-cert-key
   issuerRef:
