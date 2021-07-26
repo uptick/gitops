@@ -113,7 +113,7 @@ class Deployer:
         )
         uninstall_results = await asyncio.gather(
             *[
-                self.uninstall_app(self.current_app_definitions.apps[app_name])
+                self.uninstall_app(self.previous_app_definitions.apps[app_name])
                 for app_name in removed_apps
             ]
         )
