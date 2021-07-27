@@ -2,7 +2,7 @@ environment: {}
 secrets: {}
 
 certificate:
-  install: true
+  install: false
 
 ingress:
     ## Additional annotations to add to the ingress

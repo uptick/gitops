@@ -1,6 +1,7 @@
 **~
 build
 dist
+**/*.tmp
 **.egg-info
 **/__pycache__
 **.pyc

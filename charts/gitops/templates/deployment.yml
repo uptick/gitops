@@ -36,6 +36,11 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-secret
                 key: SLACK_URL
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: SENTRY_DSN
           - name: ACCOUNT_ID
             valueFrom:
               secretKeyRef:

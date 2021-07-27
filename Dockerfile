@@ -46,4 +46,4 @@ ENV PYTHONPATH="$PYTHONPATH:/app"
 ENV ACCESS_LOG=""
 
 
-CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8000", "gitops_server.main:app"]
+CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "--port", "8000", "gitops_server.main:app", "--reload"]
