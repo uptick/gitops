@@ -2,6 +2,7 @@ import asyncio
 import base64
 import os
 import random
+import time
 
 import dsnparse
 from invoke import run, task
@@ -108,7 +109,7 @@ def proxy(
     local_port=None,
     bastion_instance_id=None,
     aws_availability_zone=None,
-    post_cmd="",
+    background=False,
 ):
     """Creates a proxy to RDS. Can supply either the app name or a DSN
 
@@ -171,10 +172,8 @@ def proxy(
             -o "ServerAliveInterval=60" \
             -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region={aws_availability_zone[:-1]}" \
             ec2-user@{bastion_instance_id}"""
-    if post_cmd:
-        run(f"{cmd}& sleep 5 &&  {post_cmd.format(dsn=proxy_dsn)}", pty=True, hide=False, warn=True)
-    else:
-        run(cmd, hide=True)
+
+    return proxy_dsn, run(cmd, hide=True, asynchronous=background)
 
 
 @task
@@ -183,4 +182,9 @@ def pgcli(
     app_name,
 ):
     """Opens pgcli to a remote DB"""
-    proxy(ctx, app_name, post_cmd="pgcli {dsn}")
+    print("making proxy")
+    proxy_dsn, ctx = proxy(ctx, app_name, background=True)
+    with ctx:
+        print("Waiting for proxy to open")
+        time.sleep(4)
+        run(f"pgcli {proxy_dsn}", pty=True)
