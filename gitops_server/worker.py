@@ -1,20 +1,27 @@
 import asyncio
 import logging
 
-from gitops_server.app import app
-
 from .deploy import Deployer
 
 logger = logging.getLogger("gitops_worker")
 
 
 class Worker:
-    """Simple syncrhonous background work queue.
+    """Simple synchronous background work queue.
 
     Deployments need to be carried out one at a time to ensure the cluster
     doesn't get confused. The worker is based entirely on asyncio and runs
     alongside the server for maximum efficiency.
     """
+
+    _worker = None
+
+    @classmethod
+    def get_worker(cls):
+        if not cls._worker:
+            loop = asyncio.get_running_loop()
+            cls._worker = cls(loop)
+        return cls._worker
 
     def __init__(self, loop):
         self.loop = loop
@@ -35,6 +42,7 @@ class Worker:
         awaited here to ensure synchronous operation.
         # TODO: Need to gracefully handle termination.
         """
+        logger.info("Starting up deployer worker loop")
         while True:
             try:
                 await self.process_work()
@@ -48,24 +56,3 @@ class Worker:
         if ref == "refs/heads/master":
             deployer = await Deployer.from_push_event(work)
             await deployer.deploy()
-
-
-def get_worker():
-    global worker
-    return worker
-
-
-worker = None
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Prepare the worker.
-
-    Creates a new worker object and launches it as a future task.
-    """
-    loop = asyncio.get_running_loop()
-    logger.info("Starting up worker")
-    global worker
-    worker = Worker(loop)
-    worker.task = asyncio.ensure_future(worker.run(), loop=loop)

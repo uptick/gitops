@@ -35,7 +35,7 @@ RUN pip3 install poetry
 COPY pyproject.toml poetry.lock /app/
 
 # Install dependencies
-RUN poetry install -E server --no-dev
+RUN poetry install --extras server --no-dev
 
 COPY cluster.key /app/
 COPY gitops /app/gitops/

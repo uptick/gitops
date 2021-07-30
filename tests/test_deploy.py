@@ -15,7 +15,7 @@ from .utils import mock_load_app_definitions
 
 class TestDeploy(TestCase):
     @patch("gitops_server.deploy.run")
-    @patch("gitops_server.deploy.post")
+    @patch("gitops_server.slack.post")
     @patch("gitops_server.deploy.load_app_definitions", mock_load_app_definitions)
     @patch("gitops_server.deploy.temp_repo")
     async def test_deployer_git(self, temp_repo_mock, post_mock, run_mock):
