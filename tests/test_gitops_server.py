@@ -3,9 +3,9 @@ import hmac
 import json
 from unittest.mock import AsyncMock, patch
 
-from asynctest.mock import Mock
 from fastapi.testclient import TestClient
 
+import gitops_server
 from gitops_server.main import app
 
 from .webhook_sample_data import headers, payload
@@ -26,7 +26,7 @@ def test_webhook_returns_200_if_hmac_is_correct():
     ).hexdigest()
     headers["X-Hub-Signature"] = f"sha1={sha_encoding}"
 
-    with patch("gitops_server.main.get_worker", Mock()) as get_worker_mock:
+    with patch.object(gitops_server.worker.Worker, "get_worker") as get_worker_mock:
         get_worker_mock.return_value = AsyncMock()
         response = client.post("/webhook", headers=headers, json=payload)
 
@@ -39,7 +39,7 @@ def test_webhook_returns_400_if_hmac_is_invalid():
     sha_encoding = "INVALID HMAC ENCODING"
     headers["X-Hub-Signature"] = f"sha1={sha_encoding}"
 
-    with patch("gitops_server.main.get_worker", AsyncMock):
+    with patch.object(gitops_server.worker.Worker, "get_worker", AsyncMock):
         response = client.post("/webhook", headers=headers, json=payload)
 
     assert response.status_code == 400
