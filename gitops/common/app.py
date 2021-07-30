@@ -46,6 +46,17 @@ class App:
     def is_inactive(self):
         return "inactive" in self.values.get("tags", [])
 
+    def set_value(self, path: str, value: any):
+        """Sets the value on the path of self.values
+        Usage:
+            app.set_value("deployments.label.GITHUB_DEPLOYMENT_KEY", "1")
+        """
+        keys = path.split(".")
+        current_dict = self.values
+        for key in keys[:-1]:
+            current_dict = current_dict.setdefault(key, {})
+        current_dict[keys[-1]] = value
+
     def _make_values(self, deployments: Dict, secrets: Dict) -> Dict:
         values = {
             **deployments,

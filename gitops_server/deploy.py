@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import tempfile
+import uuid
 from typing import List, Optional
 
 from gitops.common.app import App
 
-from . import settings
+from . import github, settings, slack
 from .app_definitions import AppDefinitions
 from .git import temp_repo
-from .slack import post
 from .types import UpdateAppResult
 from .utils import get_repo_name_from_url, run
 
@@ -27,25 +27,37 @@ async def post_init_summary(
     for typ, d in [("Adding", added_apps), ("Updating", updated_apps), ("Removing", removed_apps)]:
         if d:
             deltas += f"\n\t• {typ}: {', '.join(f'`{app}`' for app in sorted(d))}"
-    await post(
+    await slack.post(
         f"A deployment from `{source}` has been initiated by *{username}* for cluster"
         f" `{settings.CLUSTER_NAME}`, the following apps will be updated:{deltas}\nCommit Message:"
         f" {commit_message}"
     )
 
 
-async def post_result(source: str, result: UpdateAppResult):
+async def post_result(app: App, source: str, result: UpdateAppResult):
+    github_deployment_url = str(app.values.get("github/deployment_url", ""))
     if result["exit_code"] != 0:
-        await post(
+        await github.update_deployment(
+            github_deployment_url,
+            status=github.STATUSES.failure,
+            description=f"Failed to deploy app. {result['output']}",
+        )
+        await slack.post(
             f"Failed to deploy app `{result['app_name']}` from `{source}` for cluster"
             f" `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
+        )
+    else:
+        await github.update_deployment(
+            github_deployment_url,
+            status=github.STATUSES.in_progress,
+            description="Helm installed app into cluster. Waiting for pods to deploy.",
         )
 
 
 async def post_result_summary(source: str, results: List[UpdateAppResult]):
     n_success = sum([r["exit_code"] == 0 for r in results])
     n_failed = sum([r["exit_code"] != 0 for r in results])
-    await post(
+    await slack.post(
         f"Deployment from `{source}` for `{settings.CLUSTER_NAME}` results summary:\n"
         f"\t• {n_success} succeeded\n"
         f"\t• {n_failed} failed"
@@ -72,6 +84,7 @@ class Deployer:
         self.commit_message = commit_message
         self.current_app_definitions = current_app_definitions
         self.previous_app_definitions = previous_app_definitions
+        self.deploy_id = str(uuid.uuid4())
 
         # Max parallel helm installs at a time
         # Kube api may rate limit otherwise
@@ -130,10 +143,15 @@ class Deployer:
                 f"helm uninstall {app.name} -n {app.values['namespace']}", suppress_errors=True
             )
             update_result = UpdateAppResult(app_name=app.name, **result)
-            await post_result(self.current_app_definitions.name, update_result)
+            await post_result(app, self.current_app_definitions.name, update_result)
         return update_result
 
     async def update_app_deployment(self, app: App) -> Optional[UpdateAppResult]:
+        app.set_value("deployment.labels.gitops/deploy_id", self.deploy_id)
+        app.set_value("deployment.labels.gitops/status", github.STATUSES.in_progress)
+        if github_deployment_url := app.values.get("github/deployment_url"):
+            app.set_value("deployment.annotations.github/deployment_url", github_deployment_url)
+
         async with self.semaphore:
             logger.info(f"Deploying app {app.name!r}.")
             if app.chart.type == "git":
@@ -176,7 +194,8 @@ class Deployer:
                 return None
 
             update_result = UpdateAppResult(app_name=app.name, **result)
-            await post_result(self.current_app_definitions.name, update_result)
+
+            await post_result(app, self.current_app_definitions.name, update_result)
         return update_result
 
     def calculate_app_deltas(self):
