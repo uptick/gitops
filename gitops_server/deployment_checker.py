@@ -23,11 +23,6 @@ from .settings import CLUSTER_NAMESPACE
 logger = logging.getLogger("deployment_status")
 
 
-class DeploymentStore:
-    def __init__(self):
-        pass
-
-
 async def get_ingress_url(api, namespace: str, app: str):
     """Attempts to get domain for the ingress associated with the app"""
     ingresses = await kubernetes_asyncio.client.NetworkingV1beta1Api(api).list_namespaced_ingress(
@@ -49,9 +44,7 @@ class DeploymentStatusWorker:
     _worker = None
 
     @classmethod
-    def get_worker(
-        cls,
-    ):
+    def get_worker(cls):
         if not cls._worker:
             loop = asyncio.get_running_loop()
             cls._worker = cls(loop)
@@ -68,67 +61,64 @@ class DeploymentStatusWorker:
             await kubernetes_asyncio.config.load_kube_config()
 
     async def process_work(self):
-        await self.load_config()
+        async with kubernetes_asyncio.client.ApiClient() as api:
+            apps_api = kubernetes_asyncio.client.AppsV1Api(api)
+            deployments = await apps_api.list_namespaced_deployment(
+                # Only things that have gitops/deploy_id aka was deployed
+                namespace=CLUSTER_NAMESPACE,
+                label_selector="gitops/deploy_id,gitops/status=in_progress",
+            )
+            await asyncio.sleep(10)
 
-        while True:
-            async with kubernetes_asyncio.client.ApiClient() as api:
-                apps_api = kubernetes_asyncio.client.AppsV1Api(api)
-                deployments = await apps_api.list_namespaced_deployment(
-                    # Only things that have gitops/deploy_id aka was deployed
-                    namespace=CLUSTER_NAMESPACE,
-                    label_selector="gitops/deploy_id,gitops/status=in_progress",
-                )
-                await asyncio.sleep(10)
-
-                for deployment in deployments.items:
-                    app = deployment.metadata.labels["app"]
-                    namespace = deployment.metadata.namespace
-                    github_deployment_url = deployment.metadata.annotations.get(
-                        "github/deployment_url"
+            for deployment in deployments.items:
+                app = deployment.metadata.labels["app"]
+                namespace = deployment.metadata.namespace
+                github_deployment_url = deployment.metadata.annotations.get("github/deployment_url")
+                conds = {}
+                for x in deployment.status.conditions:
+                    conds[x.type] = x
+                status = None
+                if (
+                    len(conds) == 2
+                    and conds["Available"].status == "True"
+                    and conds["Progressing"].status == "True"
+                    and conds["Progressing"].reason == "NewReplicaSetAvailable"
+                ):
+                    status = github.STATUSES.success
+                    await github.update_deployment(
+                        github_deployment_url,
+                        status=status,
+                        description="Deployed successfully",
+                        environment_url=await get_ingress_url(api, namespace, app),
                     )
-                    conds = {}
-                    for x in deployment.status.conditions:
-                        conds[x.type] = x
-                    status = None
-                    if (
-                        len(conds) == 2
-                        and conds["Available"].status == "True"
-                        and conds["Progressing"].status == "True"
-                        and conds["Progressing"].reason == "NewReplicaSetAvailable"
-                    ):
-                        status = github.STATUSES.success
-                        await github.update_deployment(
-                            github_deployment_url,
-                            status=status,
-                            description="Deployed successfully",
-                            environment_url=await get_ingress_url(api, namespace, app),
+                elif (
+                    "Progressing" in conds
+                    and conds["Progressing"].status == "False"
+                    and conds["Progressing"].reason == "ProgressDeadlineExceeded"
+                ):
+                    status = github.STATUSES.failure
+                    await github.update_deployment(
+                        github_deployment_url,
+                        status=status,
+                        description="Failed to deploy. Check the pod or migrations.",
+                    )
+                if status:
+                    logger.info(
+                        f"Patching {deployment.metadata.name}.label.gitops/status to {status}"
+                    )
+                    deployment.metadata.labels["gitops/status"] = status
+                    try:
+                        await apps_api.patch_namespaced_deployment(
+                            deployment.metadata.name, deployment.metadata.namespace, deployment
                         )
-                    elif (
-                        "Progressing" in conds
-                        and conds["Progressing"].status == "False"
-                        and conds["Progressing"].reason == "ProgressDeadlineExceeded"
-                    ):
-                        status = github.STATUSES.failure
-                        await github.update_deployment(
-                            github_deployment_url,
-                            status=status,
-                            description="Failed to deploy. Check the pod or migrations.",
-                        )
-                    if status:
-                        logger.info(
-                            f"Patching {deployment.metadata.name}.label.gitops/status to {status}"
-                        )
-                        deployment.metadata.labels["gitops/status"] = status
-                        try:
-                            await apps_api.patch_namespaced_deployment(
-                                deployment.metadata.name, deployment.metadata.namespace, deployment
-                            )
-                        except kubernetes_asyncio.client.exceptions.ApiException as e:
-                            logger.warning(e, exc_info=True)
+                    except kubernetes_asyncio.client.exceptions.ApiException as e:
+                        logger.warning(e, exc_info=True)
 
     async def run(self):
         logger.info("Starting deployment status watching loop")
+        await self.load_config()
         try:
-            await self.process_work()
+            while True:
+                await self.process_work()
         except Exception as e:
             logger.error(str(e), exc_info=True)
