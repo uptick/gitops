@@ -1,9 +1,11 @@
 import asyncio
 import base64
+import datetime
 import os
 import random
 import time
 
+import boto3
 import dsnparse
 from invoke import run, task
 
@@ -188,3 +190,35 @@ def pgcli(
         print("Waiting for proxy to open")
         time.sleep(4)
         run(f"pgcli {proxy_dsn}", pty=True)
+
+
+@task
+def rds_logs(ctx, app_name, last=24):
+    """
+    Fetches RDS logs since the last N hours.
+
+    Usage:
+        gitops db.rds-logs APP --last 5
+    """
+    rds = boto3.client("rds")
+    app = get_app_details(app_name, load_secrets=True)
+    db_name = app.name.replace("_", "")
+    logs = rds.describe_db_log_files(DBInstanceIdentifier=db_name)
+    for log in logs["DescribeDBLogFiles"][-last:]:
+        log_file = rds.download_db_log_file_portion(
+            DBInstanceIdentifier=db_name,
+            LogFileName=log["LogFileName"],
+        )
+        for line in log_file["LogFileData"].split("\n"):
+            if line:
+                try:
+                    print(
+                        str(
+                            datetime.datetime.fromisoformat(line[:19])
+                            .replace(tzinfo=datetime.timezone.utc)
+                            .astimezone()
+                        )
+                        + line[23:]
+                    )
+                except Exception:
+                    print(line)
