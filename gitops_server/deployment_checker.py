@@ -106,10 +106,10 @@ class DeploymentStatusWorker:
                     logger.info(
                         f"Patching {deployment.metadata.name}.label.gitops/status to {status}"
                     )
-                    deployment.metadata.labels["gitops/status"] = status
+                    patch = {"metadata": {"labels": {"gitops/status": status}}}
                     try:
                         await apps_api.patch_namespaced_deployment(
-                            deployment.metadata.name, deployment.metadata.namespace, deployment
+                            deployment.metadata.name, deployment.metadata.namespace, patch
                         )
                     except kubernetes_asyncio.client.exceptions.ApiException as e:
                         logger.warning(e, exc_info=True)

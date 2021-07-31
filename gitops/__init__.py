@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .utils.cli import success, warning
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 
 # Checking gitops version matches cluster repo version.
