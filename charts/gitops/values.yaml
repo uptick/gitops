@@ -1,5 +1,20 @@
-environment: {}
-secrets: {}
+environment:
+  # Location of git crypt key (to be loaded via a volume mount)
+  GIT_CRYPT_KEY_FILE: ""
+  # Namespace to track deployments
+  CLUSTER_NAMESPACE: ""
+  # Name of the cluster
+  CLUSTER_NAME: ""
+  # Specify the timezone for logging purposes. EG: Australia/Melbourne
+  TZ: "UTC"
+
+secrets:
+  ACCOUNT_ID: ""
+  SLACK_URL: ""
+  GITHUB_OAUTH_TOKEN: ""
+  GITHUB_WEBHOOK_KEY: ""
+  GIT_CRYPT_KEY: ""
+  SENTRY_DSN: ""
 
 certificate:
   install: false
