@@ -42,7 +42,7 @@ async def update_deployment(deployment_url: str, status: str, description: str, 
             json=data,
             headers=headers,
         )
-        if response.status_code >= 300:
+        if response.status_code >= 300 and response.status_code != 404:
             try:
                 logger.warn(response.json())
             except Exception:
