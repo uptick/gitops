@@ -193,12 +193,12 @@ def pgcli(
 
 
 @task
-def rds_logs(ctx, app_name, last=24):
+def logs(ctx, app_name, last=24):
     """
     Fetches RDS logs since the last N hours.
 
     Usage:
-        gitops db.rds-logs APP --last 5
+        gitops db.logs APP --last 5
     """
     rds = boto3.client("rds")
     app = get_app_details(app_name, load_secrets=True)
