@@ -71,6 +71,9 @@ class DeploymentStatusWorker:
             await asyncio.sleep(10)
 
             for deployment in deployments.items:
+                # Deployment status may not exist yet
+                if not deployment.status:
+                    continue
                 app = deployment.metadata.labels["app"]
                 namespace = deployment.metadata.namespace
                 github_deployment_url = deployment.metadata.annotations.get("github/deployment_url")
