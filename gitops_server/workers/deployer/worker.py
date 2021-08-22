@@ -6,7 +6,7 @@ from .deploy import Deployer
 logger = logging.getLogger("gitops_worker")
 
 
-class Worker:
+class DeployQueueWorker:
     """Simple synchronous background work queue.
 
     Deployments need to be carried out one at a time to ensure the cluster

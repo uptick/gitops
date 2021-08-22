@@ -4,7 +4,7 @@ import tempfile
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional
 
-from .utils import run
+from . import run
 
 BASE_REPO_DIR = "/var/gitops/repos"
 

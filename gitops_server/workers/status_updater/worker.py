@@ -17,8 +17,8 @@ import kubernetes_asyncio
 import kubernetes_asyncio.client
 import kubernetes_asyncio.config
 
-from . import github
-from .settings import CLUSTER_NAMESPACE
+from gitops_server.settings import CLUSTER_NAMESPACE
+from gitops_server.utils import github
 
 logger = logging.getLogger("deployment_status")
 
@@ -54,7 +54,6 @@ class DeploymentStatusWorker:
         self.loop = loop
 
     async def load_config(self):
-        logger.info("Loading kubernetes asyncio api")
         try:
             kubernetes_asyncio.config.load_incluster_config()
         except kubernetes_asyncio.config.config_exception.ConfigException:
@@ -119,9 +118,10 @@ class DeploymentStatusWorker:
 
     async def run(self):
         logger.info("Starting deployment status watching loop")
-        await self.load_config()
+        logger.info("Loading kubernetes asyncio api")
         try:
             while True:
+                await self.load_config()
                 await self.process_work()
         except Exception as e:
             logger.error(str(e), exc_info=True)

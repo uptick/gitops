@@ -7,12 +7,10 @@ import uuid
 from typing import List, Optional
 
 from gitops.common.app import App
-
-from . import github, settings, slack
-from .app_definitions import AppDefinitions
-from .git import temp_repo
-from .types import UpdateAppResult
-from .utils import get_repo_name_from_url, run
+from gitops_server import settings
+from gitops_server.types import AppDefinitions, UpdateAppResult
+from gitops_server.utils import get_repo_name_from_url, github, run, slack
+from gitops_server.utils.git import temp_repo
 
 BASE_REPO_DIR = "/var/gitops/repos"
 ROLE_ARN = f"arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess"
