@@ -1,7 +1,7 @@
 import yaml
 
 from gitops.common.app import App
-from gitops_server.app_definitions import AppDefinitions
+from gitops_server.types import AppDefinitions
 
 
 async def mock_load_app_definitions(url, sha):
