@@ -17,8 +17,8 @@ import kubernetes_asyncio
 import kubernetes_asyncio.client
 import kubernetes_asyncio.config
 
-from . import github
-from .settings import CLUSTER_NAMESPACE
+from gitops_server.settings import CLUSTER_NAMESPACE
+from gitops_server.utils import github
 
 logger = logging.getLogger("deployment_status")
 
@@ -31,7 +31,7 @@ async def get_ingress_url(api, namespace: str, app: str):
     environment_url = ""
     if ingresses.items:
         try:
-            environment_url: str = "https://" + ingresses.items[0].spec.rules[0].host
+            environment_url = "https://" + ingresses.items[0].spec.rules[0].host
         except Exception:
             logger.warning(f"Could not find ingress for {app=}")
             pass
@@ -54,7 +54,6 @@ class DeploymentStatusWorker:
         self.loop = loop
 
     async def load_config(self):
-        logger.info("Loading kubernetes asyncio api")
         try:
             kubernetes_asyncio.config.load_incluster_config()
         except kubernetes_asyncio.config.config_exception.ConfigException:
@@ -119,9 +118,10 @@ class DeploymentStatusWorker:
 
     async def run(self):
         logger.info("Starting deployment status watching loop")
-        await self.load_config()
+        logger.info("Loading kubernetes asyncio api")
         try:
             while True:
+                await self.load_config()
                 await self.process_work()
         except Exception as e:
             logger.error(str(e), exc_info=True)

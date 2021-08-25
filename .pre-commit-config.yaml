@@ -14,7 +14,7 @@ repos:
     name: isort (python)
 
 - repo: https://github.com/hadialqattan/pycln
-  rev: 0.0.4 # Possible releases: https://github.com/hadialqattan/pycln/tags
+  rev: v1.0.3 # Possible releases: https://github.com/hadialqattan/pycln/tags
   hooks:
     - id: pycln
 

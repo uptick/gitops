@@ -7,9 +7,8 @@ from fastapi import HTTPException, Request
 
 from gitops_server import settings
 from gitops_server.app import app
-from gitops_server.deployment_checker import DeploymentStatusWorker
 from gitops_server.logging_config import *  # noqa
-from gitops_server.worker import Worker  # noqa
+from gitops_server.workers import DeploymentStatusWorker, DeployQueueWorker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gitops")
@@ -30,7 +29,7 @@ async def webhook(request: Request):
 
     json = await request.json()
 
-    worker = Worker.get_worker()
+    worker = DeployQueueWorker.get_worker()
 
     await worker.enqueue(json)
     return {"enqueued": True}
@@ -43,8 +42,8 @@ async def startup_event():
     Creates a new worker object and launches it as a future task.
     """
     loop = asyncio.get_running_loop()
-    worker = Worker.get_worker()
-    worker.task = asyncio.ensure_future(worker.run(), loop=loop)
+    deploy_queue_worker = DeployQueueWorker.get_worker()
+    deploy_queue_worker.task = asyncio.ensure_future(deploy_queue_worker.run(), loop=loop)
 
     deployment_status_worker = DeploymentStatusWorker.get_worker()
     deployment_status_worker.task = asyncio.ensure_future(deployment_status_worker.run(), loop=loop)

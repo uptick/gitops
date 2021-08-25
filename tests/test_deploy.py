@@ -3,7 +3,7 @@ from unittest.mock import patch
 from asynctest import TestCase
 
 from gitops.common.app import App
-from gitops_server.deploy import Deployer
+from gitops_server.workers.deployer import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD
 from .utils import mock_load_app_definitions
@@ -14,10 +14,10 @@ from .utils import mock_load_app_definitions
 
 
 class TestDeploy(TestCase):
-    @patch("gitops_server.deploy.run")
-    @patch("gitops_server.slack.post")
-    @patch("gitops_server.deploy.load_app_definitions", mock_load_app_definitions)
-    @patch("gitops_server.deploy.temp_repo")
+    @patch("gitops_server.workers.deployer.deploy.run")
+    @patch("gitops_server.utils.slack.post")
+    @patch("gitops_server.workers.deployer.deploy.load_app_definitions", mock_load_app_definitions)
+    @patch("gitops_server.workers.deployer.deploy.temp_repo")
     async def test_deployer_git(self, temp_repo_mock, post_mock, run_mock):
         """Fake a deploy to two servers, bumping fg from 2 to 4."""
         run_mock.return_value = {"exit_code": 0, "output": ""}
@@ -52,10 +52,10 @@ class TestDeploy(TestCase):
                 post_mock.call_args_list[where][0][0],
             )
 
-    @patch("gitops_server.deploy.run")
-    @patch("gitops_server.deploy.post_result")
-    @patch("gitops_server.deploy.load_app_definitions", mock_load_app_definitions)
-    @patch("gitops_server.deploy.temp_repo")
+    @patch("gitops_server.workers.deployer.deploy.run")
+    @patch("gitops_server.workers.deployer.deploy.post_result")
+    @patch("gitops_server.workers.deployer.deploy.load_app_definitions", mock_load_app_definitions)
+    @patch("gitops_server.workers.deployer.deploy.temp_repo")
     async def test_deployer_update_helm_app(self, temp_repo_mock, post_mock, run_mock):
         run_mock.return_value = {"exit_code": 0, "output": ""}
         helm_app = App(

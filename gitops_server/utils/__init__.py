@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from .types import RunOutput
+from ..types import RunOutput
 
 logger = logging.getLogger("gitops")
 
@@ -31,6 +31,6 @@ async def run(command, suppress_errors=False) -> RunOutput:
         return RunOutput(exit_code=exit_code, output=stderr.decode())
 
 
-def get_repo_name_from_url(url):
+def get_repo_name_from_url(url: str):
     # https://github.com/user/repo-name.git > repo-name
     return url.split("/")[-1].split(".")[0]
