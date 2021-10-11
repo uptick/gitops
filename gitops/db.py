@@ -11,7 +11,7 @@ from invoke import run, task
 
 from .utils import kube
 from .utils.apps import get_app_details
-from .utils.cli import progress, warning
+from .utils.cli import progress, success, warning
 
 # TODO: Abstract this code out of gitops.
 
@@ -222,3 +222,35 @@ def logs(ctx, app_name, last=24):
                     )
                 except Exception:
                     print(line)
+
+
+@task
+def wipe_db(ctx, destination, skip_backup=False, cleanup=True):
+    """Wipes a customers database."""
+    source_app = get_app_details(destination, load_secrets=True)
+    kube.confirm_database(destination)
+    values = {
+        "name": f"wipe-db-{destination}",
+        "destination": destination,
+        "SOURCE_DATABASE_URL_ENCODED": source_app.values["secrets"]["DATABASE_URL"],
+        "DESTINATION_DATABASE_URL_ENCODED": source_app.values["secrets"]["DATABASE_URL"],
+        "skip_backup": "skip" if skip_backup else "",
+    }
+    print(progress(f":: Wiping database {destination}"))
+    asyncio.run(
+        kube._run_job(
+            "jobs/wipe-db-job.yml",
+            values,
+            context=source_app.cluster,
+            namespace="workforce",
+            cleanup=cleanup,
+        )
+    )
+    print(success("Deleted!"))
+    print(progress(":: Running migrations"))
+    run(f"gitops migrate {destination}", echo=True)
+
+    print(progress(":: Clearing cache"))
+    run(f"gitops mcommand {destination} clear_cache", echo=True)
+
+    print(progress("Success!"))
