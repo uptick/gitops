@@ -173,7 +173,7 @@ class Deployer:
                         result = await run(
                             "helm upgrade"
                             " --install"
-                            f" {'--no-hooks' if self.skip_migrations else ''}"
+                            f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
                             f" {app.name}"
@@ -192,7 +192,7 @@ class Deployer:
                     result = await run(
                         "helm upgrade"
                         " --install"
-                        f" {'--no-hooks' if self.skip_migrations else ''}"
+                        f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"
                         f" {app.name}"

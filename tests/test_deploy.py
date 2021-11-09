@@ -5,7 +5,7 @@ from asynctest import TestCase
 from gitops.common.app import App
 from gitops_server.workers.deployer import Deployer
 
-from .sample_data import SAMPLE_GITHUB_PAYLOAD
+from .sample_data import SAMPLE_GITHUB_PAYLOAD, SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS
 from .utils import mock_load_app_definitions
 
 # Patch gitops_server.git.run & check correct commands + order
@@ -86,3 +86,43 @@ class TestDeploy(TestCase):
             r" --namespace=mynamespace helm_app brigade/brigade",
         )
         self.assertEqual(post_mock.call_count, 1)
+
+    @patch("gitops_server.workers.deployer.deploy.run")
+    @patch("gitops_server.utils.slack.post")
+    @patch("gitops_server.workers.deployer.deploy.load_app_definitions", mock_load_app_definitions)
+    @patch("gitops_server.workers.deployer.deploy.temp_repo")
+    async def test_deployer_skip_migrations_in_commit_message_should_run_helm_without_hooks(
+        self, temp_repo_mock, post_mock, run_mock
+    ):
+        """Fake a deploy to two servers, bumping fg from 2 to 4."""
+        run_mock.return_value = {"exit_code": 0, "output": ""}
+        temp_repo_mock.return_value.__aenter__.return_value = "mock-repo"
+        deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS)
+        await deployer.deploy()
+        self.assertEqual(run_mock.call_count, 4)
+        self.assertEqual(run_mock.call_args_list[0][0][0], "cd mock-repo; helm dependency build")
+        self.assertRegex(
+            run_mock.call_args_list[1][0][0],
+            r"helm upgrade --install --set skip_migrations=true -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
+        )
+        self.assertEqual(run_mock.call_args_list[2][0][0], "cd mock-repo; helm dependency build")
+        self.assertRegex(
+            run_mock.call_args_list[3][0][0],
+            r"helm upgrade --install --set skip_migrations=true -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
+        )
+        self.assertEqual(post_mock.call_count, 2)
+        check_in_run_mock = [
+            (0, "mock-repo"),
+            (0, "authorusername"),
+            (0, "sample-app-1"),
+            (0, "sample-app-2"),
+            (1, "2 succeeded"),
+            (1, "0 failed"),
+        ]
+        for where, check in check_in_run_mock:
+            self.assertIn(
+                check,
+                post_mock.call_args_list[where][0][0],
+            )
