@@ -77,12 +77,14 @@ class Deployer:
         commit_message: str,
         current_app_definitions: AppDefinitions,
         previous_app_definitions: AppDefinitions,
+        skip_migrations: bool = False,
     ):
         self.pusher = pusher
         self.commit_message = commit_message
         self.current_app_definitions = current_app_definitions
         self.previous_app_definitions = previous_app_definitions
         self.deploy_id = str(uuid.uuid4())
+        self.skip_migrations = skip_migrations
 
         # Max parallel helm installs at a time
         # Kube api may rate limit otherwise
@@ -93,13 +95,20 @@ class Deployer:
         url = push_event["repository"]["clone_url"]
         pusher = push_event["pusher"]["name"]
         commit_message = push_event.get("head_commit", {}).get("message")
+        skip_migrations = "--skip-migrations" in commit_message
         logger.info(f'Initialising deployer for "{url}".')
         before = push_event["before"]
         after = push_event["after"]
         current_app_definitions = await load_app_definitions(url, sha=after)
         # TODO: Handle case where there is no previous commit.
         previous_app_definitions = await load_app_definitions(url, sha=before)
-        return cls(pusher, commit_message, current_app_definitions, previous_app_definitions)
+        return cls(
+            pusher,
+            commit_message,
+            current_app_definitions,
+            previous_app_definitions,
+            skip_migrations,
+        )
 
     async def deploy(self):
         added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
@@ -164,6 +173,7 @@ class Deployer:
                         result = await run(
                             "helm upgrade"
                             " --install"
+                            f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
                             f" {app.name}"
@@ -180,7 +190,9 @@ class Deployer:
                     )
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
-                        "helm upgrade --install"
+                        "helm upgrade"
+                        " --install"
+                        f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"
                         f" {app.name}"
