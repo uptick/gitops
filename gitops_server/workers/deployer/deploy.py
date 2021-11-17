@@ -85,7 +85,6 @@ class Deployer:
         self.previous_app_definitions = previous_app_definitions
         self.deploy_id = str(uuid.uuid4())
         self.skip_migrations = skip_migrations
-
         # Max parallel helm installs at a time
         # Kube api may rate limit otherwise
         self.semaphore = asyncio.Semaphore(int(GITOPS_MAX_PARALLEL_DEPLOYS))
@@ -173,6 +172,7 @@ class Deployer:
                         result = await run(
                             "helm upgrade"
                             " --install"
+                            " --timeout 600"
                             f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
@@ -192,6 +192,7 @@ class Deployer:
                     result = await run(
                         "helm upgrade"
                         " --install"
+                        " --timeout 600"
                         f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"

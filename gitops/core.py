@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 
 from colorama import Fore
 from invoke import run, task
@@ -38,12 +39,16 @@ def bump(
     autoexclude_inactive=True,
     interactive=True,
     push=False,
+    redeploy=False,
+    skip_migrations=False,
 ):
     """Bump image tag on selected app(s).
     Provide `image_tag` to set to a specific image tag, or provide `prefix` to use latest image
     with the given prefix.
     Otherwise, the latest tag with the same prefix as the app's current tag will be used.
     Provide `push` to automatically push the commit (and retry on conflict.)
+    Provide `redeploy` to redeploy servers even if nothing has changed.
+    Provide `skip_migrations` to disable running migrations via helm hooks.
     """
     prompt_message = "The following apps will have their image bumped"
     if image_tag:
@@ -79,18 +84,28 @@ def bump(
                 f" -> {colour_image(new_image_tag)}"
             )
             update_app(app_name, **{"image-tag": new_image_tag})
+        elif redeploy:
+            print(f"Redeploying {colourise(app_name, Fore.LIGHTGREEN_EX)}")
+            update_app(app_name, **{"bump": str(uuid.uuid4())})
         else:
             print(
                 f"Skipping {colourise(app_name, Fore.LIGHTGREEN_EX)}: already on"
                 f" {colour_image(new_image_tag)}"
             )
-    commit_message = f"Bump {filter}"
+    if redeploy:
+        commit_message = f"Redeploying {filter}"
+    else:
+        commit_message = f"Bump {filter}"
+
     if exclude:
         commit_message += f" (except {exclude})"
     if image_tag:
         commit_message += f" to use {image_tag}"
     if prefix:
         commit_message += f" to use prefix {prefix}"
+    if skip_migrations:
+        commit_message += " --skip-migrations"
+
     run(f'cd {APPS_PATH}; git commit -am "{commit_message}."')
 
     if push:

@@ -28,13 +28,13 @@ class TestDeploy(TestCase):
         self.assertEqual(run_mock.call_args_list[0][0][0], "cd mock-repo; helm dependency build")
         self.assertRegex(
             run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install -f .+\.yml"
+            r"helm upgrade --install --timeout 600 -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
         )
         self.assertEqual(run_mock.call_args_list[2][0][0], "cd mock-repo; helm dependency build")
         self.assertRegex(
             run_mock.call_args_list[3][0][0],
-            r"helm upgrade --install -f .+\.yml"
+            r"helm upgrade --install --timeout 600 -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
         )
         self.assertEqual(post_mock.call_count, 2)
@@ -82,7 +82,7 @@ class TestDeploy(TestCase):
         )
         self.assertRegex(
             run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install -f .+\.yml"
+            r"helm upgrade --install --timeout 600 -f .+\.yml"
             r" --namespace=mynamespace helm_app brigade/brigade",
         )
         self.assertEqual(post_mock.call_count, 1)
@@ -103,13 +103,13 @@ class TestDeploy(TestCase):
         self.assertEqual(run_mock.call_args_list[0][0][0], "cd mock-repo; helm dependency build")
         self.assertRegex(
             run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install --set skip_migrations=true -f .+\.yml"
+            r"helm upgrade --install --timeout 600 --set skip_migrations=true -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
         )
         self.assertEqual(run_mock.call_args_list[2][0][0], "cd mock-repo; helm dependency build")
         self.assertRegex(
             run_mock.call_args_list[3][0][0],
-            r"helm upgrade --install --set skip_migrations=true -f .+\.yml"
+            r"helm upgrade --install --timeout 600 --set skip_migrations=true -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
         )
         self.assertEqual(post_mock.call_count, 2)
