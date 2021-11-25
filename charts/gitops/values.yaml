@@ -22,3 +22,9 @@ certificate:
 ingress:
     ## Additional annotations to add to the ingress
     annotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
