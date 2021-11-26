@@ -172,7 +172,7 @@ class Deployer:
                         result = await run(
                             "helm upgrade"
                             " --install"
-                            " --timeout 600"
+                            " --timeout=600s"
                             f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                             f" -f {cfg.name}"
                             f" --namespace={app.values['namespace']}"
@@ -192,7 +192,7 @@ class Deployer:
                     result = await run(
                         "helm upgrade"
                         " --install"
-                        " --timeout 600"
+                        " --timeout=600s"
                         f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                         f" -f {cfg.name}"
                         f" --namespace={app.values['namespace']}"
