@@ -6,8 +6,6 @@
 
 Manage multiple apps across one or more k8s clusters.
 
-Documentations is still WIP.
-
 ## Overview
 
 Keeping track of numerous of single-tenanted application deployments can quickly become a handful. Enter Gitops!
