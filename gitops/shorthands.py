@@ -4,7 +4,7 @@ from invoke import task
 
 from .core import command
 from .utils.apps import get_app_details
-from .utils.cli import success
+from .utils.cli import confirm_dangerous_command, success
 from .utils.kube import run_job
 
 UNSAFE_MANAGE_PY = "env DJANGO_ALLOW_ASYNC_UNSAFE=true ./manage.py"
@@ -17,6 +17,8 @@ def bash(ctx, app, cleanup=True):
     eg. inv bash aesg
     """
     app = get_app_details(app)
+    if "production" in app.tags:
+        confirm_dangerous_command()
     asyncio.run(run_job(app, "bash", cleanup=cleanup))
     print(success("Done!"))
 
@@ -45,6 +47,8 @@ def shell_plus(ctx, app, cleanup=True):
     eg. inv sp aesg
     """
     app = get_app_details(app)
+    if "production" in app.tags:
+        confirm_dangerous_command()
     asyncio.run(run_job(app, f"{UNSAFE_MANAGE_PY} shell_plus", cleanup=cleanup))
     print(success("Done!"))
 
