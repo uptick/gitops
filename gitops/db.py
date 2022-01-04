@@ -168,7 +168,7 @@ def proxy(
     print(progress(f"Connect to the db using: {proxy_dsn}\n"))
     # Create ssh tunnel
     cmd = f"""ssh -i /tmp/temp \
-            -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port} \
+            -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port or 5432} \
             -o "UserKnownHostsFile=/dev/null" \
             -o "StrictHostKeyChecking=no" \
             -o "ServerAliveInterval=60" \
