@@ -36,7 +36,7 @@ def confirm(message=""):
 def confirm_dangerous_command():
     message = (
         "You are about to execute a dangerous command against a"
-        f" {colourise('production' , Fore.RED)} environment. Please ensure you are pairing up with"
+        f" {colourise('production' , Fore.RED)} environment. Please ensure you are pairing with"
         " someone else."
     )
     # TODO. Include an actual multi person MFA to proceed.
