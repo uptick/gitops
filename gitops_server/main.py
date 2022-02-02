@@ -14,9 +14,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("gitops")
 
 
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.args[2] not in {"/readyz", "/livez", "/"}  # type: ignore
+
+
+# Filter out / from access logs (We don't care about these calls)
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+logger = logging.getLogger("document-wrapper")
+
+
 @app.get("/")
-def index():
-    return {}
+@app.get("/readyz")
+@app.get("/livez")
+def health_check():
+    return {"status": "ok"}
 
 
 @app.post("/webhook")
