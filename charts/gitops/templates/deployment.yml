@@ -25,6 +25,12 @@ spec:
       containers:
       - name: gitops
         image: {{ .Values.image }}
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8000
         envFrom:
@@ -68,6 +74,7 @@ spec:
           - key: GIT_CRYPT_KEY
             path: git_crypt_key
       restartPolicy: Always
+
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
