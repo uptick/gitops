@@ -48,6 +48,16 @@ def logs(ctx):
     run(f"kubectl -n default logs -f {name}", pty=True)
 
 
+@task
+def test_helm(ctx):
+    """Tests / validates a dry installation of the helm chart"""
+    run(
+        "helm install --dry-run --debug --set environment.GIT_CRYPT_KEY_FILE='test' --set"
+        " environment.CLUSTER_NAME='hi' --set environment.CLUSTER_NAMESPACE='test' debug"
+        " charts/gitops/"
+    )
+
+
 def get_commit_tag():
     return run("git rev-parse --short HEAD", hide=True).stdout.strip()
 

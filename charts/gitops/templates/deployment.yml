@@ -31,7 +31,7 @@ spec:
             path: /livez
             port: 8000
           initialDelaySeconds: 5
-          failureTHreshold: 5
+          failureThreshold: 5
           timeoutSeconds: 10
           periodSeconds: 30
         ports:
