@@ -22,6 +22,7 @@ spec:
         checksum/environment: {{ include (print $.Template.BasePath "/environment.yml") . | sha256sum }}
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yml") . | sha256sum }}
     spec:
+      priorityClassName: system-node-critical
       containers:
       - name: gitops
         image: {{ .Values.image }}
@@ -30,9 +31,16 @@ spec:
             path: /livez
             port: 8000
           initialDelaySeconds: 5
-          periodSeconds: 5
+          failureTHreshold: 5
+          timeoutSeconds: 10
+          periodSeconds: 30
         ports:
         - containerPort: 8000
+        resources:
+          requests:
+            memory: "200Mi"
+          limits:
+            memory: "1000Mi"
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-environment
