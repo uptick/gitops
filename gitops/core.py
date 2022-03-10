@@ -67,6 +67,10 @@ def bump(
     except AppOperationAborted:
         print(success_negative("Aborted."))
         return
+
+    if push:
+        run(f'cd {APPS_PATH}; git pull"')
+
     for app in apps:
         app_name = app.name
         prev_image_tag = app.image_tag
