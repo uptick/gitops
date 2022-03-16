@@ -8,6 +8,10 @@ logger = logging.getLogger("github")
 GITHUB_OAUTH_TOKEN = os.environ.get("GITHUB_OAUTH_TOKEN")
 
 
+class IssueNotFound(Exception):
+    ...
+
+
 class STATUSES:
     pending = "pending"  # default status when created during gh workflow
     in_progress = "in_progress"  # when helm installs
@@ -16,12 +20,8 @@ class STATUSES:
     error = "error"  # when error during helm deploy
 
 
-async def update_deployment(deployment_url: str, status: str, description: str, environment_url=""):
-    # https://docs.github.com/en/rest/reference/repos#create-a-deployment-status
-    if not deployment_url:
-        return
-    status_url = deployment_url + "/statuses"
-    headers = {
+def get_headers() -> dict:
+    return {
         "Authorization": f"token {GITHUB_OAUTH_TOKEN}",
         "Content-Type": "application/json",
         "Accept": (
@@ -29,6 +29,12 @@ async def update_deployment(deployment_url: str, status: str, description: str, 
         ),
     }
 
+
+async def update_deployment(deployment_url: str, status: str, description: str, environment_url=""):
+    # https://docs.github.com/en/rest/reference/repos#create-a-deployment-status
+    if not deployment_url:
+        return
+    status_url = deployment_url + "/statuses"
     logger.info(f"Updating deployment status of: {deployment_url} to {status}")
     async with httpx.AsyncClient() as client:
         data = {
@@ -40,7 +46,7 @@ async def update_deployment(deployment_url: str, status: str, description: str, 
         response = await client.post(
             status_url,
             json=data,
-            headers=headers,
+            headers=get_headers(),
         )
         if response.status_code >= 300 and response.status_code != 404:
             try:

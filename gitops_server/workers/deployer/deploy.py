@@ -6,6 +6,8 @@ import tempfile
 import uuid
 from typing import List, Optional
 
+from hooks import handle_failed_deploy, handle_successful_deploy
+
 from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import AppDefinitions, UpdateAppResult
@@ -32,25 +34,11 @@ async def post_init_summary(
     )
 
 
-async def post_result(app: App, source: str, result: UpdateAppResult):
-    github_deployment_url = str(app.values.get("github/deployment_url", ""))
+async def post_result(app: App, result: UpdateAppResult, **kwargs):
     if result["exit_code"] != 0:
-        await github.update_deployment(
-            github_deployment_url,
-            status=github.STATUSES.failure,
-            description=f"Failed to deploy app. {result['output']}",
-        )
-        await slack.post(
-            f"Failed to deploy app `{result['app_name']}` from `{source}` for cluster"
-            f" `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
-        )
+        await handle_failed_deploy(app, result, **kwargs)
     else:
-        await github.update_deployment(
-            github_deployment_url,
-            status=github.STATUSES.in_progress,
-            description="Helm installed app into cluster. Waiting for pods to deploy.",
-        )
-
+        await handle_successful_deploy(app, result, **kwargs)
 
 async def post_result_summary(source: str, results: List[UpdateAppResult]):
     n_success = sum([r["exit_code"] == 0 for r in results])
@@ -149,7 +137,7 @@ class Deployer:
                 f"helm uninstall {app.name} -n {app.values['namespace']}", suppress_errors=True
             )
             update_result = UpdateAppResult(app_name=app.name, **result)
-            await post_result(app, self.current_app_definitions.name, update_result)
+            await post_result(app=app, result=update_result, source=self.current_app_definitions.name)
         return update_result
 
     async def update_app_deployment(self, app: App) -> Optional[UpdateAppResult]:
@@ -206,7 +194,7 @@ class Deployer:
 
             update_result = UpdateAppResult(app_name=app.name, **result)
 
-            await post_result(app, self.current_app_definitions.name, update_result)
+            await post_result(app=app, result=update_result, source=self.current_app_definitions.name)
         return update_result
 
     def calculate_app_deltas(self):
