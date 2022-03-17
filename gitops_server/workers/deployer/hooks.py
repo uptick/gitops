@@ -76,7 +76,7 @@ async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> U
 
     slack_id = find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email)
     slack_user_msg = f" <@{slack_id.id}> " if slack_id else ""
-    log_msg = "<https://my.papertrailapp.com/systems/{app.name}-migration/events|(Migration Logs)>"
+    log_msg = f"<https://my.papertrailapp.com/systems/{app.name}-migration/events|(Migration Logs)>"
     result["slack_message"] = (
         f"Failed to deploy app `{result['app_name']}` for cluster"
         f" `{settings.CLUSTER_NAME}` :rotating_light:"
