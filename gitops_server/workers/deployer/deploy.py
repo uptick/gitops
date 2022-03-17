@@ -6,13 +6,13 @@ import tempfile
 import uuid
 from typing import List, Optional
 
-from hooks import handle_failed_deploy, handle_successful_deploy
-
 from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import AppDefinitions, UpdateAppResult
 from gitops_server.utils import get_repo_name_from_url, github, run, slack
 from gitops_server.utils.git import temp_repo
+
+from .hooks import handle_failed_deploy, handle_successful_deploy
 
 BASE_REPO_DIR = "/var/gitops/repos"
 ROLE_ARN = f"arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess"
