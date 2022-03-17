@@ -34,17 +34,19 @@ async def post_init_summary(
     )
 
 
-async def post_result(app: App, result: UpdateAppResult, **kwargs):
+async def post_result(app: App, result: UpdateAppResult, deployer: "Deployer", **kwargs):
     if result["exit_code"] != 0:
-        result = await handle_failed_deploy(app, result)
+        result = await handle_failed_deploy(app, result, deployer)
 
-        await slack.post(
-            f"Failed to deploy app `{result['app_name']}` for cluster"
-            f" `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
+        message = (
+            result.get("slack_message")
+            or f"Failed to deploy app `{result['app_name']}` for cluster `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
         )
 
+        await slack.post(message)
+
     else:
-        await handle_successful_deploy(app, result)
+        await handle_successful_deploy(app, result, deployer)
 
 
 async def post_result_summary(source: str, results: List[UpdateAppResult]):
@@ -68,13 +70,15 @@ async def load_app_definitions(url: str, sha: str) -> AppDefinitions:
 class Deployer:
     def __init__(
         self,
-        pusher: str,
+        author_name: str,
+        author_email: str,
         commit_message: str,
         current_app_definitions: AppDefinitions,
         previous_app_definitions: AppDefinitions,
         skip_migrations: bool = False,
     ):
-        self.pusher = pusher
+        self.author_name = author_name
+        self.author_email = author_email
         self.commit_message = commit_message
         self.current_app_definitions = current_app_definitions
         self.previous_app_definitions = previous_app_definitions
@@ -87,7 +91,8 @@ class Deployer:
     @classmethod
     async def from_push_event(cls, push_event):
         url = push_event["repository"]["clone_url"]
-        pusher = push_event["pusher"]["name"]
+        author_name = push_event.get("head_commit", {}).get("author", {}).get("name")
+        author_email = push_event.get("head_commit", {}).get("author", {}).get("email")
         commit_message = push_event.get("head_commit", {}).get("message")
         skip_migrations = "--skip-migrations" in commit_message
         logger.info(f'Initialising deployer for "{url}".')
@@ -97,7 +102,8 @@ class Deployer:
         # TODO: Handle case where there is no previous commit.
         previous_app_definitions = await load_app_definitions(url, sha=before)
         return cls(
-            pusher,
+            author_name,
+            author_email,
             commit_message,
             current_app_definitions,
             previous_app_definitions,
@@ -114,8 +120,8 @@ class Deployer:
             f" R{list(removed_apps)}"
         )
         await post_init_summary(
-            self.current_app_definitions.name,
-            self.pusher,
+            source=self.current_app_definitions.name,
+            username=self.author_name,
             added_apps=added_apps,
             updated_apps=updated_apps,
             removed_apps=removed_apps,
@@ -145,7 +151,9 @@ class Deployer:
             )
             update_result = UpdateAppResult(app_name=app.name, **result)
             await post_result(
-                app=app, result=update_result, source=self.current_app_definitions.name
+                app=app,
+                result=update_result,
+                deployer=self,
             )
         return update_result
 
@@ -203,9 +211,7 @@ class Deployer:
 
             update_result = UpdateAppResult(app_name=app.name, **result)
 
-            await post_result(
-                app=app, result=update_result, source=self.current_app_definitions.name
-            )
+            await post_result(app=app, result=update_result, deployer=self)
         return update_result
 
     def calculate_app_deltas(self):

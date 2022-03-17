@@ -40,7 +40,7 @@ class TestDeploy(TestCase):
         self.assertEqual(post_mock.call_count, 2)
         check_in_run_mock = [
             (0, "mock-repo"),
-            (0, "authorusername"),
+            (0, "Author Fullname"),
             (0, "sample-app-1"),
             (0, "sample-app-2"),
             (1, "2 succeeded"),
@@ -115,7 +115,7 @@ class TestDeploy(TestCase):
         self.assertEqual(post_mock.call_count, 2)
         check_in_run_mock = [
             (0, "mock-repo"),
-            (0, "authorusername"),
+            (0, "Author Fullname"),
             (0, "sample-app-1"),
             (0, "sample-app-2"),
             (1, "2 succeeded"),

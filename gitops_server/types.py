@@ -15,6 +15,7 @@ class RunOutput(TypedDict):
 
 class UpdateAppResult(RunOutput):
     app_name: str
+    message: str
 
 
 class AppDefinitions:
