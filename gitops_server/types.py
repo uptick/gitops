@@ -15,7 +15,7 @@ class RunOutput(TypedDict):
 
 class UpdateAppResult(RunOutput):
     app_name: str
-    message: str
+    slack_message: str
 
 
 class AppDefinitions:
