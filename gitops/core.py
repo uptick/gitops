@@ -69,7 +69,7 @@ def bump(
         return
 
     if push:
-        run(f'cd {APPS_PATH}; git pull"')
+        run(f"cd {APPS_PATH}; git pull")
 
     for app in apps:
         app_name = app.name
