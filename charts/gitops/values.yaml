@@ -11,6 +11,7 @@ environment:
 secrets:
   ACCOUNT_ID: ""
   SLACK_URL: ""
+  SLACK_TOKEN: ""
   GITHUB_OAUTH_TOKEN: ""
   GITHUB_WEBHOOK_KEY: ""
   GIT_CRYPT_KEY: ""
