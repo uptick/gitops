@@ -36,9 +36,16 @@ async def post_init_summary(
 
 async def post_result(app: App, result: UpdateAppResult, **kwargs):
     if result["exit_code"] != 0:
-        await handle_failed_deploy(app, result, **kwargs)
+        result = await handle_failed_deploy(app, result)
+
+        await slack.post(
+            f"Failed to deploy app `{result['app_name']}` for cluster"
+            f" `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
+        )
+
     else:
-        await handle_successful_deploy(app, result, **kwargs)
+        await handle_successful_deploy(app, result)
+
 
 async def post_result_summary(source: str, results: List[UpdateAppResult]):
     n_success = sum([r["exit_code"] == 0 for r in results])
@@ -137,7 +144,9 @@ class Deployer:
                 f"helm uninstall {app.name} -n {app.values['namespace']}", suppress_errors=True
             )
             update_result = UpdateAppResult(app_name=app.name, **result)
-            await post_result(app=app, result=update_result, source=self.current_app_definitions.name)
+            await post_result(
+                app=app, result=update_result, source=self.current_app_definitions.name
+            )
         return update_result
 
     async def update_app_deployment(self, app: App) -> Optional[UpdateAppResult]:
@@ -194,7 +203,9 @@ class Deployer:
 
             update_result = UpdateAppResult(app_name=app.name, **result)
 
-            await post_result(app=app, result=update_result, source=self.current_app_definitions.name)
+            await post_result(
+                app=app, result=update_result, source=self.current_app_definitions.name
+            )
         return update_result
 
     def calculate_app_deltas(self):
