@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 22.6.0
     hooks:
     - id: black
       language_version: python3.9
@@ -8,13 +8,13 @@ repos:
 
 
 - repo: https://github.com/pycqa/isort
-  rev: 5.9.2
+  rev: 5.10.1
   hooks:
   - id: isort
     name: isort (python)
 
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.0.3 # Possible releases: https://github.com/hadialqattan/pycln/tags
+  rev: v1.3.5 # Possible releases: https://github.com/hadialqattan/pycln/tags
   hooks:
     - id: pycln
 
