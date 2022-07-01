@@ -119,9 +119,7 @@ def bump(
 
 
 @task
-def command(
-    ctx, filter, command, exclude="", cleanup=True, sequential=True, interactive=True, fargate=False
-):
+def command(ctx, filter, command, exclude="", cleanup=True, sequential=True, interactive=True):
     """Run command on selected app(s).
 
     eg. inv command customer,sandbox -e aesg "python manage.py migrate"
@@ -145,21 +143,17 @@ def command(
     if sequential or (not interactive) or len(apps) == 1:
         for app in apps:
             # For each app, just run the coroutine and print the output
-            print(
-                asyncio.run(
-                    run_job(app, command, cleanup=cleanup, sequential=True, fargate=fargate)
-                )
-            )
+            print(asyncio.run(run_job(app, command, cleanup=cleanup, sequential=True)))
     else:
         # Build list of coroutines, and execute them all at once
         jobs = [
             (
-                run_job(app, command, cleanup=cleanup, sequential=sequential, fargate=fargate),
+                run_job(app, command, cleanup=cleanup, sequential=sequential),
                 app.name,
             )
             for app in apps
         ]
-        asyncio.run(run_tasks_async_with_progress(jobs, max_concurrency=100 if fargate else 10))
+        asyncio.run(run_tasks_async_with_progress(jobs, max_concurrency=10))
 
     print(success("Done!"))
 

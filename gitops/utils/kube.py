@@ -12,7 +12,7 @@ from base64 import b64encode
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
-from typing import Dict
+from typing import Dict, TypedDict
 
 import boto3
 import humanize
@@ -28,7 +28,24 @@ from gitops.utils.async_runner import async_run
 from .exceptions import CommandError
 
 
-async def run_job(app: App, command, cleanup=True, sequential=True, fargate=False):
+class ResourceSpec(TypedDict):
+    memory: str
+    cpu: str
+
+
+class ContainerResources(TypedDict):
+    limits: ResourceSpec
+    requests: ResourceSpec
+
+
+async def run_job(
+    app: App,
+    command,
+    cleanup=True,
+    sequential=True,
+    cpu: int = None,
+    memory: int = None,
+):
     job_id = make_key(4).lower()
     values = {
         "name": f"{app.name}-command-{job_id}",
@@ -37,8 +54,16 @@ async def run_job(app: App, command, cleanup=True, sequential=True, fargate=Fals
         "image": app.image,
     }
     extra_labels = {}
-    if fargate:
-        extra_labels = {"uptick/fargate": "true"}
+    container_resources = {}
+
+    if cpu and memory:
+        cpu_request = f"{cpu}m" if cpu else ""
+        memory_request = f"{memory}Mi" if memory else ""
+        container_resources = ContainerResources(
+            limits=ResourceSpec(cpu=cpu_request, memory=memory_request),
+            requests=ResourceSpec(cpu=cpu_request, memory=memory_request),
+        )
+
     return await _run_job(
         "jobs/command-job.yml",
         values,
@@ -48,6 +73,7 @@ async def run_job(app: App, command, cleanup=True, sequential=True, fargate=Fals
         cleanup=cleanup,
         sequential=sequential,
         extra_labels=extra_labels,
+        container_resources=container_resources,
     )
 
 
@@ -161,7 +187,12 @@ def make_key(length=64):
     )
 
 
-def render_template(template: str, values: Dict, extra_labels: Dict) -> str:
+def render_template(
+    template: str,
+    values: Dict = None,
+    extra_labels: Dict = None,
+    container_resources: ContainerResources = None,
+) -> str:
     """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
     extra_labels = extra_labels or {}
     values = values or {}
@@ -174,6 +205,9 @@ def render_template(template: str, values: Dict, extra_labels: Dict) -> str:
     # Adding extra labels to k8s job pod spec
     for k, v in extra_labels.items():
         job_json["spec"]["template"]["metadata"]["labels"][k] = v
+    if container_resources:
+        job_json["spec"]["template"]["spec"]["containers"][0]["resources"] = container_resources
+
     return yaml.dump(job_json)
 
 
@@ -186,13 +220,17 @@ async def _run_job(
     cleanup=True,
     sequential=True,
     extra_labels: Dict = None,
+    container_resources: ContainerResources = None,
 ):
     name = values["name"]
     logs = ""
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
         # Generate yaml template to render
         rendered_template = render_template(
-            open(APPS_PATH / ".." / path, "r").read(), values, extra_labels
+            open(APPS_PATH / ".." / path, "r").read(),
+            values,
+            extra_labels,
+            container_resources=container_resources,
         )
         tmp.write(rendered_template)
         tmp.flush()

@@ -11,7 +11,7 @@ UNSAFE_MANAGE_PY = "env DJANGO_ALLOW_ASYNC_UNSAFE=true ./manage.py"
 
 
 @task
-def bash(ctx, app, cleanup=True):
+def bash(ctx, app, cleanup=True, cpu=0, memory=0):
     """Brings up bash shell for selected app.
 
     eg. inv bash aesg
@@ -19,12 +19,12 @@ def bash(ctx, app, cleanup=True):
     app = get_app_details(app)
     if "production" in app.tags:
         confirm_dangerous_command()
-    asyncio.run(run_job(app, "bash", cleanup=cleanup))
+    asyncio.run(run_job(app, "bash", cleanup=cleanup, cpu=cpu, memory=memory))
     print(success("Done!"))
 
 
 @task
-def mcommand(ctx, filter, mcommand, exclude="", cleanup=True, sequential=False, fargate=False):
+def mcommand(ctx, filter, mcommand, exclude="", cleanup=True, sequential=False, cpu=0, memory=0):
     """Run django management command on selected app(s).
 
     eg. inv mcommand customer,sandbox -e aesg showmigrations
@@ -36,12 +36,13 @@ def mcommand(ctx, filter, mcommand, exclude="", cleanup=True, sequential=False, 
         exclude=exclude,
         cleanup=cleanup,
         sequential=sequential,
-        fargate=fargate,
+        cpu=cpu,
+        memory=memory,
     )
 
 
 @task(aliases=["sp"])
-def shell_plus(ctx, app, cleanup=True):
+def shell_plus(ctx, app, cleanup=True, cpu=0, memory=0):
     """Brings up shell_plus for selected app.
 
     eg. inv sp aesg
@@ -49,14 +50,14 @@ def shell_plus(ctx, app, cleanup=True):
     app = get_app_details(app)
     if "production" in app.tags:
         confirm_dangerous_command()
-    asyncio.run(run_job(app, f"{UNSAFE_MANAGE_PY} shell_plus", cleanup=cleanup))
+    asyncio.run(
+        run_job(app, f"{UNSAFE_MANAGE_PY} shell_plus", cleanup=cleanup, cpu=cpu, memory=memory)
+    )
     print(success("Done!"))
 
 
 @task
-def migrate(
-    ctx, filter, exclude="", cleanup=True, sequential=False, interactive=True, fargate=False
-):
+def migrate(ctx, filter, exclude="", cleanup=True, sequential=False, interactive=True):
     """Runs migrations for selected app.
 
     eg. inv migrate workforce,sandbox
@@ -69,5 +70,4 @@ def migrate(
         cleanup=cleanup,
         sequential=sequential,
         interactive=interactive,
-        fargate=fargate,
     )
