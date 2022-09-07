@@ -1,4 +1,4 @@
-from contextlib import suppress
+from functools import lru_cache
 from hashlib import md5
 
 import boto3
@@ -6,7 +6,6 @@ from colorama import Fore
 
 from .cli import colourise
 
-PREFIX_CACHE = {}
 BATCH_SIZE = 100
 
 
@@ -16,48 +15,29 @@ def get_image(tag):
     raise NotImplementedError
 
 
+@lru_cache
 def get_latest_image(prefix: str) -> str:
-    """Finds latest image in ECR with the given prefix."""
-    with suppress(KeyError):
-        return PREFIX_CACHE[prefix]
+    """Finds latest image in ECR with the given prefix and returns the image tag"""
+    ecr_client = boto3.client("ecr")
+    client_paginator = ecr_client.get_paginator("describe_images")
 
-    ecr = boto3.client("ecr")
-    image_tags = []
-    next_token = None
-    while True:
-        opts = {"repositoryName": "uptick", "filter": {"tagStatus": "TAGGED"}}
-        if next_token:
-            opts["nextToken"] = next_token
-        results = ecr.list_images(**opts)
-        for image in results["imageIds"]:
-            if image["imageTag"].startswith(prefix + "-"):
-                image_tags.append(image["imageTag"])
-        next_token = results.get("nextToken")
-        if not next_token:
-            break
+    results = []
+    for ecr_response in client_paginator.paginate(
+        repositoryName="uptick", filter={"tagStatus": "TAGGED"}, maxResults=BATCH_SIZE
+    ):
+        for image in ecr_response["imageDetails"]:
+            if prefix_tags := [tag for tag in image["imageTags"] if tag.startswith(prefix + "-")]:
+                results.append((prefix_tags[0], image["imagePushedAt"]))
 
-    if not image_tags:
+    if not results:
         print(f'No images with tag "{prefix}-*".')
-        PREFIX_CACHE[prefix] = None
         return None
 
-    # ECR allows us to fetch 100 image details at a time.
-    results = []
-    for i in range(0, len(image_tags), BATCH_SIZE):
-        batch_image_tags = image_tags[i : i + BATCH_SIZE]
-        ecr_response = ecr.describe_images(
-            repositoryName="uptick",
-            imageIds=[{"imageTag": t} for t in batch_image_tags],
-            filter={"tagStatus": "TAGGED"},
-        )
-        results += [(i["imagePushedAt"], i["imageTags"][0]) for i in ecr_response["imageDetails"]]
-
-    latest_image_tag = sorted(results, key=lambda x: x[0], reverse=True)[0][1]
-    PREFIX_CACHE[prefix] = latest_image_tag
+    latest_image_tag = sorted(results, key=lambda image: image[1], reverse=True)[0][0]
     return latest_image_tag
 
 
-def colour_image(image_tag: str):
+def colour_image(image_tag: str) -> str:
     if not image_tag:
         return image_tag
 
