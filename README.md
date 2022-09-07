@@ -11,7 +11,7 @@ Manage multiple apps across one or more k8s clusters.
 Keeping track of numerous of single-tenanted application deployments can quickly become a handful. Enter Gitops!
 
 The tool has two halves:
- * Gitops Server - an instance of this gets deployed to each of your kubernetes clusters, listening on changes made to your gitops cluster repo. The server's responsibility is to update the deployments on the cluster it lives on match the app specifications in the repo.
+ * Gitops Server - an instance of this gets deployed to each of your kubernetes clusters, listening on changes made to your gitops cluster repo. The server's responsibility is to update the deployments on the cluster it lives on to match the app specifications in the repo.
  * Gitops CLI - this is a tool that you can use to interact comfortably with your cluster repo. It allows listing all deployed applications, what images they're presently running on, and which clusters they live on. It also provides numerous operations that can be applied to one or more apps at a time, such as bumping to a newer version of an image, or running a particular command across your app cohort.
 
 You can install the CLI tool with: `pip install gitops`
