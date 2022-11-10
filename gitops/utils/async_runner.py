@@ -33,8 +33,7 @@ async def run_tasks_async_with_progress(tasks, max_concurrency=10):
         win_info,
         0,
         0,
-        f"Your command is now running on the following {len(tasks)} servers (may extend off bottom"
-        " of terminal):",
+        f"Your command is now running on the following {len(tasks)} servers:",
     )
     # Ugly.
     item_width = len(max(tasks, key=lambda x: len(x[1]))[1]) + 3
