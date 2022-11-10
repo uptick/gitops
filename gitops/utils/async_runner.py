@@ -4,10 +4,10 @@ import curses
 from .cli import progress, success, warning
 
 
-def init_curses(num_tasks):
+def init_curses():
     stdscr = curses.initscr()
     height, width = stdscr.getmaxyx()
-    win = curses.newpad(num_tasks, 300)
+    win = curses.newpad(200, 300)
     curses.start_color()
     curses.use_default_colors()
     # -1 is default terminal background color
@@ -23,14 +23,12 @@ def init_curses(num_tasks):
 def addstr(win_info, x, y, text, color=0):
     win, height, width = win_info
     win.addstr(x, y, text, color)
-    win.clrtoeol()
-    win.clearok(1)
     win.refresh(0, 0, 0, 0, height - 1, width - 1)
 
 
 async def run_tasks_async_with_progress(tasks, max_concurrency=10):
     sem = asyncio.Semaphore(max_concurrency)
-    win_info = init_curses(len(tasks) + 1)
+    win_info = init_curses()
     addstr(
         win_info,
         0,
@@ -39,9 +37,18 @@ async def run_tasks_async_with_progress(tasks, max_concurrency=10):
         " of terminal):",
     )
     # Ugly.
-    just = len(max(tasks, key=lambda x: len(x[1]))[1]) + 1
+    item_width = len(max(tasks, key=lambda x: len(x[1]))[1]) + 3
+    items_per_line = win_info[2] // item_width
     tasks = [
-        print_async_complete(task, num + 1, just, win_info, sem) for num, task in enumerate(tasks)
+        print_async_complete(
+            task,
+            num // items_per_line + 1,
+            num % items_per_line * item_width,
+            item_width - 2,
+            win_info,
+            sem,
+        )
+        for num, task in enumerate(tasks)
     ]
     # Can reverse tasks with [::-1] if we prefer them to run bottom to top on output.
     outputs = await asyncio.gather(*tasks, return_exceptions=True)
@@ -53,18 +60,18 @@ async def run_tasks_async_with_progress(tasks, max_concurrency=10):
     print("\n".join(outputs))
 
 
-async def print_async_complete(task, position, just, win_info, sem):
+async def print_async_complete(task, x, y, status_y_offset, win_info, sem):
     cor, name = task
-    addstr(win_info, position, 0, name)
+    addstr(win_info, x, y, name)
     output = f'{"-"*20}\n{progress(name)}\n{"-"*20}\n'
     try:
         await sem.acquire()
         output += await cor
     except Exception as e:
-        addstr(win_info, position, just, "✗", curses.color_pair(1))
+        addstr(win_info, x, y + status_y_offset, "✗", curses.color_pair(1))
         output += f"Exception: {str(e)}"
     else:
-        addstr(win_info, position, just, "✔", curses.color_pair(2))
+        addstr(win_info, x, y + status_y_offset, "✔", curses.color_pair(2))
     sem.release()
     return output
 
