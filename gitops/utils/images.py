@@ -16,14 +16,16 @@ def get_image(tag):
 
 
 @lru_cache
-def get_latest_image(prefix: str) -> str:
+def get_latest_image(repository_name: str, prefix: str) -> str:
     """Finds latest image in ECR with the given prefix and returns the image tag"""
     ecr_client = boto3.client("ecr")
     client_paginator = ecr_client.get_paginator("describe_images")
 
     results = []
     for ecr_response in client_paginator.paginate(
-        repositoryName="uptick", filter={"tagStatus": "TAGGED"}, maxResults=BATCH_SIZE
+        repositoryName=repository_name,
+        filter={"tagStatus": "TAGGED"},
+        maxResults=BATCH_SIZE,
     ):
         for image in ecr_response["imageDetails"]:
             if prefix_tags := [tag for tag in image["imageTags"] if tag.startswith(prefix + "-")]:

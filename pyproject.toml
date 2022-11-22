@@ -1,6 +1,10 @@
 [tool.poetry]
 name = "gitops"
+<<<<<<< HEAD
 version = "0.9.6"
+=======
+version = "0.9.5"
+>>>>>>> bc1123b (feat: Be able to bump other repos)
 description = "Manage multiple apps across one or more k8s clusters."
 authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"

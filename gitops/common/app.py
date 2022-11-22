@@ -77,6 +77,7 @@ class App:
 
     @property
     def image(self) -> str:
+        """[305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/uptick:yoink-9f03ac80f3]"""
         image = self.values.get("image", "")
         if isinstance(image, dict):
             return f"{image['repository']}:{image.get('tag','latest')}"
@@ -84,12 +85,19 @@ class App:
             return image
 
     @property
+    def image_repository_name(self) -> str:
+        """305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/[uptick]:yoink-9f03ac80f3"""
+        return self.image.split(":")[0].split("/")[-1]
+
+    @property
     def image_tag(self) -> str:
+        """305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/uptick:[yoink-9f03ac80f3]"""
         return self.image.split(":")[-1]
 
     @property
     def image_prefix(self) -> str:
         """Gets the image prefix portion of {prefix}-{git hash}
+        305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/uptick:[yoink]-9f03ac80f3
 
         eg: qa-server-12345 -> qa-server"""
         return self.image_tag.rsplit("-", 1)[0]

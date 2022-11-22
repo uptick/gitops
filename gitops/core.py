@@ -79,7 +79,7 @@ def bump(
                 new_image_prefix = app.image_prefix
             else:
                 new_image_prefix = prefix
-            new_image_tag = get_latest_image(new_image_prefix)
+            new_image_tag = get_latest_image(app.image_repository_name, new_image_prefix)
         else:
             new_image_tag = get_image(image_tag)
         if new_image_tag != prev_image_tag:
