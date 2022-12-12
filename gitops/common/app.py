@@ -28,6 +28,7 @@ class App:
         deployments = deployments or {}
         secrets = secrets or {}
         self.values = self._make_values(deployments, secrets)
+        self.namespace: str = self.values["namespace"]
         self.chart = Chart(self.values["chart"])
 
     def __eq__(self, other):

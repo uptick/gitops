@@ -8,7 +8,12 @@ from .utils import create_test_yaml
 class MakeImageTests(TestCase):
     def test_direct_image(self):
         app = App(
-            "test", deployments={"image": "I0", "chart": "https://github.com/uptick/workforce"}
+            "test",
+            deployments={
+                "image": "I0",
+                "chart": "https://github.com/uptick/workforce",
+                "namespace": "rofl",
+            },
         )
         self.assertEqual(app.values["image"], "I0")
 
@@ -19,6 +24,7 @@ class MakeImageTests(TestCase):
                 "images": {"template": "image-template-{tag}"},
                 "chart": "https://uptick.com/uptick/workforce",
                 "image-tag": "I0",
+                "namespace": "rofl",
             },
         )
         self.assertEqual(app.values["image"], "image-template-I0")
@@ -30,6 +36,7 @@ class MakeImageTests(TestCase):
                 "images": {"template": "docker.io/uptick:{tag}"},
                 "chart": "https://uptick.com/uptick/workforce",
                 "image-tag": "qa-server-1asd1",
+                "namespace": "rofl",
             },
         )
         self.assertEqual(app.image_prefix, "qa-server")
@@ -37,9 +44,7 @@ class MakeImageTests(TestCase):
     def test_no_image_tag_is_valid(self):
         app = App(
             "test",
-            deployments={
-                "chart": "https://uptick.com/uptick/workforce",
-            },
+            deployments={"chart": "https://uptick.com/uptick/workforce", "namespace": "rofl"},
         )
         self.assertIsNone(app.values.get("image"))
 
