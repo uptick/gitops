@@ -5,7 +5,15 @@ from typing import Dict, List, Optional, Union
 
 from .utils import load_yaml
 
-DEPLOYMENT_ATTRIBUTES = ["tags", "image-tag", "containers", "environment", "cluster", "bump"]
+DEPLOYMENT_ATTRIBUTES = [
+    "tags",
+    "image-tag",
+    "containers",
+    "environment",
+    "cluster",
+    "bump",
+    "namespace",
+]
 
 
 class App:
