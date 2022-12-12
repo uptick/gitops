@@ -147,7 +147,7 @@ class Deployer:
         async with self.semaphore:
             logger.info(f"Uninstalling app {app.name!r}.")
             result = await run(
-                f"helm uninstall {app.name} -n {app.values['namespace']}", suppress_errors=True
+                f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True
             )
             update_result = UpdateAppResult(app_name=app.name, **result)
             await post_result(
@@ -180,7 +180,7 @@ class Deployer:
                             " --timeout=600s"
                             f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                             f" -f {cfg.name}"
-                            f" --namespace={app.values['namespace']}"
+                            f" --namespace={app.namespace}"
                             f" {app.name}"
                             f" {chart_folder_path}",
                             suppress_errors=True,
@@ -200,7 +200,7 @@ class Deployer:
                         " --timeout=600s"
                         f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
                         f" -f {cfg.name}"
-                        f" --namespace={app.values['namespace']}"
+                        f" --namespace={app.namespace}"
                         f" {app.name}"
                         f" {app.chart.helm_chart} {chart_version_arguments}",
                         suppress_errors=True,
