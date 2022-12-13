@@ -68,7 +68,7 @@ async def run_job(
         "jobs/command-job.yml",
         values,
         context=app.cluster,
-        namespace="workforce",
+        namespace=app.namespace,
         attach=True,
         cleanup=cleanup,
         sequential=sequential,

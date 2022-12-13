@@ -5,7 +5,15 @@ from typing import Dict, List, Optional, Union
 
 from .utils import load_yaml
 
-DEPLOYMENT_ATTRIBUTES = ["tags", "image-tag", "containers", "environment", "cluster", "bump"]
+DEPLOYMENT_ATTRIBUTES = [
+    "tags",
+    "image-tag",
+    "containers",
+    "environment",
+    "cluster",
+    "bump",
+    "namespace",
+]
 
 
 class App:
@@ -28,6 +36,7 @@ class App:
         deployments = deployments or {}
         secrets = secrets or {}
         self.values = self._make_values(deployments, secrets)
+        self.namespace: str = self.values["namespace"]
         self.chart = Chart(self.values["chart"])
 
     def __eq__(self, other):

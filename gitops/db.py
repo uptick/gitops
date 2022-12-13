@@ -29,7 +29,7 @@ def backup(ctx, app_name):
             "jobs/backup-job.yml",
             values,
             context=app.cluster,
-            namespace="workforce",
+            namespace=app.namespace,
             sequential=True,
         )
     )
@@ -57,7 +57,7 @@ def restore_backup(ctx, app_name, index, cleanup=True):
             "jobs/restore-job.yml",
             values,
             context=app.cluster,
-            namespace="workforce",
+            namespace=app.namespace,
             cleanup=cleanup,
         )
     )
@@ -82,7 +82,7 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
             "jobs/copy-db-job.yml",
             values,
             context=source_app.cluster,
-            namespace="workforce",
+            namespace=source_app.namespace,
             cleanup=cleanup,
         )
     )
@@ -242,7 +242,7 @@ def wipe_db(ctx, destination, skip_backup=False, cleanup=True):
             "jobs/wipe-db-job.yml",
             values,
             context=source_app.cluster,
-            namespace="workforce",
+            namespace=source_app.namespace,
             cleanup=cleanup,
         )
     )
