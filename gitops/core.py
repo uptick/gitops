@@ -75,6 +75,7 @@ def bump(
         app_name = app.name
         prev_image_tag = app.image_tag
         if image_tag is None:
+            # if we haven't specified a prefix
             if prefix is None:
                 new_image_prefix = app.image_prefix
             else:

@@ -91,7 +91,7 @@ def get_apps(
         app = get_app_details(entry.name, load_secrets=load_secrets)
 
         pseudotags = [app.name, app.cluster]
-        if app.image:
+        if app.image and app.image_prefix:
             pseudotags.append(app.image_prefix)
 
         tags = set(app.tags + pseudotags)
