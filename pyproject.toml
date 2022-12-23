@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gitops"
-version = "0.9.10"
+version = "0.9.11"
 description = "Manage multiple apps across one or more k8s clusters."
 authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"
@@ -8,7 +8,7 @@ license = "BSD"
 [tool.poetry.dependencies]
 python = "^3.9"
 # CLI requirements
-invoke = "*"
+invoke = { git = "https://github.com/pyinvoke/invoke.git", rev = "8f6c0617c7dc59b105dd1b92fb417e75adc21bea" }
 pyyaml = ">=5.1.2"
 dsnparse = "*"
 colorama = "^0.4.4"
