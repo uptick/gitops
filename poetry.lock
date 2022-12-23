@@ -667,14 +667,10 @@ description = "Pythonic task execution"
 category = "main"
 optional = false
 python-versions = "*"
-files = []
-develop = false
-
-[package.source]
-type = "git"
-url = "https://github.com/pyinvoke/invoke.git"
-reference = "8f6c0617c7dc59b105dd1b92fb417e75adc21bea"
-resolved_reference = "8f6c0617c7dc59b105dd1b92fb417e75adc21bea"
+files = [
+    {file = "invoke-1.7.3-py3-none-any.whl", hash = "sha256:d9694a865764dd3fd91f25f7e9a97fb41666e822bbb00e670091e3f43933574d"},
+    {file = "invoke-1.7.3.tar.gz", hash = "sha256:41b428342d466a82135d5ab37119685a989713742be46e42a3a399d685579314"},
+]
 
 [[package]]
 name = "ipdb"
@@ -1731,4 +1727,4 @@ server = ["fastapi", "uvicorn", "httpx", "uvicorn", "sentry-sdk", "kubernetes_as
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9ef23cacc46438564b7493dd6a8b0bd3d0328fca09554f307db8818e1bce8235"
+content-hash = "4efe903a43b6b4f0ade3aaf8e09cfd9a0d590f9dd7267c4c9713bfd7a9bb4adf"

@@ -8,7 +8,7 @@ license = "BSD"
 [tool.poetry.dependencies]
 python = "^3.9"
 # CLI requirements
-invoke = { git = "https://github.com/pyinvoke/invoke.git", rev = "8f6c0617c7dc59b105dd1b92fb417e75adc21bea" }
+invoke = "*"
 pyyaml = ">=5.1.2"
 dsnparse = "*"
 colorama = "^0.4.4"
