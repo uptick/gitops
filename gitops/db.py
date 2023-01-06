@@ -118,6 +118,7 @@ def proxy(
     Usage: gitops db.proxy app_name
     or     gitops db.proxy postgres://...:...@5432/db
     """
+
     try:
         database_url = app_name
         database_dsn = dsnparse.parse(database_url)
@@ -133,9 +134,20 @@ def proxy(
     if not local_port:
         local_port = random.randint(1000, 9999)
 
+    # Maybe we need to connect via RDS IAM instead!
     modified_dsn = dsnparse.parse(database_url)
     modified_dsn.hostname = "localhost"
     modified_dsn.port = local_port
+    rds_iam = False
+
+    if not database_dsn.password:
+        result = run(
+            f"aws rds generate-db-auth-token --hostname {database_dsn.host} --port"
+            f" {database_dsn.port} --username {database_dsn.user}",
+            hide=True,
+        )
+        modified_dsn.password = result.stdout.strip()
+        rds_iam = True
 
     bastion_instance_id = bastion_instance_id or os.environ.get("GITOPS_BASTION_INSTANCE_ID")
     if not bastion_instance_id:
@@ -151,30 +163,19 @@ def proxy(
 
     print(progress(f"Creating a proxy to the RDS instance of: {app_name} "))
 
-    # Create a temporary ssh key
-    run("echo -e 'y\n' | ssh-keygen -t rsa -f /tmp/temp -N '' >/dev/null 2>&1")
-
-    # Send ssh key to bastion. These only last 60 seconds
-    run(
-        f"""aws ec2-instance-connect send-ssh-public-key \
-            --instance-id {bastion_instance_id}\
-            --availability-zone  {aws_availability_zone} \
-            --instance-os-user ec2-user \
-            --ssh-public-key file:///tmp/temp.pub
-    """,
-        hide=True,
-    )
-    proxy_dsn = modified_dsn.geturl()
+    if rds_iam:
+        proxy_dsn = (
+            f"'user={modified_dsn.user} password={modified_dsn.password} host={modified_dsn.hostname} dbname={modified_dsn.dbname}"
+            f" port={modified_dsn.port}'"
+        )
+    else:
+        proxy_dsn = modified_dsn.geturl()
     print(progress(f"Connect to the db using: {proxy_dsn}\n"))
-    # Create ssh tunnel
-    cmd = f"""ssh -i /tmp/temp \
-            -N -M -L {local_port}:{database_dsn.hostname}:{database_dsn.port or 5432} \
-            -o "UserKnownHostsFile=/dev/null" \
-            -o "StrictHostKeyChecking=no" \
-            -o "ServerAliveInterval=60" \
-            -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region={aws_availability_zone[:-1]}" \
-            ec2-user@{bastion_instance_id}"""
-
+    cmd = f"""aws ssm start-session  \
+        --target {bastion_instance_id}  \
+        --document-name AWS-StartPortForwardingSessionToRemoteHost \
+        --parameters='{{"host": ["{database_dsn.host}"], "portNumber":["{database_dsn.port}"],"localPortNumber":["{local_port}"]}}'
+    """
     return proxy_dsn, run(cmd, hide=True, asynchronous=background)
 
 
