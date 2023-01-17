@@ -19,9 +19,8 @@ async def update_issue_from_deployment_url(
     async with httpx.AsyncClient() as client:
         headers = github.get_headers()
         deployment_response = await client.get(deployment_url, headers=headers)
-        sha = deployment_response.json()["sha"]
-
         try:
+            sha = deployment_response.json().get("sha", "")
             issues_response = await client.get(
                 f"https://api.github.com/search/issues?q={sha}+is:pr", headers=headers
             )
