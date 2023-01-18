@@ -19,13 +19,11 @@ class DeployQueueWorker:
     @classmethod
     def get_worker(cls):
         if not cls._worker:
-            loop = asyncio.get_running_loop()
-            cls._worker = cls(loop)
+            cls._worker = cls()
         return cls._worker
 
-    def __init__(self, loop):
-        self.loop = loop
-        self.queue = asyncio.Queue(loop=self.loop)
+    def __init__(self):
+        self.queue = asyncio.Queue()
 
     async def enqueue(self, work):
         """Enqueue an item of work for future processing.
