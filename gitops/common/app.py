@@ -108,7 +108,10 @@ class App:
         """Gets the image prefix portion of {prefix}-{git hash}
         305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/uptick:[yoink]-9f03ac80f3
 
-        eg: qa-server-12345 -> qa-server"""
+        eg: qa-server-12345 -> qa-server
+        """
+        if "-" not in self.image_tag:
+            return ""
         return self.image_tag.rsplit("-", 1)[0]
 
     @property

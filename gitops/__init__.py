@@ -5,7 +5,7 @@ from pathlib import Path
 from . import monkeypatches  # NOQA
 from .utils.cli import success, warning
 
-__version__ = "0.9.13"
+__version__ = "0.9.14"
 
 
 # Checking gitops version matches cluster repo version.

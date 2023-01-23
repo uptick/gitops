@@ -28,11 +28,20 @@ def get_latest_image(repository_name: str, prefix: str) -> str:
         maxResults=BATCH_SIZE,
     ):
         for image in ecr_response["imageDetails"]:
-            if prefix_tags := [tag for tag in image["imageTags"] if tag.startswith(prefix + "-")]:
-                results.append((prefix_tags[0], image["imagePushedAt"]))
+            if prefix != "":
+                if prefix_tags := [
+                    tag for tag in image["imageTags"] if tag.startswith(prefix + "-")
+                ]:
+                    results.append((prefix_tags[0], image["imagePushedAt"]))
+            else:
+                if prefix_tags := [tag for tag in image["imageTags"] if "-" not in tag]:
+                    results.append((prefix_tags[0], image["imagePushedAt"]))
 
     if not results:
-        print(f'No images with tag "{prefix}-*".')
+        if prefix:
+            print(f'No images found in repository: {repository_name} with tag "{prefix}-*".')
+        else:
+            print(f"No images found in repository: {repository_name}")
         return None
 
     latest_image_tag = sorted(results, key=lambda image: image[1], reverse=True)[0][0]
