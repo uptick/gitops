@@ -122,6 +122,14 @@ class App:
     def tags(self) -> List[str]:
         return self.values.get("tags", [])
 
+    @property
+    def service_account_name(self) -> str:
+        return (
+            self.values.get("serviceAccount", {}).get("name")
+            or self.values.get("serviceAccountName")
+            or "default"
+        )
+
 
 class Chart:
     """Represents a Helm chart

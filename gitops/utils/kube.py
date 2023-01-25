@@ -52,6 +52,7 @@ async def run_job(
         "app": app.name,
         "command": str(shlex.split(command)),
         "image": app.image,
+        "serviceAccountName": app.service_account_name,
     }
     extra_labels = {}
     container_resources = {}
