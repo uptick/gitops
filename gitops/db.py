@@ -89,6 +89,9 @@ def copy_db(ctx, source, destination, skip_backup=False, cleanup=True):
     print(progress("You may want to clear the redis cache now!"))
     print(progress(f"\t- gitops mcommand {destination} clear_cache"))
 
+    print(progress(":: Running migrations"))
+    run(f"gitops migrate {destination}", echo=True)
+
 
 @task
 def download_backup(ctx, app, index=None, path=None, datestamp=False):
