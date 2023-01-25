@@ -173,6 +173,12 @@ def proxy(
         )
     else:
         proxy_dsn = modified_dsn.geturl()
+    print(
+        progress(
+            "Proxy established to :"
+            f"postgres://{modified_dsn.user}@{modified_dsn.hostname}:{modified_dsn.port}/{modified_dsn.dbname}\n"
+        )
+    )
     print(progress(f"Connect to the db using: {proxy_dsn}\n"))
     cmd = f"""aws ssm start-session  \
         --target {bastion_instance_id}  \
