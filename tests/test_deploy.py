@@ -1,6 +1,7 @@
+import re
 from unittest.mock import patch
 
-from asynctest import TestCase
+import pytest
 
 from gitops.common.app import App
 from gitops_server.workers.deployer import Deployer
@@ -13,7 +14,8 @@ from .utils import mock_load_app_definitions
 # Provide x with a valid diff
 
 
-class TestDeploy(TestCase):
+@pytest.mark.asyncio
+class TestDeploy:
     @patch("gitops_server.workers.deployer.deploy.run")
     @patch("gitops_server.utils.slack.post")
     @patch("gitops_server.workers.deployer.deploy.load_app_definitions", mock_load_app_definitions)
@@ -24,20 +26,20 @@ class TestDeploy(TestCase):
         temp_repo_mock.return_value.__aenter__.return_value = "mock-repo"
         deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
         await deployer.deploy()
-        self.assertEqual(run_mock.call_count, 4)
-        self.assertEqual(run_mock.call_args_list[0][0][0], "cd mock-repo; helm dependency build")
-        self.assertRegex(
+        assert run_mock.call_count == 4
+        assert run_mock.call_args_list[0][0][0] == "cd mock-repo; helm dependency build"
+        assert re.match(
+            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install --timeout=600s -f .+\.yml"
-            r" --namespace=mynamespace sample-app-\d mock-repo",
         )
-        self.assertEqual(run_mock.call_args_list[2][0][0], "cd mock-repo; helm dependency build")
-        self.assertRegex(
+        assert run_mock.call_args_list[2][0][0] == "cd mock-repo; helm dependency build"
+        assert re.match(
+            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[3][0][0],
-            r"helm upgrade --install --timeout=600s -f .+\.yml"
-            r" --namespace=mynamespace sample-app-\d mock-repo",
         )
-        self.assertEqual(post_mock.call_count, 2)
+        assert post_mock.call_count == 2
         check_in_run_mock = [
             (0, "mock-repo"),
             (0, "Author Fullname"),
@@ -47,10 +49,7 @@ class TestDeploy(TestCase):
             (1, "0 failed"),
         ]
         for where, check in check_in_run_mock:
-            self.assertIn(
-                check,
-                post_mock.call_args_list[where][0][0],
-            )
+            assert check in post_mock.call_args_list[where][0][0]
 
     @patch("gitops_server.workers.deployer.deploy.run")
     @patch("gitops_server.workers.deployer.deploy.post_result")
@@ -76,16 +75,14 @@ class TestDeploy(TestCase):
         deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD)
         await deployer.update_app_deployment(helm_app)
 
-        self.assertEqual(run_mock.call_count, 2)
-        self.assertEqual(
-            run_mock.call_args_list[0][0][0], "helm repo add brigade https://helm.charts"
-        )
-        self.assertRegex(
-            run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install --timeout=600s -f .+\.yml"
+        assert run_mock.call_count == 2
+        assert run_mock.call_args_list[0][0][0] == "helm repo add brigade https://helm.charts"
+        assert re.match(
+            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
             r" --namespace=mynamespace helm_app brigade/brigade",
+            run_mock.call_args_list[1][0][0],
         )
-        self.assertEqual(post_mock.call_count, 1)
+        assert post_mock.call_count == 1
 
     @patch("gitops_server.workers.deployer.deploy.run")
     @patch("gitops_server.utils.slack.post")
@@ -99,20 +96,20 @@ class TestDeploy(TestCase):
         temp_repo_mock.return_value.__aenter__.return_value = "mock-repo"
         deployer = await Deployer.from_push_event(SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS)
         await deployer.deploy()
-        self.assertEqual(run_mock.call_count, 4)
-        self.assertEqual(run_mock.call_args_list[0][0][0], "cd mock-repo; helm dependency build")
-        self.assertRegex(
+        assert run_mock.call_count == 4
+        assert run_mock.call_args_list[0][0][0] == "cd mock-repo; helm dependency build"
+        assert re.match(
+            r"helm secrets upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[1][0][0],
-            r"helm upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
-            r" --namespace=mynamespace sample-app-\d mock-repo",
         )
-        self.assertEqual(run_mock.call_args_list[2][0][0], "cd mock-repo; helm dependency build")
-        self.assertRegex(
+        assert run_mock.call_args_list[2][0][0] == "cd mock-repo; helm dependency build"
+        assert re.match(
+            r"helm secrets upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
+            r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[3][0][0],
-            r"helm upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
-            r" --namespace=mynamespace sample-app-\d mock-repo",
         )
-        self.assertEqual(post_mock.call_count, 2)
+        assert post_mock.call_count == 2
         check_in_run_mock = [
             (0, "mock-repo"),
             (0, "Author Fullname"),
@@ -122,7 +119,4 @@ class TestDeploy(TestCase):
             (1, "0 failed"),
         ]
         for where, check in check_in_run_mock:
-            self.assertIn(
-                check,
-                post_mock.call_args_list[where][0][0],
-            )
+            assert check in post_mock.call_args_list[where][0][0]

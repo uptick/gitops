@@ -14,11 +14,11 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.10"
       - run: pip install pre-commit
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-$${{ hashFiles('.pre-commit-config.yaml') }}
+          key: ${{ runner.os }}-3.10-pre-commit-$${{ hashFiles('.pre-commit-config.yaml') }}
       - run: pre-commit run --all-files
 

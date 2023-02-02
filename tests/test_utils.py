@@ -1,5 +1,4 @@
 import yaml
-from asynctest import TestCase
 
 import gitops.utils.kube as kube
 
@@ -31,7 +30,7 @@ spec:
 """
 
 
-class TestRenderTemplate(TestCase):
+class TestRenderTemplate:
     def test_render_template_with_app_values(self):
         values = {
             "name": "name",

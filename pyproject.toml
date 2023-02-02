@@ -6,7 +6,7 @@ authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 # CLI requirements
 invoke = "*"
 pyyaml = ">=5.1.2"
@@ -36,14 +36,13 @@ server = [
 #Flake 9 is flake 8 with pyproject support =_=.
 isort = "*"
 ipdb = "*"
-asynctest = "*"
 python-dotenv = "*"
 pytest = "*"
-pytest-asyncio = "^0.15.1"
 requests = "^2.25.1"
 pre-commit = "^2.13.0"
 mypy = "^0.941"
 black = "*"
+pytest-asyncio = "^0.20.3"
 
 [tool.poetry.scripts]
 gitops = 'gitops.main:program.run'
@@ -51,6 +50,7 @@ gitops = 'gitops.main:program.run'
 # Use this to seperate our CLI and Server requirements. poetry install -E server
 #[tool.poetry.extras]
 #server = ["fastapi", "uvicorn", "httpx"]
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -8,7 +8,7 @@ from invoke import run, task
 
 @task
 def test(ctx, pty=True):
-    run("python -m unittest -v")
+    run("py.test")
 
 
 @task

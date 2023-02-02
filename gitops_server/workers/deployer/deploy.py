@@ -175,7 +175,7 @@ class Deployer:
                         cfg.flush()
                         os.fsync(cfg.fileno())
                         result = await run(
-                            "helm upgrade"
+                            "helm secrets upgrade"
                             " --install"
                             " --timeout=600s"
                             f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
@@ -195,7 +195,7 @@ class Deployer:
                     )
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
-                        "helm upgrade"
+                        "helm secrets upgrade"
                         " --install"
                         " --timeout=600s"
                         f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
