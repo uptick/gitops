@@ -19,6 +19,6 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-$${{ hashFiles('.pre-commit-config.yaml') }}
+          key: ${{ runner.os }}-3.10-pre-commit-$${{ hashFiles('.pre-commit-config.yaml') }}
       - run: pre-commit run --all-files
 
