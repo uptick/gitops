@@ -183,6 +183,7 @@ def proxy(
     cmd = f"""aws ssm start-session  \
         --target {bastion_instance_id}  \
         --document-name AWS-StartPortForwardingSessionToRemoteHost \
+        --region {aws_availability_zone} \
         --parameters='{{"host": ["{database_dsn.host}"], "portNumber":["{database_dsn.port}"],"localPortNumber":["{local_port}"]}}'
     """
     return proxy_dsn, run(cmd, hide=True, asynchronous=background)
