@@ -6,7 +6,7 @@ authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 # CLI requirements
 invoke = "*"
 pyyaml = ">=5.1.2"

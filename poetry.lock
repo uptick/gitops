@@ -280,7 +280,6 @@ mypy-extensions = ">=0.4.3"
 pathspec = ">=0.9.0"
 platformdirs = ">=2"
 tomli = ">=1.1.0"
-typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -1726,5 +1725,5 @@ server = ["fastapi", "uvicorn", "httpx", "uvicorn", "sentry-sdk", "kubernetes_as
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9"
-content-hash = "4efe903a43b6b4f0ade3aaf8e09cfd9a0d590f9dd7267c4c9713bfd7a9bb4adf"
+python-versions = "^3.10"
+content-hash = "4a1c62dad97f04729d913f8a08d83857ba603657eb68b447f6c2a3d3346251ea"
