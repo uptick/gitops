@@ -19,11 +19,14 @@ RUN apt-get install wget ca-certificates bash git git-crypt -y --no-install-reco
     && chmod +x /usr/local/bin/kubectl \
     && wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm \
+    && helm plugin install https://github.com/jkroepke/helm-secrets --version v4.2.2 \
+    && wget -q https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux.amd64 -O /usr/local/bin/sops \
+    && chmod +x  /usr/local/bin/sops \
     && apt-get clean \
     && apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/ \
-ENV SHELL=/bin/bash
+    ENV SHELL=/bin/bash
 
 ##
 ## Install dependencies and copy GitOps server.
