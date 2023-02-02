@@ -1,11 +1,9 @@
-from unittest import TestCase
-
 from gitops.common.app import App, Chart
 
 from .utils import create_test_yaml
 
 
-class MakeImageTests(TestCase):
+class TestMakeImage:
     def test_direct_image(self):
         app = App(
             "test",
@@ -15,7 +13,7 @@ class MakeImageTests(TestCase):
                 "namespace": "rofl",
             },
         )
-        self.assertEqual(app.values["image"], "I0")
+        assert app.values["image"] == "I0"
 
     def test_image_tag(self):
         app = App(
@@ -27,7 +25,7 @@ class MakeImageTests(TestCase):
                 "namespace": "rofl",
             },
         )
-        self.assertEqual(app.values["image"], "image-template-I0")
+        assert app.values["image"] == "image-template-I0"
 
     def test_image_prefix_is_parsed_properly(self):
         app = App(
@@ -39,47 +37,47 @@ class MakeImageTests(TestCase):
                 "namespace": "rofl",
             },
         )
-        self.assertEqual(app.image_prefix, "qa-server")
+        assert app.image_prefix == "qa-server"
 
     def test_no_image_tag_is_valid(self):
         app = App(
             "test",
             deployments={"chart": "https://uptick.com/uptick/workforce", "namespace": "rofl"},
         )
-        self.assertIsNone(app.values.get("image"))
+        assert app.values.get("image") is None
 
     def test_image_tag_from_yaml(self):
         path = create_test_yaml()
         app = App("test", path)
-        self.assertEqual(app.values["image"], "template-tag-myimagetag")
+        assert app.values["image"] == "template-tag-myimagetag"
 
     def test_images_key_deleted(self):
         path = create_test_yaml()
         app = App("test", path)
-        self.assertNotIn("images", app.values)
+        assert "images" not in app.values
 
 
-class TestChart(TestCase):
+class TestChart:
     def test_string_git_chart_is_parsed_properly_as_git(self):
         chart = Chart("https://github.com/uptick/workforce")
 
-        self.assertEqual(chart.type, "git")
-        self.assertEqual(chart.git_repo_url, "https://github.com/uptick/workforce")
-        self.assertIsNone(chart.git_sha)
+        assert chart.type == "git"
+        assert chart.git_repo_url == "https://github.com/uptick/workforce"
+        assert chart.git_sha is None
 
     def test_git_repo_url_sha_is_parsed_properly(self):
         chart = Chart("https://github.com/uptick/workforce@123")
 
-        self.assertEqual(chart.type, "git")
-        self.assertEqual(chart.git_repo_url, "https://github.com/uptick/workforce")
-        self.assertEqual(chart.git_sha, "123")
+        assert chart.type == "git"
+        assert chart.git_repo_url == "https://github.com/uptick/workforce"
+        assert chart.git_sha == "123"
 
     def test_git_repo_config_is_parsed_properly(self):
         chart = Chart({"type": "git", "git_repo_url": "https://github.com/uptick/workforce@123"})
 
-        self.assertEqual(chart.type, "git")
-        self.assertEqual(chart.git_repo_url, "https://github.com/uptick/workforce")
-        self.assertEqual(chart.git_sha, "123")
+        assert chart.type == "git"
+        assert chart.git_repo_url == "https://github.com/uptick/workforce"
+        assert chart.git_sha == "123"
 
     def test_helm_repo_is_parsed_properly(self):
         chart = Chart(
@@ -92,10 +90,10 @@ class TestChart(TestCase):
             }
         )
 
-        self.assertEqual(chart.type, "helm")
-        self.assertEqual(chart.helm_repo_url, "https://brigade")
-        self.assertEqual(chart.helm_chart, "brigade/brigade")
-        self.assertEqual(chart.version, "1.3.2")
+        assert chart.type == "helm"
+        assert chart.helm_repo_url == "https://brigade"
+        assert chart.helm_chart == "brigade/brigade"
+        assert chart.version == "1.3.2"
 
     def test_local_repo_is_parsed_properly(self):
         chart = Chart(
@@ -105,5 +103,5 @@ class TestChart(TestCase):
             }
         )
 
-        self.assertEqual(chart.type, "local")
-        self.assertEqual(chart.path, ".")
+        assert chart.type == "local"
+        assert chart.path == "."
