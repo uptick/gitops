@@ -1,11 +1,11 @@
 import os
-from pathlib import Path
 from typing import List, Union
 
 from colorama import Fore
 from tabulate import tabulate
 
 from gitops.common.app import DEPLOYMENT_ATTRIBUTES, App
+from gitops.settings import get_apps_directory
 from gitops.utils import yaml as yaml
 
 from . import get_account_id
@@ -14,14 +14,15 @@ from .exceptions import AppDoesNotExist, AppOperationAborted
 from .images import colour_image
 from .tags import colour_tags, validate_tags
 
-APPS_PATH = Path(os.environ.get("GITOPS_APPS_DIRECTORY", "apps"))
-
 
 def get_app_details(app_name: str, load_secrets: bool = True) -> App:
     account_id = get_account_id() if load_secrets else "UNKNOWN"
     try:
         app = App(
-            app_name, path=APPS_PATH / app_name, load_secrets=load_secrets, account_id=account_id
+            app_name,
+            path=get_apps_directory() / app_name,
+            load_secrets=load_secrets,
+            account_id=account_id,
         )
     except FileNotFoundError:
         # Check if apps dir doesn't exist, or just that one app
@@ -34,7 +35,7 @@ def get_app_details(app_name: str, load_secrets: bool = True) -> App:
 
 
 def update_app(app_name: str, **kwargs):
-    filename = APPS_PATH / app_name / "deployment.yml"
+    filename = get_apps_directory() / app_name / "deployment.yml"
     with open(filename, "r") as f:
         data = yaml.safe_load(f)
     for k, v in kwargs.items():
@@ -82,7 +83,7 @@ def get_apps(
     existing_tags = set()
 
     try:
-        directory = sorted(APPS_PATH.iterdir())
+        directory = sorted(get_apps_directory().iterdir())
     except FileNotFoundError:
         raise AppDoesNotExist()
     for entry in directory:

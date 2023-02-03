@@ -4,8 +4,9 @@ import uuid
 from colorama import Fore
 from invoke import run, task
 
+from .settings import get_apps_directory
 from .utils import config
-from .utils.apps import APPS_PATH, get_apps, update_app
+from .utils.apps import get_apps, update_app
 from .utils.async_runner import run_tasks_async_with_progress
 from .utils.cli import colourise, progress, success, success_negative, warning
 from .utils.exceptions import AppOperationAborted
@@ -69,7 +70,7 @@ def bump(
         return
 
     if push:
-        run(f"cd {APPS_PATH}; git pull")
+        run(f"cd {get_apps_directory()}; git pull")
 
     for app in apps:
         app_name = app.name
@@ -111,10 +112,10 @@ def bump(
     if skip_migrations:
         commit_message += " --skip-migrations"
 
-    run(f'cd {APPS_PATH}; git commit -am "{commit_message}."')
+    run(f'cd {get_apps_directory()}; git commit -am "{commit_message}."')
 
     if push:
-        git_push(APPS_PATH)
+        git_push(get_apps_directory())
 
     print(success("Done!"))
 

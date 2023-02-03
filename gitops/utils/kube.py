@@ -22,7 +22,7 @@ from invoke import run
 from invoke.exceptions import UnexpectedExit
 
 from gitops.common.app import App
-from gitops.utils.apps import APPS_PATH
+from gitops.settings import get_apps_directory
 from gitops.utils.async_runner import async_run
 
 from .exceptions import CommandError
@@ -228,7 +228,7 @@ async def _run_job(
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
         # Generate yaml template to render
         rendered_template = render_template(
-            open(APPS_PATH / ".." / path, "r").read(),
+            open(get_apps_directory() / ".." / path, "r").read(),
             values,
             extra_labels,
             container_resources=container_resources,
