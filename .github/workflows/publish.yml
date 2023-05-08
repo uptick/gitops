@@ -20,7 +20,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Pull latest image. Build docker image and publish it.
         env:
@@ -38,7 +38,7 @@ jobs:
   publish_helm_chart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Publish Helm charts
         uses: stefanprodan/helm-gh-pages@master
         with:
@@ -48,7 +48,7 @@ jobs:
     name: Publishes tag to pypi
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Python
         uses: actions/setup-python@v2
         with:
