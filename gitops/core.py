@@ -84,7 +84,13 @@ def bump(
             new_image_tag = get_latest_image(app.image_repository_name, new_image_prefix)
         else:
             new_image_tag = get_image(image_tag)
-        if new_image_tag != prev_image_tag:
+
+        if not new_image_tag:
+            print(
+                f"Skipping {colourise(app_name, Fore.LIGHTRED_EX)}: no image matching"
+                f" {colour_image(new_image_tag)}"
+            )
+        elif new_image_tag != prev_image_tag:
             print(
                 f"Bumping {colourise(app_name, Fore.LIGHTGREEN_EX)}: {colour_image(prev_image_tag)}"
                 f" -> {colour_image(new_image_tag)}"
