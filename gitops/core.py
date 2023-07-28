@@ -88,7 +88,7 @@ def bump(
         if not new_image_tag:
             print(
                 f"Skipping {colourise(app_name, Fore.LIGHTRED_EX)}: no image matching"
-                f" {colour_image(new_image_tag)}"
+                f" {colour_image(prefix or app.image_prefix)}"
             )
         elif new_image_tag != prev_image_tag:
             print(
