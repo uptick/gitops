@@ -1,4 +1,5 @@
 # Gitops
+
 [![PyPI version](https://badge.fury.io/py/gitops.svg)](https://pypi.org/project/gitops/)
 [![versions](https://img.shields.io/pypi/pyversions/gitops.svg)](https://pypi.org/project/gitops/)
 [![Test](https://github.com/uptick/gitops/workflows/Test/badge.svg)](https://github.com/uptick/gitops/actions?query=workflow%3ATest)
@@ -11,8 +12,9 @@ Manage multiple apps across one or more k8s clusters.
 Keeping track of numerous of single-tenanted application deployments can quickly become a handful. Enter Gitops!
 
 The tool has two halves:
- * Gitops Server - an instance of this gets deployed to each of your kubernetes clusters, listening on changes made to your gitops cluster repo. The server's responsibility is to update the deployments on the cluster it lives on to match the app specifications in the repo.
- * Gitops CLI - this is a tool that you can use to interact comfortably with your cluster repo. It allows listing all deployed applications, what images they're presently running on, and which clusters they live on. It also provides numerous operations that can be applied to one or more apps at a time, such as bumping to a newer version of an image, or running a particular command across your app cohort.
+
+- Gitops Server - an instance of this gets deployed to each of your kubernetes clusters, listening on changes made to your gitops cluster repo. The server's responsibility is to update the deployments on the cluster it lives on to match the app specifications in the repo.
+- Gitops CLI - this is a tool that you can use to interact comfortably with your cluster repo. It allows listing all deployed applications, what images they're presently running on, and which clusters they live on. It also provides numerous operations that can be applied to one or more apps at a time, such as bumping to a newer version of an image, or running a particular command across your app cohort.
 
 You can install the CLI tool with: `pip install gitops`
 
@@ -21,6 +23,7 @@ Currently Kubernetes/Helm is the only supported cluster interface. All app deplo
 ## So what's a "cluster repo"?
 
 This is a git repository that you set up, where you list out all of your applications and how you want them deployed. It looks like this:
+
 <pre>
 .
 +- apps
@@ -58,3 +61,8 @@ subjects:
   name: default
   namespace: gitops
 ```
+
+# Making a release
+
+1. Run `make release` to set tag version the multiple required locations.
+2. Create a github release. Set the release tag to match the version number used. The github pipeline will do the following: Create a new version of the chart, create a docker image and release a new python library version to pypi.

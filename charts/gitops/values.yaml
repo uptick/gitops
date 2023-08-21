@@ -1,10 +1,10 @@
 environment:
   # Location of git crypt key (to be loaded via a volume mount)
-  GIT_CRYPT_KEY_FILE: ""
+  GIT_CRYPT_KEY_FILE: "test"
   # Namespace to track deployments
-  CLUSTER_NAMESPACE: ""
+  CLUSTER_NAMESPACE: "test"
   # Name of the cluster
-  CLUSTER_NAME: ""
+  CLUSTER_NAME: "test"
   # Specify the timezone for logging purposes. EG: Australia/Melbourne
   TZ: "UTC"
 
