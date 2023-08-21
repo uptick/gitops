@@ -21,8 +21,9 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: gitops-service
-          serviceName: {{ .Release.Name }}-service
-          servicePort: 80
+          service:
+            name: {{ .Release.Name }}-service
+            port:
+              number: 80
         path: /
         pathType: Prefix
