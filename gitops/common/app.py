@@ -1,7 +1,7 @@
 import json
 import os
 from base64 import b64encode
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .utils import load_yaml
 
@@ -39,17 +39,17 @@ class App:
         self.namespace: str = self.values["namespace"]
         self.chart = Chart(self.values["chart"])
 
-    def __eq__(self, other):
+    def __eq__(self, other: "App") -> bool:
         return (
             type(self) == type(other)
             and self.name == other.name
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
-    def is_inactive(self):
+    def is_inactive(self) -> bool:
         return "inactive" in self.values.get("tags", [])
 
-    def set_value(self, path: str, value: any):
+    def set_value(self, path: str, value: Any) -> None:
         """Sets the value on the path of self.values
         Usage:
             app.set_value("deployments.label.GITHUB_DEPLOYMENT_KEY", "1")
