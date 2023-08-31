@@ -25,7 +25,7 @@ logger = logging.getLogger("deployment_status")
 
 async def get_ingress_url(api, namespace: str, app: str):
     """Attempts to get domain for the ingress associated with the app"""
-    ingresses = await kubernetes_asyncio.client.NetworkingV1beta1Api(api).list_namespaced_ingress(
+    ingresses = await kubernetes_asyncio.client.NetworkingApi(api).list_namespaced_ingress(
         namespace=namespace, label_selector=f"app={app}"
     )
     environment_url = ""
