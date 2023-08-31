@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gitops"
-version = "0.9.19"
+version = "0.9.20"
 description = "Manage multiple apps across one or more k8s clusters."
 authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"
