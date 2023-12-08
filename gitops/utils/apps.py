@@ -1,5 +1,6 @@
 import os
 from typing import List, Union
+from pathlib import PosixPath
 
 from colorama import Fore
 from tabulate import tabulate
@@ -15,6 +16,17 @@ from .images import colour_image
 from .tags import colour_tags, validate_tags
 
 
+
+def is_valid_app_directory(directory: PosixPath) -> bool:
+    files = ['deployment.yml', 'secrets.yml']
+    files_exist = False
+    for file in files:
+        file_path = directory / file
+        if file_path.exists() and file_path.is_file():
+            files_exist = True
+        else:
+            files_exist = False
+    return files_exist
 def get_app_details(app_name: str, load_secrets: bool = True) -> App:
     account_id = get_account_id() if load_secrets else "UNKNOWN"
     try:
@@ -88,6 +100,8 @@ def get_apps(
         raise AppDoesNotExist()
     for entry in directory:
         if not entry.is_dir():
+            continue
+        elif not is_valid_app_directory(entry):
             continue
         app = get_app_details(entry.name, load_secrets=load_secrets)
 
