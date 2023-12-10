@@ -18,14 +18,8 @@ from .tags import colour_tags, validate_tags
 
 def is_valid_app_directory(directory: PosixPath) -> bool:
     files = ["deployment.yml", "secrets.yml"]
-    files_exist = False
-    for file in files:
-        file_path = directory / file
-        if file_path.exists() and file_path.is_file():
-            files_exist = True
-        else:
-            files_exist = False
-    return files_exist
+    file_paths = [(directory / file).is_file() for file in files]
+    return all(file_paths)
 
 
 def get_app_details(app_name: str, load_secrets: bool = True) -> App:

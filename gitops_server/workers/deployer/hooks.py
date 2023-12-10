@@ -65,7 +65,6 @@ async def handle_successful_deploy(
 async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> UpdateAppResult:
     github_deployment_url = str(app.values.get("github/deployment_url", ""))
     if github_deployment_url:
-
         await github.update_deployment(
             github_deployment_url,
             status=github.STATUSES.failure,
