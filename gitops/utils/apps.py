@@ -1,4 +1,5 @@
 import os
+from pathlib import PosixPath
 from typing import List, Union
 
 from colorama import Fore
@@ -13,6 +14,12 @@ from .cli import colourise, confirm, warning
 from .exceptions import AppDoesNotExist, AppOperationAborted
 from .images import colour_image
 from .tags import colour_tags, validate_tags
+
+
+def is_valid_app_directory(directory: PosixPath) -> bool:
+    files = ["deployment.yml", "secrets.yml"]
+    file_paths = [(directory / file).is_file() for file in files]
+    return all(file_paths)
 
 
 def get_app_details(app_name: str, load_secrets: bool = True) -> App:
@@ -88,6 +95,8 @@ def get_apps(
         raise AppDoesNotExist()
     for entry in directory:
         if not entry.is_dir():
+            continue
+        elif not is_valid_app_directory(entry):
             continue
         app = get_app_details(entry.name, load_secrets=load_secrets)
 
