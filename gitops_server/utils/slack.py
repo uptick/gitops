@@ -10,6 +10,22 @@ import httpx
 logger = logging.getLogger("gitops")
 
 
+@dataclasses.dataclass
+class SlackUser:
+    name: str
+    email: str
+    real_name: str
+    id: str
+
+    def __str__(self) -> str:
+        return "<@{}>".format(self.id)
+
+
+class SlackGroup(SlackUser):
+    def __str__(self) -> str:
+        return "<!subteam^{}|{}>".format(self.id, self.name)
+
+
 async def post(message):
     """Post a message to a slack channel
 
@@ -29,7 +45,7 @@ async def post(message):
 def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
     token = os.environ.get("SLACK_TOKEN", "")
     if not token:
-        return
+        return None
 
     with urllib.request.urlopen(
         urllib.request.Request(
@@ -56,14 +72,6 @@ def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
     return matched_user
 
 
-@dataclasses.dataclass
-class SlackUser:
-    name: str
-    email: str
-    real_name: str
-    id: str
-
-
 def jaccard_similarity(x: Iterable, y: Iterable) -> float:
     """returns the jaccard similarity between two lists or strings"""
     intersection_cardinality = len(set.intersection(*[set(x), set(y)]))
@@ -79,7 +87,7 @@ def pairwise_tuples(x: str) -> List[Tuple[str, str]]:
         return [(letter, x[i + 1]) for i, letter in enumerate(x[:-1])]
 
 
-def search(name: str, email: str, users: List[SlackUser]) -> SlackUser:
+def search(name: str, email: str, users: list[SlackUser]) -> SlackUser | None:
     def scoring_fn(user: SlackUser) -> float:
         return (
             jaccard_similarity(pairwise_tuples(user.email), pairwise_tuples(email))
@@ -87,5 +95,7 @@ def search(name: str, email: str, users: List[SlackUser]) -> SlackUser:
             + jaccard_similarity(pairwise_tuples(name), pairwise_tuples(user.real_name))
         )
 
-    match = max(users, key=scoring_fn)
-    return match
+    matches = sorted([(scoring_fn(u), u) for u in users], key=lambda x: x[0], reverse=True)
+    if matches[0][0] > 1.0:
+        return matches[0][1]
+    return None
