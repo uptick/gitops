@@ -1,5 +1,6 @@
 """Overwrite this file in kubernetes to inject custom code"""
 import logging
+import os
 
 import httpx
 
@@ -7,7 +8,7 @@ from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import UpdateAppResult
 from gitops_server.utils import github
-from gitops_server.utils.slack import find_commiter_slack_user
+from gitops_server.utils.slack import SlackGroup, find_commiter_slack_user
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ async def handle_successful_deploy(
     )
     return result
 
+DEFAULT_USER_GROUP =  SlackGroup("devops", "", "devops", os.environ.get("DEFAULT_SLACK_USER_GROUP_ID", "S5KVCGSGP"))
 
 async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> UpdateAppResult:
     github_deployment_url = str(app.values.get("github/deployment_url", ""))
@@ -72,8 +74,13 @@ async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> U
         )
         await update_issue_from_deployment_url(app, github_deployment_url)
 
-    slack_id = find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email)
-    slack_user_msg = f" <@{slack_id.id}> " if slack_id else ""
+    email = deployer.author_email
+
+    if "devops" in email.lower() or "tickforge" in email.lower():
+        slack_user = DEFAULT_USER_GROUP
+    else:
+        slack_user  = find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email) or DEFAULT_USER_GROUP
+    slack_user_msg = f" {slack_user} " if slack_user else ""
     log_msg = f"<https://my.papertrailapp.com/systems/{app.name}-migration/events|(Migration Logs)>"
     result["slack_message"] = (
         f"Failed to deploy app `{result['app_name']}` for cluster"
