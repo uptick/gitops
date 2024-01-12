@@ -9,12 +9,14 @@ import httpx
 
 logger = logging.getLogger("gitops")
 
+
 @dataclasses.dataclass
 class SlackUser:
     name: str
     email: str
     real_name: str
     id: str
+
     def __str__(self) -> str:
         return "<@{}>".format(self.id)
 
@@ -70,7 +72,6 @@ def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
     return matched_user
 
 
-
 def jaccard_similarity(x: Iterable, y: Iterable) -> float:
     """returns the jaccard similarity between two lists or strings"""
     intersection_cardinality = len(set.intersection(*[set(x), set(y)]))
@@ -94,9 +95,7 @@ def search(name: str, email: str, users: list[SlackUser]) -> SlackUser | None:
             + jaccard_similarity(pairwise_tuples(name), pairwise_tuples(user.real_name))
         )
 
-    matches = sorted(
-        [(scoring_fn(u), u) for u in users], key=lambda x: x[0], reverse=True
-    )
+    matches = sorted([(scoring_fn(u), u) for u in users], key=lambda x: x[0], reverse=True)
     if matches[0][0] > 1.0:
         return matches[0][1]
     return None
