@@ -9,7 +9,7 @@ license = "BSD"
 python = "^3.10"
 # CLI requirements
 invoke = "*"
-pyyaml = ">=5.1.2"
+pyyaml = ">=6.0.1"
 dsnparse = "*"
 colorama = "^0.4.4"
 boto3 = "*"
