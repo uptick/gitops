@@ -129,9 +129,7 @@ def proxy(
     except ValueError:
         # app_name was not a valid dsn
         app = get_app_details(app_name, load_secrets=True)
-        database_url = base64.b64decode(
-            app.values["secrets"]["DATABASE_URL"].encode("ascii")
-        ).decode("ascii")
+        database_url = base64.b64decode(app.values["secrets"]["DATABASE_URL"].encode("ascii")).decode("ascii")
         database_dsn = dsnparse.parse(database_url)
 
     if not local_port:
@@ -154,15 +152,11 @@ def proxy(
 
     bastion_instance_id = bastion_instance_id or os.environ.get("GITOPS_BASTION_INSTANCE_ID")
     if not bastion_instance_id:
-        raise Exception(
-            "Please set GITOPS_BASTION_INSTANCE_ID environment variable for db proxy to work."
-        )
+        raise Exception("Please set GITOPS_BASTION_INSTANCE_ID environment variable for db proxy to work.")
 
     aws_availability_zone = aws_availability_zone or os.environ.get("GITOPS_AWS_AVAILABILITY_ZONE")
     if not aws_availability_zone:
-        raise Exception(
-            "Please set GITOPS_AWS_AVAILABILITY_ZONE environment variable for db proxy to work."
-        )
+        raise Exception("Please set GITOPS_AWS_AVAILABILITY_ZONE environment variable for db proxy to work.")
 
     print(progress(f"Creating a proxy to the RDS instance of: {app_name} "))
 

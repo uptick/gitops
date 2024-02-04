@@ -22,27 +22,21 @@ async def update_issue_from_deployment_url(
         deployment_response = await client.get(deployment_url, headers=headers)
         try:
             sha = deployment_response.json().get("sha", "")
-            issues_response = await client.get(
-                f"https://api.github.com/search/issues?q={sha}+is:pr", headers=headers
-            )
+            issues_response = await client.get(f"https://api.github.com/search/issues?q={sha}+is:pr", headers=headers)
             issue_url = issues_response.json()["items"][0]["url"]
         except Exception:
             logging.warning(f"Could not find issue for {app.name}")
             return
 
         try:
-            response = await client.post(
-                issue_url + "/labels", json={"labels": ["NODEPLOY"]}, headers=headers
-            )
+            response = await client.post(issue_url + "/labels", json={"labels": ["NODEPLOY"]}, headers=headers)
             response.raise_for_status()
             comment = (
                 ":poop: Failed to deploy :poop:\n Applying `NODEPLOY` label to shutdown the server"
                 " and prevent deploys until it has been fixed.\nCheck migration logs at"
                 f" https://my.papertrailapp.com/systems/{app.name}-migration/events"
             )
-            response = await client.post(
-                issue_url + "/comments", json={"body": comment}, headers=headers
-            )
+            response = await client.post(issue_url + "/comments", json={"body": comment}, headers=headers)
             response.raise_for_status()
         except Exception:
             logging.warning("Failed to update PR")
@@ -63,9 +57,7 @@ async def handle_successful_deploy(
     return result
 
 
-DEFAULT_USER_GROUP = SlackGroup(
-    "devops", "", "devops", os.environ.get("DEFAULT_SLACK_USER_GROUP_ID", "S5KVCGSGP")
-)
+DEFAULT_USER_GROUP = SlackGroup("devops", "", "devops", os.environ.get("DEFAULT_SLACK_USER_GROUP_ID", "S5KVCGSGP"))
 
 
 async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> UpdateAppResult:
@@ -84,8 +76,7 @@ async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> U
         slack_user = DEFAULT_USER_GROUP
     else:
         slack_user = (
-            find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email)
-            or DEFAULT_USER_GROUP
+            find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email) or DEFAULT_USER_GROUP
         )
     slack_user_msg = f" {slack_user} " if slack_user else ""
     log_msg = f"<https://my.papertrailapp.com/systems/{app.name}-migration/events|(Migration Logs)>"

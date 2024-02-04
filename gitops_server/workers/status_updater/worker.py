@@ -105,9 +105,7 @@ class DeploymentStatusWorker:
                         description="Failed to deploy. Check the pod or migrations.",
                     )
                 if status:
-                    logger.info(
-                        f"Patching {deployment.metadata.name}.label.gitops/status to {status}"
-                    )
+                    logger.info(f"Patching {deployment.metadata.name}.label.gitops/status to {status}")
                     patch = {"metadata": {"labels": {"gitops/status": status}}}
                     try:
                         await apps_api.patch_namespaced_deployment(

@@ -14,9 +14,7 @@ SAMPLE_GITHUB_PAYLOAD = {
             "distinct": True,
             "message": "bump test-app-1",
             "timestamp": "2019-07-18T15:07:37+10:00",
-            "url": (
-                "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00"
-            ),
+            "url": ("https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00"),
             "author": {
                 "name": "Author Fullname",
                 "email": "author@example.com",
@@ -87,9 +85,7 @@ SAMPLE_GITHUB_PAYLOAD = {
         "url": "https://github.com/user/mock-repo",
         "forks_url": "https://api.github.com/repos/user/mock-repo/forks",
         "keys_url": "https://api.github.com/repos/user/mock-repo/keys{/key_id}",
-        "collaborators_url": (
-            "https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}"
-        ),
+        "collaborators_url": ("https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}"),
         "teams_url": "https://api.github.com/repos/user/mock-repo/teams",
         "hooks_url": "https://api.github.com/repos/user/mock-repo/hooks",
         "issue_events_url": "https://api.github.com/repos/user/mock-repo/issues/events{/number}",
@@ -119,9 +115,7 @@ SAMPLE_GITHUB_PAYLOAD = {
         "issues_url": "https://api.github.com/repos/user/mock-repo/issues{/number}",
         "pulls_url": "https://api.github.com/repos/user/mock-repo/pulls{/number}",
         "milestones_url": "https://api.github.com/repos/user/mock-repo/milestones{/number}",
-        "notifications_url": (
-            "https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}"
-        ),
+        "notifications_url": ("https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}"),
         "labels_url": "https://api.github.com/repos/user/mock-repo/labels{/name}",
         "releases_url": "https://api.github.com/repos/user/mock-repo/releases{/id}",
         "deployments_url": "https://api.github.com/repos/user/mock-repo/deployments",
@@ -209,9 +203,7 @@ SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS = {
             "distinct": True,
             "message": "bump test-app-1 --skip-migrations",
             "timestamp": "2019-07-18T15:07:37+10:00",
-            "url": (
-                "https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00"
-            ),
+            "url": ("https://github.com/user/mock-repo/commit/c099171d00c099171d00c099171d00c099171d00"),
             "author": {
                 "name": "Author Fullname",
                 "email": "author@example.com",
@@ -282,9 +274,7 @@ SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS = {
         "url": "https://github.com/user/mock-repo",
         "forks_url": "https://api.github.com/repos/user/mock-repo/forks",
         "keys_url": "https://api.github.com/repos/user/mock-repo/keys{/key_id}",
-        "collaborators_url": (
-            "https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}"
-        ),
+        "collaborators_url": ("https://api.github.com/repos/user/mock-repo/collaborators{/collaborator}"),
         "teams_url": "https://api.github.com/repos/user/mock-repo/teams",
         "hooks_url": "https://api.github.com/repos/user/mock-repo/hooks",
         "issue_events_url": "https://api.github.com/repos/user/mock-repo/issues/events{/number}",
@@ -314,9 +304,7 @@ SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS = {
         "issues_url": "https://api.github.com/repos/user/mock-repo/issues{/number}",
         "pulls_url": "https://api.github.com/repos/user/mock-repo/pulls{/number}",
         "milestones_url": "https://api.github.com/repos/user/mock-repo/milestones{/number}",
-        "notifications_url": (
-            "https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}"
-        ),
+        "notifications_url": ("https://api.github.com/repos/user/mock-repo/notifications{?since,all,participating}"),
         "labels_url": "https://api.github.com/repos/user/mock-repo/labels{/name}",
         "releases_url": "https://api.github.com/repos/user/mock-repo/releases{/id}",
         "deployments_url": "https://api.github.com/repos/user/mock-repo/deployments",

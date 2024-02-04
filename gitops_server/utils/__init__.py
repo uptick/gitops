@@ -25,9 +25,7 @@ async def run(command, suppress_errors=False) -> RunOutput:
     else:
         # Something went wrong.
         if not suppress_errors:
-            raise Exception(
-                f"Run: {command} returned with exit code: {exit_code}\n\n{stderr.decode()}"
-            )
+            raise Exception(f"Run: {command} returned with exit code: {exit_code}\n\n{stderr.decode()}")
         return RunOutput(exit_code=exit_code, output=stderr.decode())
 
 

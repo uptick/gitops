@@ -221,7 +221,5 @@ headers = {
     "X-GitHub-Hook-Installation-Target-ID": "139318783",
     "X-GitHub-Hook-Installation-Target-Type": "repository",
     "X-Hub-Signature": "sha1=12ff19806fc71191137bc1749f7574c228a0a9c3",
-    "X-Hub-Signature-256": (
-        "sha256=37c6aa3564905378207c2eb9b29aac5f3ea1803ec0225f983911cc20f7d2e384"
-    ),
+    "X-Hub-Signature-256": ("sha256=37c6aa3564905378207c2eb9b29aac5f3ea1803ec0225f983911cc20f7d2e384"),
 }

@@ -76,18 +76,11 @@ async def print_async_complete(task, x, y, status_y_offset, win_info, sem):
 
 
 async def async_run(cmd):
-    proc = await asyncio.create_subprocess_shell(
-        cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    )
+    proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
     stdout, stderr = await proc.communicate()
     return (
         stdout,
         stderr,
-        (
-            success("[stdout]\n")
-            + f"{stdout.decode()}\n"
-            + warning("[stderr]\n")
-            + f"{stderr.decode()}\n"
-        ),
+        (success("[stdout]\n") + f"{stdout.decode()}\n" + warning("[stderr]\n") + f"{stderr.decode()}\n"),
     )

@@ -19,9 +19,7 @@ logger = logging.getLogger("gitops")
 GITOPS_MAX_PARALLEL_DEPLOYS = os.environ.get("GITOPS_MAX_PARALLEL_DEPLOYS", "5")
 
 
-async def post_init_summary(
-    source, username, added_apps, updated_apps, removed_apps, commit_message
-):
+async def post_init_summary(source, username, added_apps, updated_apps, removed_apps, commit_message):
     deltas = ""
     for typ, d in [("Adding", added_apps), ("Updating", updated_apps), ("Removing", removed_apps)]:
         if d:
@@ -133,21 +131,14 @@ class Deployer:
             ]
         )
         uninstall_results = await asyncio.gather(
-            *[
-                self.uninstall_app(self.previous_app_definitions.apps[app_name])
-                for app_name in removed_apps
-            ]
+            *[self.uninstall_app(self.previous_app_definitions.apps[app_name]) for app_name in removed_apps]
         )
-        await post_result_summary(
-            self.current_app_definitions.name, update_results + uninstall_results
-        )
+        await post_result_summary(self.current_app_definitions.name, update_results + uninstall_results)
 
     async def uninstall_app(self, app: App) -> UpdateAppResult:
         async with self.semaphore:
             logger.info(f"Uninstalling app {app.name!r}.")
-            result = await run(
-                f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True
-            )
+            result = await run(f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True)
             update_result = UpdateAppResult(app_name=app.name, **result)
             await post_result(
                 app=app,
@@ -165,9 +156,7 @@ class Deployer:
         async with self.semaphore:
             logger.info(f"Deploying app {app.name!r}.")
             if app.chart.type == "git":
-                async with temp_repo(
-                    app.chart.git_repo_url, sha=app.chart.git_sha
-                ) as chart_folder_path:
+                async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
                     await run(f"cd {chart_folder_path}; helm dependency build")
                     with tempfile.NamedTemporaryFile(suffix=".yml") as cfg:
                         cfg.write(json.dumps(app.values).encode())
@@ -189,9 +178,7 @@ class Deployer:
                     cfg.write(json.dumps(app.values).encode())
                     cfg.flush()
                     os.fsync(cfg.fileno())
-                    chart_version_arguments = (
-                        f" --version={app.chart.version}" if app.chart.version else ""
-                    )
+                    chart_version_arguments = f" --version={app.chart.version}" if app.chart.version else ""
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
                         "helm secrets upgrade"

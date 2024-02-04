@@ -9,9 +9,7 @@ __version__ = "0.9.23"
 
 
 # Checking gitops version matches cluster repo version.
-versions_path = (
-    Path(os.environ.get("GITOPS_APPS_DIRECTORY", "apps")).parent.absolute() / "setup.cfg"
-)
+versions_path = Path(os.environ.get("GITOPS_APPS_DIRECTORY", "apps")).parent.absolute() / "setup.cfg"
 if versions_path.exists():
     import configparser
 

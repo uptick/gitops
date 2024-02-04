@@ -181,9 +181,7 @@ def run_wrapper(intro):
 
 def make_key(length=64):
     """Generate a sequence of random characters."""
-    return "".join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length)
-    )
+    return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 def render_template(
@@ -291,13 +289,7 @@ async def _run_job(
 
 async def wait_for_pod(context, namespace, pod):
     while True:
-        cmd = (
-            "kubectl get pod"
-            f" --context {context}"
-            f" -n {namespace}"
-            ' -o jsonpath="{.status.phase}"'
-            f" {pod}"
-        )
+        cmd = "kubectl get pod" f" --context {context}" f" -n {namespace}" ' -o jsonpath="{.status.phase}"' f" {pod}"
         stdout, _, _ = await async_run(cmd)
         stdout = stdout.decode().lower()
         if stdout != "pending":

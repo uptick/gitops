@@ -124,11 +124,7 @@ class App:
 
     @property
     def service_account_name(self) -> str:
-        return (
-            self.values.get("serviceAccount", {}).get("name")
-            or self.values.get("serviceAccountName")
-            or "default"
-        )
+        return self.values.get("serviceAccount", {}).get("name") or self.values.get("serviceAccountName") or "default"
 
 
 class Chart:
@@ -169,9 +165,7 @@ class Chart:
             self.version = definition.get("version")
             self.path = definition.get("path")
         else:
-            raise Exception(
-                "Chart definition must be either a dict or string. Instead it is: {definition}"
-            )
+            raise Exception("Chart definition must be either a dict or string. Instead it is: {definition}")
 
         if self.git_repo_url and "@" in self.git_repo_url:
             self.git_repo_url, self.git_sha = self.git_repo_url.split("@")
