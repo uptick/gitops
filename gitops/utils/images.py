@@ -67,4 +67,4 @@ def color_hash(bit):
         Fore.MAGENTA,
         Fore.CYAN,
         Fore.WHITE,
-    ][int.from_bytes(md5(bit.encode()).digest(), "big") % 7]
+    ][int.from_bytes(md5(bit.encode()).digest(), "big") % 7] # noqa: S324

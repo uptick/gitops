@@ -133,7 +133,7 @@ def proxy(
         database_dsn = dsnparse.parse(database_url)
 
     if not local_port:
-        local_port = random.randint(1000, 9999)
+        local_port = random.randint(1000, 9999) # noqa
 
     # Maybe we need to connect via RDS IAM instead!
     modified_dsn = dsnparse.parse(database_url)

@@ -31,7 +31,7 @@ def summary(ctx, filter="", exclude=""):
 
 
 @task
-def bump(
+def bump( # noqa: C901
     ctx,
     filter,
     exclude="",
@@ -248,7 +248,7 @@ def _getenv(env_or_secrets, filter, exclude, filter_values):
     for app in apps:
         print("-" * 20, progress(app.name), sep="\n")
         values = app.values.get(env_or_secrets)
-        if type(values) == dict:
+        if isinstance(values, dict):
             filtered_values = {k: v for k, v in values.items() if k in filter_values} if filter_values else values
             for k, v in filtered_values.items():
                 print(f"{k}={v}")

@@ -138,7 +138,7 @@ def get_backups(product, prefix):
         name = obj.key.split("/")[-1].split(".")[0]
         if not name:
             continue
-        dt = datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
+        dt = datetime.strptime(name, "%Y-%m-%d_%H-%M-%S").astimezone(None)
         all_backups.append((name, dt, obj.size, obj.key))
     return sorted(all_backups, key=lambda x: x[1])
 
@@ -296,7 +296,7 @@ async def wait_for_pod(context, namespace, pod):
             return stdout
 
 
-def retry(*args, max_attempts=3, delay=1):
+def retry(*args, max_attempts=3, delay=1): # noqa: C901
     """A decorator for retrying a function.
 
     After `max_attempts` failed attempts the last thrown exception

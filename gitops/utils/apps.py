@@ -56,7 +56,7 @@ def update_app(app_name: str, **kwargs):
         yaml.dump(data, f, default_flow_style=False)
 
 
-def get_apps(
+def get_apps( # noqa: C901
     filter: list[str] | str = "",
     exclude: list[str] | str = "",
     mode="PROMPT",

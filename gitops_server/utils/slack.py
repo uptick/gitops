@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import urllib.request
-from typing import Optional
 from collections.abc import Iterable
+from typing import Optional
 
 import httpx
 
@@ -48,7 +48,7 @@ def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
     if not token:
         return None
 
-    with urllib.request.urlopen(
+    with urllib.request.urlopen( # noqa:S310
         urllib.request.Request(
             "https://slack.com/api/users.list?limit=300&pretty=1",
             headers={"Authorization": f"Bearer {token}"},
