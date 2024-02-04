@@ -13,6 +13,8 @@ repos:
     rev: v3.14.1
     hooks:
       - id: commitizen
+        stages:
+          - commit-msg
   - repo: local
     hooks:
       - id: mypy

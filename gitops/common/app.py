@@ -1,7 +1,7 @@
 import json
 import os
 from base64 import b64encode
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from .utils import load_yaml
 
@@ -20,9 +20,9 @@ class App:
     def __init__(
         self,
         name: str,
-        path: Optional[str] = None,
-        deployments: Optional[Dict] = None,
-        secrets: Optional[Dict] = None,
+        path: str | None = None,
+        deployments: dict | None = None,
+        secrets: dict | None = None,
         load_secrets: bool = True,
         account_id: str = "",
     ):
@@ -60,7 +60,7 @@ class App:
             current_dict = current_dict.setdefault(key, {})
         current_dict[keys[-1]] = value
 
-    def _make_values(self, deployments: Dict, secrets: Dict) -> Dict:
+    def _make_values(self, deployments: dict, secrets: dict) -> dict:
         values = {
             **deployments,
             "secrets": {**{k: b64encode(v.encode()).decode() for k, v in secrets.items()}},
@@ -75,7 +75,7 @@ class App:
         values.pop("images", None)
         return values
 
-    def _make_image(self, deployment_config: Dict):
+    def _make_image(self, deployment_config: dict):
         if "image-tag" in deployment_config:
             return deployment_config["images"]["template"].format(
                 account_id=self.account_id,
@@ -119,7 +119,7 @@ class App:
         return self.values.get("cluster", "")
 
     @property
-    def tags(self) -> List[str]:
+    def tags(self) -> list[str]:
         return self.values.get("tags", [])
 
     @property
@@ -153,7 +153,7 @@ class Chart:
       chart: https://github.com/uptick/workforce
     """
 
-    def __init__(self, definition: Union[Dict, str]):
+    def __init__(self, definition: dict | str):
         if isinstance(definition, str):
             # for backwards compat, any chart definition which is a string, is a git repo
             self.type = "git"

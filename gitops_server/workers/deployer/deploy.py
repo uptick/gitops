@@ -4,7 +4,6 @@ import logging
 import os
 import tempfile
 import uuid
-from typing import List, Optional
 
 from gitops.common.app import App
 from gitops_server import settings
@@ -49,7 +48,7 @@ async def post_result(app: App, result: UpdateAppResult, deployer: "Deployer", *
         await handle_successful_deploy(app, result, deployer)
 
 
-async def post_result_summary(source: str, results: List[UpdateAppResult]):
+async def post_result_summary(source: str, results: list[UpdateAppResult]):
     n_success = sum([r["exit_code"] == 0 for r in results])
     n_failed = sum([r["exit_code"] != 0 for r in results])
     await slack.post(
@@ -157,7 +156,7 @@ class Deployer:
             )
         return update_result
 
-    async def update_app_deployment(self, app: App) -> Optional[UpdateAppResult]:
+    async def update_app_deployment(self, app: App) -> UpdateAppResult | None:
         app.set_value("deployment.labels.gitops/deploy_id", self.deploy_id)
         app.set_value("deployment.labels.gitops/status", github.STATUSES.in_progress)
         if github_deployment_url := app.values.get("github/deployment_url"):

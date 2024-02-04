@@ -1,22 +1,21 @@
 import os
-from typing import Dict
 
 import yaml
 
 
-def load_yaml(path) -> Dict:
-    with open(path, "r") as file:
+def load_yaml(path) -> dict:
+    with open(path) as file:
         return resolve_values(yaml.safe_load(file), path)
 
 
-def resolve_values(values, path) -> Dict:
+def resolve_values(values, path) -> dict:
     if "extends" not in values:
         return values
     parent_values = load_yaml(os.path.join(os.path.dirname(path), values["extends"]))
     return deep_merge(parent_values, values)
 
 
-def deep_merge(parent: Dict, child: Dict) -> Dict:
+def deep_merge(parent: dict, child: dict) -> dict:
     """Deeply merge two dictionaries.
 
     Dictionary entries will be followed and merged, anything else will be

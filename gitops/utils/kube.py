@@ -12,7 +12,7 @@ from base64 import b64encode
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
-from typing import Dict, TypedDict
+from typing import TypedDict
 
 import boto3
 import humanize
@@ -105,7 +105,7 @@ def download_backup(product, prefix, index, path=None, datestamp=False):
 def copy_db(ctx, source, destination, context=""):
     """Copy database between two applications."""
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
-        job = open("copy-db-job.yml", "r").read()
+        job = open("copy-db-job.yml").read()
         job = job.replace("{{ source }}", source)
         job = job.replace("{{ destination }}", destination)
         tmp.write(job)
@@ -125,9 +125,7 @@ def copy_db(ctx, source, destination, context=""):
         )
         print("done")
         run(
-            ("kubectl delete -n workforce job copy-db-{source}-{destination}").format(
-                source=source, destination=destination
-            ),
+            (f"kubectl delete -n workforce job copy-db-{source}-{destination}"),
             hide=True,
         )
 
@@ -190,8 +188,8 @@ def make_key(length=64):
 
 def render_template(
     template: str,
-    values: Dict = None,
-    extra_labels: Dict = None,
+    values: dict = None,
+    extra_labels: dict = None,
     container_resources: ContainerResources = None,
 ) -> str:
     """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
@@ -214,13 +212,13 @@ def render_template(
 
 async def _run_job(
     path,
-    values: Dict = None,
+    values: dict = None,
     context="",
     namespace="default",
     attach=False,
     cleanup=True,
     sequential=True,
-    extra_labels: Dict = None,
+    extra_labels: dict = None,
     container_resources: ContainerResources = None,
 ):
     name = values["name"]
@@ -228,7 +226,7 @@ async def _run_job(
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
         # Generate yaml template to render
         rendered_template = render_template(
-            open(get_apps_directory() / ".." / path, "r").read(),
+            open(get_apps_directory() / ".." / path).read(),
             values,
             extra_labels,
             container_resources=container_resources,

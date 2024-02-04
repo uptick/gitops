@@ -1,6 +1,5 @@
 import os
 from pathlib import PosixPath
-from typing import List, Union
 
 from colorama import Fore
 from tabulate import tabulate
@@ -43,7 +42,7 @@ def get_app_details(app_name: str, load_secrets: bool = True) -> App:
 
 def update_app(app_name: str, **kwargs):
     filename = get_apps_directory() / app_name / "deployment.yml"
-    with open(filename, "r") as f:
+    with open(filename) as f:
         data = yaml.safe_load(f)
     for k, v in kwargs.items():
         if k not in DEPLOYMENT_ATTRIBUTES:
@@ -58,13 +57,13 @@ def update_app(app_name: str, **kwargs):
 
 
 def get_apps(
-    filter: Union[List[str], str] = "",
-    exclude: Union[List[str], str] = "",
+    filter: list[str] | str = "",
+    exclude: list[str] | str = "",
     mode="PROMPT",
     autoexclude_inactive=True,
     message=None,
     load_secrets=True,
-) -> List[App]:
+) -> list[App]:
     """Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
     `exclude`. The incoming filter and exclude params may come in as a list or commastring.
     For the purpose of this filtering, app names and image tag prefixes are also considered as
@@ -125,7 +124,7 @@ def get_apps(
     return apps
 
 
-def preview_apps(apps: List[App]):
+def preview_apps(apps: list[App]):
     """Produce a summary of apps, their tags, and their expected images & replicas.
     May not necessarily reflect actual app statuses if recent changes haven't yet been pushed to
     the remote, or the deployment has failed.
