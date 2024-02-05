@@ -31,7 +31,7 @@ def summary(ctx, filter="", exclude=""):
 
 
 @task
-def bump( # noqa: C901
+def bump(  # noqa: C901
     ctx,
     filter,
     exclude="",
