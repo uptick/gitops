@@ -1,4 +1,4 @@
-import os
+import sys
 from pathlib import PosixPath
 
 from colorama import Fore
@@ -10,7 +10,7 @@ from gitops.utils import yaml as yaml
 
 from . import get_account_id
 from .cli import colourise, confirm, warning
-from .exceptions import AppDoesNotExist, AppOperationAborted
+from .exceptions import AppDirectoryDoesNotExist, AppDoesNotExist, AppOperationAborted
 from .images import colour_image
 from .tags import colour_tags, validate_tags
 
@@ -21,7 +21,7 @@ def is_valid_app_directory(directory: PosixPath) -> bool:
     return all(file_paths)
 
 
-def get_app_details(app_name: str, load_secrets: bool = True) -> App:
+def get_app_details(app_name: str, load_secrets: bool = True, exit_if_not_found: bool = True) -> App:
     account_id = get_account_id() if load_secrets else "UNKNOWN"
     try:
         app = App(
@@ -31,11 +31,15 @@ def get_app_details(app_name: str, load_secrets: bool = True) -> App:
             account_id=account_id,
         )
     except FileNotFoundError as e:
-        # Check if apps dir doesn't exist, or just that one app
-        if os.path.exists("apps"):
-            raise AppDoesNotExist(app_name) from e
+        msg, exc = "", Exception
+        if get_apps_directory().exists():
+            msg, exc = f"There's no app with the name '{app_name}', silly.", AppDoesNotExist
         else:
-            raise AppDoesNotExist() from e
+            msg, exc = "Could not find an 'apps' directory. Are you in a cluster repo?", AppDirectoryDoesNotExist
+        if exit_if_not_found:
+            sys.exit(warning(msg))
+        else:
+            raise exc(msg) from e
 
     return app
 
@@ -86,7 +90,7 @@ def get_apps(  # noqa: C901
         exclude.add("inactive")
 
     apps = []
-    existing_tags = set()
+    existing_tags = {"suspended", "inactive", "release", "qa", "no_shutdown"}
 
     try:
         directory = sorted(get_apps_directory().iterdir())
