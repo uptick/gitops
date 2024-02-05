@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, Optional, TypedDict
+from typing import TypedDict
 
 from gitops.common.app import App
 from gitops_server import settings
@@ -19,7 +19,7 @@ class UpdateAppResult(RunOutput):
 
 
 class AppDefinitions:
-    def __init__(self, name, apps: Optional[Dict] = None):
+    def __init__(self, name, apps: dict | None = None):
         self.name = name
         self.apps = apps or {}
 

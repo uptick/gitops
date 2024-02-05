@@ -3,7 +3,8 @@ import json
 import logging
 import os
 import urllib.request
-from typing import Iterable, List, Optional, Tuple
+from collections.abc import Iterable
+from typing import Optional
 
 import httpx
 
@@ -18,12 +19,12 @@ class SlackUser:
     id: str
 
     def __str__(self) -> str:
-        return "<@{}>".format(self.id)
+        return f"<@{self.id}>"
 
 
 class SlackGroup(SlackUser):
     def __str__(self) -> str:
-        return "<!subteam^{}|{}>".format(self.id, self.name)
+        return f"<!subteam^{self.id}|{self.name}>"
 
 
 async def post(message):
@@ -47,7 +48,7 @@ def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
     if not token:
         return None
 
-    with urllib.request.urlopen(
+    with urllib.request.urlopen(  # noqa:S310
         urllib.request.Request(
             "https://slack.com/api/users.list?limit=300&pretty=1",
             headers={"Authorization": f"Bearer {token}"},
@@ -79,7 +80,7 @@ def jaccard_similarity(x: Iterable, y: Iterable) -> float:
     return intersection_cardinality / float(union_cardinality)
 
 
-def pairwise_tuples(x: str) -> List[Tuple[str, str]]:
+def pairwise_tuples(x: str) -> list[tuple[str, str]]:
     """Given William returns [(W,i), (i,l), (l,l), (l,i), (i,a), (a, m)]"""
     if not x or len(x) < 2:
         return [("", "")]

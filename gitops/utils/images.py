@@ -29,9 +29,7 @@ def get_latest_image(repository_name: str, prefix: str) -> str:
     ):
         for image in ecr_response["imageDetails"]:
             if prefix != "":
-                if prefix_tags := [
-                    tag for tag in image["imageTags"] if tag.startswith(prefix + "-")
-                ]:
+                if prefix_tags := [tag for tag in image["imageTags"] if tag.startswith(prefix + "-")]:
                     results.append((prefix_tags[0], image["imagePushedAt"]))
             else:
                 if prefix_tags := [tag for tag in image["imageTags"] if "-" not in tag]:
@@ -69,4 +67,4 @@ def color_hash(bit):
         Fore.MAGENTA,
         Fore.CYAN,
         Fore.WHITE,
-    ][int.from_bytes(md5(bit.encode()).digest(), "big") % 7]
+    ][int.from_bytes(md5(bit.encode()).digest(), "big") % 7]  # noqa: S324

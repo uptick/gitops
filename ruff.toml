@@ -1,0 +1,40 @@
+exclude = [ ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg", ".ipynb_checkpoints", ".mypy_cache", ".nox", ".pants.d", ".pyenv", ".pytest_cache", ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", ".vscode", "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv",]
+line-length = 120
+indent-width = 4
+target-version = "py310"
+
+[lint]
+# Enable Pyflakes `E` and `F` codes by default.
+select = [
+    "F",   # Pyflakes
+    "E",   # Pycodestyle
+    "W",   # Pycodestyle
+    "C90", # Mccabe complexity
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "S",   # bandit (security)
+    "DTZ", # Enforce good datetime
+    # "BLE", # Blind exceptions
+]
+
+ignore = [
+    "E501", # Line length is done by black
+    "D202", # NoBlankLineAfterFunction
+    "S101", # Use of `assert` detected
+    "S106", # Ignore secrets
+    "B008", # Do not perform function call. Lots of false positives with typer.Option
+    "S108", # Insecure use of temporary
+]
+
+fixable = [ "ALL",]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"

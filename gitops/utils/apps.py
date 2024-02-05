@@ -1,6 +1,5 @@
-import os
+import sys
 from pathlib import PosixPath
-from typing import List, Union
 
 from colorama import Fore
 from tabulate import tabulate
@@ -11,7 +10,7 @@ from gitops.utils import yaml as yaml
 
 from . import get_account_id
 from .cli import colourise, confirm, warning
-from .exceptions import AppDoesNotExist, AppOperationAborted
+from .exceptions import AppDirectoryDoesNotExist, AppDoesNotExist, AppOperationAborted
 from .images import colour_image
 from .tags import colour_tags, validate_tags
 
@@ -22,7 +21,7 @@ def is_valid_app_directory(directory: PosixPath) -> bool:
     return all(file_paths)
 
 
-def get_app_details(app_name: str, load_secrets: bool = True) -> App:
+def get_app_details(app_name: str, load_secrets: bool = True, exit_if_not_found: bool = True) -> App:
     account_id = get_account_id() if load_secrets else "UNKNOWN"
     try:
         app = App(
@@ -31,19 +30,23 @@ def get_app_details(app_name: str, load_secrets: bool = True) -> App:
             load_secrets=load_secrets,
             account_id=account_id,
         )
-    except FileNotFoundError:
-        # Check if apps dir doesn't exist, or just that one app
-        if os.path.exists("apps"):
-            raise AppDoesNotExist(app_name)
+    except FileNotFoundError as e:
+        msg, exc = "", Exception
+        if get_apps_directory().exists():
+            msg, exc = f"There's no app with the name '{app_name}', silly.", AppDoesNotExist
         else:
-            raise AppDoesNotExist()
+            msg, exc = "Could not find an 'apps' directory. Are you in a cluster repo?", AppDirectoryDoesNotExist
+        if exit_if_not_found:
+            sys.exit(warning(msg))
+        else:
+            raise exc(msg) from e
 
     return app
 
 
 def update_app(app_name: str, **kwargs):
     filename = get_apps_directory() / app_name / "deployment.yml"
-    with open(filename, "r") as f:
+    with open(filename) as f:
         data = yaml.safe_load(f)
     for k, v in kwargs.items():
         if k not in DEPLOYMENT_ATTRIBUTES:
@@ -57,14 +60,14 @@ def update_app(app_name: str, **kwargs):
         yaml.dump(data, f, default_flow_style=False)
 
 
-def get_apps(
-    filter: Union[List[str], str] = "",
-    exclude: Union[List[str], str] = "",
+def get_apps(  # noqa: C901
+    filter: list[str] | str = "",
+    exclude: list[str] | str = "",
     mode="PROMPT",
     autoexclude_inactive=True,
     message=None,
     load_secrets=True,
-) -> List[App]:
+) -> list[App]:
     """Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
     `exclude`. The incoming filter and exclude params may come in as a list or commastring.
     For the purpose of this filtering, app names and image tag prefixes are also considered as
@@ -87,12 +90,12 @@ def get_apps(
         exclude.add("inactive")
 
     apps = []
-    existing_tags = set()
+    existing_tags = {"suspended", "inactive", "release", "qa", "no_shutdown"}
 
     try:
         directory = sorted(get_apps_directory().iterdir())
-    except FileNotFoundError:
-        raise AppDoesNotExist()
+    except FileNotFoundError as e:
+        raise AppDoesNotExist() from e
     for entry in directory:
         if not entry.is_dir():
             continue
@@ -125,7 +128,7 @@ def get_apps(
     return apps
 
 
-def preview_apps(apps: List[App]):
+def preview_apps(apps: list[App]):
     """Produce a summary of apps, their tags, and their expected images & replicas.
     May not necessarily reflect actual app statuses if recent changes haven't yet been pushed to
     the remote, or the deployment has failed.
@@ -134,7 +137,7 @@ def preview_apps(apps: List[App]):
     for app in apps:
         table.append(
             [
-                colourise(app.name, Fore.RED, lambda _: "inactive" in app.tags),
+                colourise(app.name, Fore.RED, lambda _: "inactive" in app.tags),  # noqa
                 colour_image(app.image_tag),
                 app.cluster,
                 colourise(

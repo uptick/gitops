@@ -24,9 +24,7 @@ def get_headers() -> dict:
     return {
         "Authorization": f"token {GITHUB_OAUTH_TOKEN}",
         "Content-Type": "application/json",
-        "Accept": (
-            "application/vnd.github.flash-preview+json, application/vnd.github.ant-man-preview+json"
-        ),
+        "Accept": ("application/vnd.github.flash-preview+json, application/vnd.github.ant-man-preview+json"),
     }
 
 
@@ -51,8 +49,6 @@ async def update_deployment(deployment_url: str, status: str, description: str, 
         if response.status_code >= 300 and response.status_code != 404:
             try:
                 logger.warn(response.json())
-            except Exception:
-                pass
-            logger.exception(
-                "Failed to update github deployment", exc_info=True, extra=response.__dict__
-            )
+            except Exception:  # noqa
+                logger.error("Something went wrong while logging the response for a failed deployment")
+            logger.exception("Failed to update github deployment", exc_info=True, extra=response.__dict__)

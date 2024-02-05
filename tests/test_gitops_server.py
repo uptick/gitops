@@ -22,9 +22,7 @@ def test_get_on_index_returns_200():
 
 @patch("gitops_server.main.settings.GITHUB_WEBHOOK_KEY", "test_key")
 def test_webhook_returns_200_if_hmac_is_correct():
-    sha_encoding = hmac.new(
-        "test_key".encode(), json.dumps(payload).encode(), hashlib.sha1
-    ).hexdigest()
+    sha_encoding = hmac.new(b"test_key", json.dumps(payload).encode(), hashlib.sha1).hexdigest()
     headers["X-Hub-Signature"] = f"sha1={sha_encoding}"
 
     with patch.object(gitops_server.workers.DeployQueueWorker, "get_worker") as get_worker_mock:

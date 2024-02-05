@@ -50,9 +50,7 @@ def shell_plus(ctx, app, cleanup=True, cpu=0, memory=0):
     app = get_app_details(app)
     if "production" in app.tags:
         confirm_dangerous_command()
-    asyncio.run(
-        run_job(app, f"{UNSAFE_MANAGE_PY} shell_plus", cleanup=cleanup, cpu=cpu, memory=memory)
-    )
+    asyncio.run(run_job(app, f"{UNSAFE_MANAGE_PY} shell_plus", cleanup=cleanup, cpu=cpu, memory=memory))
     print(success("Done!"))
 
 

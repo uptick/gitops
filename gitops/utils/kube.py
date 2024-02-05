@@ -12,7 +12,7 @@ from base64 import b64encode
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
-from typing import Dict, TypedDict
+from typing import TypedDict
 
 import boto3
 import humanize
@@ -105,7 +105,7 @@ def download_backup(product, prefix, index, path=None, datestamp=False):
 def copy_db(ctx, source, destination, context=""):
     """Copy database between two applications."""
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
-        job = open("copy-db-job.yml", "r").read()
+        job = open("copy-db-job.yml").read()
         job = job.replace("{{ source }}", source)
         job = job.replace("{{ destination }}", destination)
         tmp.write(job)
@@ -125,9 +125,7 @@ def copy_db(ctx, source, destination, context=""):
         )
         print("done")
         run(
-            ("kubectl delete -n workforce job copy-db-{source}-{destination}").format(
-                source=source, destination=destination
-            ),
+            (f"kubectl delete -n workforce job copy-db-{source}-{destination}"),
             hide=True,
         )
 
@@ -140,7 +138,7 @@ def get_backups(product, prefix):
         name = obj.key.split("/")[-1].split(".")[0]
         if not name:
             continue
-        dt = datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
+        dt = datetime.strptime(name, "%Y-%m-%d_%H-%M-%S").astimezone(None)
         all_backups.append((name, dt, obj.size, obj.key))
     return sorted(all_backups, key=lambda x: x[1])
 
@@ -154,9 +152,9 @@ def get_backup_datestamp(url):
 def get_secret(name, base64=False):
     try:
         value = os.environ[name]
-    except KeyError:
+    except KeyError as e:
         msg = f"Variable {Fore.RED}{name}{Fore.RESET} missing from environment."
-        raise CommandError(msg)
+        raise CommandError(msg) from e
     if base64:
         value = b64encode(value.encode()).decode()
     else:
@@ -183,15 +181,13 @@ def run_wrapper(intro):
 
 def make_key(length=64):
     """Generate a sequence of random characters."""
-    return "".join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length)
-    )
+    return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 def render_template(
     template: str,
-    values: Dict = None,
-    extra_labels: Dict = None,
+    values: dict = None,
+    extra_labels: dict = None,
     container_resources: ContainerResources = None,
 ) -> str:
     """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
@@ -214,13 +210,13 @@ def render_template(
 
 async def _run_job(
     path,
-    values: Dict = None,
+    values: dict = None,
     context="",
     namespace="default",
     attach=False,
     cleanup=True,
     sequential=True,
-    extra_labels: Dict = None,
+    extra_labels: dict = None,
     container_resources: ContainerResources = None,
 ):
     name = values["name"]
@@ -228,7 +224,7 @@ async def _run_job(
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
         # Generate yaml template to render
         rendered_template = render_template(
-            open(get_apps_directory() / ".." / path, "r").read(),
+            open(get_apps_directory() / ".." / path).read(),
             values,
             extra_labels,
             container_resources=container_resources,
@@ -293,20 +289,14 @@ async def _run_job(
 
 async def wait_for_pod(context, namespace, pod):
     while True:
-        cmd = (
-            "kubectl get pod"
-            f" --context {context}"
-            f" -n {namespace}"
-            ' -o jsonpath="{.status.phase}"'
-            f" {pod}"
-        )
+        cmd = "kubectl get pod" f" --context {context}" f" -n {namespace}" ' -o jsonpath="{.status.phase}"' f" {pod}"
         stdout, _, _ = await async_run(cmd)
         stdout = stdout.decode().lower()
         if stdout != "pending":
             return stdout
 
 
-def retry(*args, max_attempts=3, delay=1):
+def retry(*args, max_attempts=3, delay=1):  # noqa: C901
     """A decorator for retrying a function.
 
     After `max_attempts` failed attempts the last thrown exception

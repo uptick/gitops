@@ -80,9 +80,7 @@ spec:
             "extra": "extra",
         }
 
-        rendered_template = kube.render_template(
-            template, values, extra_labels={"uptick/fargate": "true"}
-        )
+        rendered_template = kube.render_template(template, values, extra_labels={"uptick/fargate": "true"})
 
         assert yaml.safe_load(rendered_template) == yaml.safe_load(
             """

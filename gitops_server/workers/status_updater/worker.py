@@ -34,7 +34,6 @@ async def get_ingress_url(api, namespace: str, app: str):
             environment_url = "https://" + ingresses.items[0].spec.rules[0].host
         except Exception:
             logger.warning(f"Could not find ingress for {app=}")
-            pass
     return environment_url
 
 
@@ -105,9 +104,7 @@ class DeploymentStatusWorker:
                         description="Failed to deploy. Check the pod or migrations.",
                     )
                 if status:
-                    logger.info(
-                        f"Patching {deployment.metadata.name}.label.gitops/status to {status}"
-                    )
+                    logger.info(f"Patching {deployment.metadata.name}.label.gitops/status to {status}")
                     patch = {"metadata": {"labels": {"gitops/status": status}}}
                     try:
                         await apps_api.patch_namespaced_deployment(

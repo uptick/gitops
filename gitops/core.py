@@ -31,7 +31,7 @@ def summary(ctx, filter="", exclude=""):
 
 
 @task
-def bump(
+def bump(  # noqa: C901
     ctx,
     filter,
     exclude="",
@@ -105,10 +105,7 @@ def bump(
             print(f"Redeploying {colourise(app_name, Fore.LIGHTGREEN_EX)}")
             update_app(app_name, **{"bump": str(uuid.uuid4())})
         else:
-            print(
-                f"Skipping {colourise(app_name, Fore.LIGHTGREEN_EX)}: already on"
-                f" {colour_image(new_image_tag)}"
-            )
+            print(f"Skipping {colourise(app_name, Fore.LIGHTGREEN_EX)}: already on" f" {colour_image(new_image_tag)}")
     if redeploy:
         commit_message = f"Redeploying {filter}"
     else:
@@ -166,18 +163,12 @@ def command(
     if sequential or (not interactive) or len(apps) == 1:
         for app in apps:
             # For each app, just run the coroutine and print the output
-            print(
-                asyncio.run(
-                    run_job(app, command, cleanup=cleanup, sequential=True, cpu=cpu, memory=memory)
-                )
-            )
+            print(asyncio.run(run_job(app, command, cleanup=cleanup, sequential=True, cpu=cpu, memory=memory)))
     else:
         # Build list of coroutines, and execute them all at once
         jobs = [
             (
-                run_job(
-                    app, command, cleanup=cleanup, sequential=sequential, cpu=cpu, memory=memory
-                ),
+                run_job(app, command, cleanup=cleanup, sequential=sequential, cpu=cpu, memory=memory),
                 app.name,
             )
             for app in apps
@@ -257,10 +248,8 @@ def _getenv(env_or_secrets, filter, exclude, filter_values):
     for app in apps:
         print("-" * 20, progress(app.name), sep="\n")
         values = app.values.get(env_or_secrets)
-        if type(values) == dict:
-            filtered_values = (
-                {k: v for k, v in values.items() if k in filter_values} if filter_values else values
-            )
+        if isinstance(values, dict):
+            filtered_values = {k: v for k, v in values.items() if k in filter_values} if filter_values else values
             for k, v in filtered_values.items():
                 print(f"{k}={v}")
         else:

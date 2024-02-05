@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
+from collections.abc import AsyncGenerator
 
 from . import run
 
@@ -11,13 +11,11 @@ BASE_REPO_DIR = "/var/gitops/repos"
 logger = logging.getLogger("gitops")
 
 
-async def clone_repo(git_repo_url: str, path: str, sha: Optional[str] = None):
+async def clone_repo(git_repo_url: str, path: str, sha: str | None = None):
     """Shallow Clones a git repo url to path and git-crypt unlocks all encrypted files"""
     logger.info(f'Cloning "{git_repo_url}".')
 
-    url_with_oauth_token = git_repo_url.replace(
-        "://", f"://{os.environ['GITHUB_OAUTH_TOKEN'].strip()}@"
-    )
+    url_with_oauth_token = git_repo_url.replace("://", f"://{os.environ['GITHUB_OAUTH_TOKEN'].strip()}@")
 
     await run(f"git clone {url_with_oauth_token} {path}; cd {path}; git checkout {sha}")
 
@@ -25,7 +23,7 @@ async def clone_repo(git_repo_url: str, path: str, sha: Optional[str] = None):
 
 
 @asynccontextmanager
-async def temp_repo(git_repo_url: str, sha: Optional[str] = None) -> AsyncGenerator[str, None]:
+async def temp_repo(git_repo_url: str, sha: str | None = None) -> AsyncGenerator[str, None]:
     """Checks out a git_repo_url to a temporary folder location. Returns temporary folder location"""
     with tempfile.TemporaryDirectory() as temporary_folder_path:
         await clone_repo(git_repo_url, path=temporary_folder_path, sha=sha)
