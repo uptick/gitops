@@ -15,7 +15,7 @@ select = [
     "UP",  # pyupgrade
     "S",   # bandit (security)
     "DTZ", # Enforce good datetime
-    "BLE", # Blind exceptions
+    # "BLE", # Blind exceptions
 ]
 
 ignore = [

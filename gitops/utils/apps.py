@@ -30,12 +30,12 @@ def get_app_details(app_name: str, load_secrets: bool = True) -> App:
             load_secrets=load_secrets,
             account_id=account_id,
         )
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         # Check if apps dir doesn't exist, or just that one app
         if os.path.exists("apps"):
-            raise AppDoesNotExist(app_name)
+            raise AppDoesNotExist(app_name) from e
         else:
-            raise AppDoesNotExist()
+            raise AppDoesNotExist() from e
 
     return app
 
@@ -56,7 +56,7 @@ def update_app(app_name: str, **kwargs):
         yaml.dump(data, f, default_flow_style=False)
 
 
-def get_apps( # noqa: C901
+def get_apps(  # noqa: C901
     filter: list[str] | str = "",
     exclude: list[str] | str = "",
     mode="PROMPT",
@@ -90,8 +90,8 @@ def get_apps( # noqa: C901
 
     try:
         directory = sorted(get_apps_directory().iterdir())
-    except FileNotFoundError:
-        raise AppDoesNotExist()
+    except FileNotFoundError as e:
+        raise AppDoesNotExist() from e
     for entry in directory:
         if not entry.is_dir():
             continue
@@ -133,7 +133,7 @@ def preview_apps(apps: list[App]):
     for app in apps:
         table.append(
             [
-                colourise(app.name, Fore.RED, lambda _: "inactive" in app.tags),
+                colourise(app.name, Fore.RED, lambda _: "inactive" in app.tags),  # noqa
                 colour_image(app.image_tag),
                 app.cluster,
                 colourise(

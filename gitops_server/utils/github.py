@@ -49,6 +49,6 @@ async def update_deployment(deployment_url: str, status: str, description: str, 
         if response.status_code >= 300 and response.status_code != 404:
             try:
                 logger.warn(response.json())
-            except Exception:
-                pass
+            except Exception:  # noqa
+                logger.error("Something went wrong while logging the response for a failed deployment")
             logger.exception("Failed to update github deployment", exc_info=True, extra=response.__dict__)

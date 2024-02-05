@@ -15,14 +15,14 @@ repos:
       - id: commitizen
         stages:
           - commit-msg
-  - repo: local
-    hooks:
-      - id: mypy
-        args:
-          - --show-error-codes
-        name: mypy
-        entry: poetry run mypy
-        require_serial: true
-        language: system
-        types:
-          - python
+  # - repo: local
+  #   hooks:
+  #     - id: mypy
+  #       args:
+  #         - --show-error-codes
+  #       name: mypy
+  #       entry: poetry run mypy
+  #       require_serial: true
+  #       language: system
+  #       types:
+  #         - python

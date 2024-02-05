@@ -133,7 +133,7 @@ def proxy(
         database_dsn = dsnparse.parse(database_url)
 
     if not local_port:
-        local_port = random.randint(1000, 9999) # noqa
+        local_port = random.randint(1000, 9999)  # noqa
 
     # Maybe we need to connect via RDS IAM instead!
     modified_dsn = dsnparse.parse(database_url)
@@ -216,17 +216,10 @@ def logs(ctx, app_name, last=24):
         )
         for line in log_file["LogFileData"].split("\n"):
             if line:
-                try:
-                    print(
-                        str(
-                            datetime.datetime.fromisoformat(line[:19])
-                            .replace(tzinfo=datetime.timezone.utc)
-                            .astimezone()
-                        )
-                        + line[23:]
-                    )
-                except Exception:
-                    print(line)
+                print(
+                    str(datetime.datetime.fromisoformat(line[:19]).replace(tzinfo=datetime.timezone.utc).astimezone())
+                    + line[23:]
+                )
 
 
 @task

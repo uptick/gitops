@@ -152,9 +152,9 @@ def get_backup_datestamp(url):
 def get_secret(name, base64=False):
     try:
         value = os.environ[name]
-    except KeyError:
+    except KeyError as e:
         msg = f"Variable {Fore.RED}{name}{Fore.RESET} missing from environment."
-        raise CommandError(msg)
+        raise CommandError(msg) from e
     if base64:
         value = b64encode(value.encode()).decode()
     else:
@@ -296,7 +296,7 @@ async def wait_for_pod(context, namespace, pod):
             return stdout
 
 
-def retry(*args, max_attempts=3, delay=1): # noqa: C901
+def retry(*args, max_attempts=3, delay=1):  # noqa: C901
     """A decorator for retrying a function.
 
     After `max_attempts` failed attempts the last thrown exception

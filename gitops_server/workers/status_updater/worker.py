@@ -34,7 +34,6 @@ async def get_ingress_url(api, namespace: str, app: str):
             environment_url = "https://" + ingresses.items[0].spec.rules[0].host
         except Exception:
             logger.warning(f"Could not find ingress for {app=}")
-            pass
     return environment_url
 
 

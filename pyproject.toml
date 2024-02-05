@@ -6,7 +6,7 @@ authors = ["Jarek Głowacki <jarekwg@gmail.com>"]
 license = "BSD"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 # CLI requirements
 invoke = "*"
 pyyaml = ">=6.0.1"
@@ -40,7 +40,7 @@ python-dotenv = "*"
 pytest = "*"
 requests = "^2.25.1"
 pre-commit = "^2.13.0"
-mypy = "^0.941"
+mypy = "^1.8.0"
 black = "*"
 pytest-asyncio = "^0.20.3"
 
