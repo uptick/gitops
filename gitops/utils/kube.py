@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
 from typing import TypedDict
+from collections.abc import Iterator
 
 import boto3
 import humanize
@@ -40,12 +41,12 @@ class ContainerResources(TypedDict):
 
 async def run_job(
     app: App,
-    command,
-    cleanup=True,
-    sequential=True,
-    cpu: int = None,
-    memory: int = None,
-):
+    command: str,
+    cleanup: bool = True,
+    sequential: bool = True,
+    cpu: int | None = None,
+    memory: int | None = None,
+) -> str:
     job_id = make_key(4).lower()
     values = {
         "name": f"{app.name}-command-{job_id}",
@@ -78,7 +79,7 @@ async def run_job(
     )
 
 
-def list_backups(product, prefix):
+def list_backups(product: str, prefix: str) -> None:
     """List application backups."""
     backups = get_backups(product, prefix)
     for ii, backup in enumerate(reversed(backups)):
@@ -87,7 +88,7 @@ def list_backups(product, prefix):
         print(f"{Fore.BLUE}{index:4}{Fore.RESET}. {backup[1]} - {Fore.GREEN}{size}{Fore.RESET}")
 
 
-def download_backup(product, prefix, index, path=None, datestamp=False):
+def download_backup(product: str, prefix: str, index: int, path: str | None = None, datestamp: bool = False) -> None:
     s3 = boto3.client("s3")
     key = get_backups(product, prefix)[int(index) - 1][3]
     url = s3.generate_presigned_url("get_object", Params={"Bucket": "uptick-backups", "Key": key})
@@ -102,7 +103,7 @@ def download_backup(product, prefix, index, path=None, datestamp=False):
     print(f"{Fore.GREEN}ok{Fore.RESET}")
 
 
-def copy_db(ctx, source, destination, context=""):
+def copy_db(ctx: object, source: str, destination: str, context: str = "") -> None:
     """Copy database between two applications."""
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
         job = open("copy-db-job.yml").read()
@@ -130,7 +131,7 @@ def copy_db(ctx, source, destination, context=""):
         )
 
 
-def get_backups(product, prefix):
+def get_backups(product: str, prefix: str) -> list[tuple[str, datetime, int, str]]:
     s3 = boto3.resource("s3")
     bucket = s3.Bucket("uptick-backups")
     all_backups = []
@@ -143,13 +144,13 @@ def get_backups(product, prefix):
     return sorted(all_backups, key=lambda x: x[1])
 
 
-def get_backup_datestamp(url):
+def get_backup_datestamp(url: str) -> str:
     jj = url.find("?")
     ii = url.rfind("/", 0, jj) + 1
     return url[ii:jj][:-4]
 
 
-def get_secret(name, base64=False):
+def get_secret(name: str, base64: bool = False) -> str:
     try:
         value = os.environ[name]
     except KeyError as e:
@@ -163,7 +164,7 @@ def get_secret(name, base64=False):
 
 
 @contextmanager
-def run_wrapper(intro):
+def run_wrapper(intro: str) -> Iterator[None]:
     print(intro, end="", flush=True)
     try:
         yield
@@ -179,16 +180,16 @@ def run_wrapper(intro):
         print(f"{Fore.GREEN}ok{Fore.RESET}")
 
 
-def make_key(length=64):
+def make_key(length: int = 64) -> str:
     """Generate a sequence of random characters."""
     return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 def render_template(
     template: str,
-    values: dict = None,
-    extra_labels: dict = None,
-    container_resources: ContainerResources = None,
+    values: dict | None = None,
+    extra_labels: dict | None = None,
+    container_resources: ContainerResources | None = None,
 ) -> str:
     """Given a yaml of a K8s Job, replace template values and add extra labels to the pod spec"""
     extra_labels = extra_labels or {}
@@ -209,16 +210,16 @@ def render_template(
 
 
 async def _run_job(
-    path,
-    values: dict = None,
-    context="",
-    namespace="default",
-    attach=False,
-    cleanup=True,
-    sequential=True,
-    extra_labels: dict = None,
-    container_resources: ContainerResources = None,
-):
+    path: str,
+    values: dict,
+    context: str = "",
+    namespace: str = "default",
+    attach: bool = False,
+    cleanup: bool = True,
+    sequential: bool = True,
+    extra_labels: dict | None = None,
+    container_resources: ContainerResources | None = None,
+) -> str:
     name = values["name"]
     logs = ""
     with tempfile.NamedTemporaryFile("wt", suffix=".yml") as tmp:
@@ -241,7 +242,7 @@ async def _run_job(
         )
 
         @retry
-        async def _find_pod():
+        async def _find_pod() -> str:
             stdout, _, _ = await async_run(cmd)
             pod = stdout.decode()
             if not pod:
@@ -287,7 +288,7 @@ async def _run_job(
     return logs
 
 
-async def wait_for_pod(context, namespace, pod):
+async def wait_for_pod(context: str, namespace: str, pod: str) -> str | None:
     while True:
         cmd = "kubectl get pod" f" --context {context}" f" -n {namespace}" ' -o jsonpath="{.status.phase}"' f" {pod}"
         stdout, _, _ = await async_run(cmd)
@@ -296,7 +297,7 @@ async def wait_for_pod(context, namespace, pod):
             return stdout
 
 
-def retry(*args, max_attempts=3, delay=1):  # noqa: C901
+def retry(*args: object, max_attempts: int = 3, delay: int = 1):  # noqa: C901
     """A decorator for retrying a function.
 
     After `max_attempts` failed attempts the last thrown exception
@@ -342,7 +343,7 @@ def retry(*args, max_attempts=3, delay=1):  # noqa: C901
         return outer
 
 
-def confirm_database(database):
+def confirm_database(database: str) -> None:
     print(
         textwrap.fill(
             f"This operation will {Fore.RED}destroy{Fore.RESET}"

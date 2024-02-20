@@ -26,7 +26,7 @@ def get_app_details(app_name: str, load_secrets: bool = True, exit_if_not_found:
     try:
         app = App(
             app_name,
-            path=get_apps_directory() / app_name,
+            path=str(get_apps_directory() / app_name),
             load_secrets=load_secrets,
             account_id=account_id,
         )
@@ -44,7 +44,7 @@ def get_app_details(app_name: str, load_secrets: bool = True, exit_if_not_found:
     return app
 
 
-def update_app(app_name: str, **kwargs):
+def update_app(app_name: str, **kwargs: object) -> None:
     filename = get_apps_directory() / app_name / "deployment.yml"
     with open(filename) as f:
         data = yaml.safe_load(f)
@@ -61,12 +61,12 @@ def update_app(app_name: str, **kwargs):
 
 
 def get_apps(  # noqa: C901
-    filter: list[str] | str = "",
-    exclude: list[str] | str = "",
-    mode="PROMPT",
-    autoexclude_inactive=True,
-    message=None,
-    load_secrets=True,
+    filter: set[str] | list[str] | str = "",
+    exclude: set[str] | list[str] | str = "",
+    mode: str = "PROMPT",
+    autoexclude_inactive: bool = True,
+    message: str | None = None,
+    load_secrets: bool = True,
 ) -> list[App]:
     """Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
     `exclude`. The incoming filter and exclude params may come in as a list or commastring.
@@ -128,7 +128,7 @@ def get_apps(  # noqa: C901
     return apps
 
 
-def preview_apps(apps: list[App]):
+def preview_apps(apps: list[App]) -> None:
     """Produce a summary of apps, their tags, and their expected images & replicas.
     May not necessarily reflect actual app statuses if recent changes haven't yet been pushed to
     the remote, or the deployment has failed.

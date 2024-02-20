@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from colorama import Fore
 
 from .cli import colourise
@@ -35,24 +36,24 @@ TAG_COLOURS = {
 }
 
 
-def validate_tags(tags, other_valid_tags):
+def validate_tags(tags: Iterable[str], other_valid_tags: Iterable[str]) -> None:
     unrecognised_tags = set(tags) - set(TAG_COLOURS.keys()) - set(other_valid_tags)
     if unrecognised_tags:
         raise Exception(f"Unrecognised tags: {', '.join(unrecognised_tags)}")
 
 
-def colour_tag(tag):
+def colour_tag(tag: str) -> str:
     try:
         return colourise(tag, TAG_COLOURS[tag])
     except KeyError:
         return colourise(tag, Fore.LIGHTBLACK_EX)
 
 
-def colour_tags(tags):
+def colour_tags(tags: Iterable[str]) -> str:
     return ", ".join(map(colour_tag, tags))
 
 
-def sort_tags(tags):
+def sort_tags(tags: list[str]) -> list[str]:
     result = []
     for t in TAG_ORDER:
         if t in tags:

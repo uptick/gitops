@@ -3,12 +3,12 @@ import os
 import yaml
 
 
-def load_yaml(path) -> dict:
+def load_yaml(path: str) -> dict:
     with open(path) as file:
         return resolve_values(yaml.safe_load(file), path)
 
 
-def resolve_values(values, path) -> dict:
+def resolve_values(values: dict, path: str) -> dict:
     if "extends" not in values:
         return values
     parent_values = load_yaml(os.path.join(os.path.dirname(path), values["extends"]))
