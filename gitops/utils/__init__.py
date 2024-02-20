@@ -8,11 +8,11 @@ from invoke import run
 CACHE = {}
 
 
-def gen_secret(length=64):
+def gen_secret(length: int = 64) -> str:
     return "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
-def get_account_id():
+def get_account_id() -> str:
     if "ACCOUNT_ID" not in CACHE:
         # This is not ideal, as it makes an assumption that the account_id of interest is the
         # one the user is currently sitting in. Ideally, should ask the cluster (though that is

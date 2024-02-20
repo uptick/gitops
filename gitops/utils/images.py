@@ -9,14 +9,14 @@ from .cli import colourise
 BATCH_SIZE = 100
 
 
-def get_image(tag):
+def get_image(tag: str) -> str:
     """Finds a specific image in ECR."""
     # TODO
     raise NotImplementedError
 
 
 @lru_cache
-def get_latest_image(repository_name: str, prefix: str) -> str:
+def get_latest_image(repository_name: str, prefix: str) -> str | None:
     """Finds latest image in ECR with the given prefix and returns the image tag"""
     ecr_client = boto3.client("ecr")
     client_paginator = ecr_client.get_paginator("describe_images")
@@ -58,7 +58,7 @@ def colour_image(image_tag: str) -> str:
         return colourise(bits[0], color_hash(bits[0]))
 
 
-def color_hash(bit):
+def color_hash(bit: str) -> Fore:  # type: ignore[no-untyped-def]
     return [
         Fore.RED,
         Fore.GREEN,

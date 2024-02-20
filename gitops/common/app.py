@@ -25,7 +25,7 @@ class App:
         secrets: dict | None = None,
         load_secrets: bool = True,
         account_id: str = "",
-    ):
+    ) -> None:
         self.name = name
         self.path = path
         self.account_id = account_id
@@ -39,9 +39,10 @@ class App:
         self.namespace: str = self.values["namespace"]
         self.chart = Chart(self.values["chart"])
 
-    def __eq__(self, other: "App") -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             type(self) == type(other)
+            and isinstance(other, App)
             and self.name == other.name
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
@@ -75,7 +76,7 @@ class App:
         values.pop("images", None)
         return values
 
-    def _make_image(self, deployment_config: dict):
+    def _make_image(self, deployment_config: dict) -> str:
         if "image-tag" in deployment_config:
             return deployment_config["images"]["template"].format(
                 account_id=self.account_id,

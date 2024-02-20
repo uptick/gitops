@@ -75,7 +75,7 @@ async def print_async_complete(task, x, y, status_y_offset, win_info, sem):
     return output
 
 
-async def async_run(cmd):
+async def async_run(cmd: str) -> tuple[bytes, bytes, str]:
     proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
     stdout, stderr = await proc.communicate()
