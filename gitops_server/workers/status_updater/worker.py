@@ -59,6 +59,7 @@ class DeploymentStatusWorker:
             await kubernetes_asyncio.config.load_kube_config()
 
     async def process_work(self):
+        await asyncio.sleep(5)
         async with kubernetes_asyncio.client.ApiClient() as api:
             apps_api = kubernetes_asyncio.client.AppsV1Api(api)
             deployments = await apps_api.list_namespaced_deployment(
@@ -66,7 +67,7 @@ class DeploymentStatusWorker:
                 namespace=CLUSTER_NAMESPACE,
                 label_selector="gitops/deploy_id,gitops/status=in_progress",
             )
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
 
             for deployment in deployments.items:
                 # Deployment status may not exist yet
@@ -116,9 +117,9 @@ class DeploymentStatusWorker:
     async def run(self):
         logger.info("Starting deployment status watching loop")
         logger.info("Loading kubernetes asyncio api")
-        try:
-            while True:
+        while True:
+            try:
                 await self.load_config()
                 await self.process_work()
-        except Exception as e:
-            logger.error(str(e), exc_info=True)
+            except Exception as e:
+                logger.error(str(e), exc_info=True)
