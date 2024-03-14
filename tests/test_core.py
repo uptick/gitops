@@ -10,23 +10,24 @@ import gitops.utils.apps as apps
 from gitops import core
 
 
+@fixture(autouse=True)
+def mock_invoke_run(monkeypatch):
+    monkeypatch.setattr(core, "run", lambda cmd: None)
+
+@fixture
+def confirm_yes(monkeypatch):
+    monkeypatch.setattr(apps, "confirm", lambda: True)
+
+@fixture
+def sample_app(tmp_path, monkeypatch):
+    monkeypatch.setattr(apps, "get_apps_directory", lambda: tmp_path)
+    (tmp_path / "sample_app").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "sample_app/deployment.yml").write_text("{}")
+    (tmp_path / "sample_app/secrets.yml").write_text("{}")
+    return tmp_path / "sample_app/"
+
+
 class TestMixin:
-    @fixture(autouse=True)
-    def mock_invoke_run(self, monkeypatch):
-        monkeypatch.setattr(core, "run", lambda cmd: None)
-
-    @fixture
-    def confirm_yes(self, monkeypatch):
-        monkeypatch.setattr(apps, "confirm", lambda: True)
-
-    @fixture
-    def sample_app(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(apps, "get_apps_directory", lambda: tmp_path)
-        (tmp_path / "sample_app").mkdir(parents=True, exist_ok=True)
-        (tmp_path / "sample_app/deployment.yml").write_text("{}")
-        (tmp_path / "sample_app/secrets.yml").write_text("{}")
-        return tmp_path / "sample_app/"
-
     @fixture
     def deployment_yml(self, sample_app):
         def _deployment_yml(content):
