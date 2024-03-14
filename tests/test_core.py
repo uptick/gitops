@@ -1,11 +1,9 @@
 # type: ignore
-from invoke import MockContext
-
-import yaml
-from pytest import fixture 
 from textwrap import dedent
 
-import gitops.utils.kube as kube
+from invoke import MockContext
+from pytest import fixture
+
 import gitops.utils.apps as apps
 from gitops import core
 
@@ -14,9 +12,11 @@ from gitops import core
 def mock_invoke_run(monkeypatch):
     monkeypatch.setattr(core, "run", lambda cmd: None)
 
+
 @fixture
 def confirm_yes(monkeypatch):
     monkeypatch.setattr(apps, "confirm", lambda: True)
+
 
 @fixture
 def sample_app(tmp_path, monkeypatch):
@@ -50,7 +50,7 @@ class TestSetEnv(TestMixin):
         deployment_yml,
         confirm_yes,
     ):
-        file = deployment_yml(
+        file = deployment_yml(  # noqa: F841
             """\
             namespace: test
             chart: test
@@ -112,7 +112,7 @@ class TestSetEnv(TestMixin):
         deployment_yml,
         confirm_yes,
     ):
-        file = deployment_yml(
+        file = deployment_yml(  # noqa: F841
             """\
             namespace: test
             chart: test
@@ -163,7 +163,7 @@ class TestUnsetEnv(TestMixin):
         deployment_yml,
         confirm_yes,
     ):
-        file = deployment_yml(
+        file = deployment_yml(  # noqa: F841
             """\
             namespace: test
             chart: test
@@ -219,7 +219,7 @@ class TestUnsetEnv(TestMixin):
         deployment_yml,
         confirm_yes,
     ):
-        file = deployment_yml(
+        file = deployment_yml(  # noqa: F841
             """\
             namespace: test
             chart: test
@@ -234,13 +234,12 @@ class TestUnsetEnv(TestMixin):
             """
         )
 
-
     def test_preserve_null_environment_variable(
         self,
         deployment_yml,
         confirm_yes,
     ):
-        file = deployment_yml(
+        file = deployment_yml(  # noqa: F841
             """\
             namespace: test
             chart: test
