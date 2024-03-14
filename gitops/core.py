@@ -326,7 +326,7 @@ def unsetenv(ctx, filter, values, exclude=""):
         print(success_negative("Aborted."))
         return
     for app in apps:
-        environment = app.values.get("environment", {})
+        environment = app.values.get("environment") or {}
         for e in splitenvs:
             if e in environment:
                 del environment[e]
