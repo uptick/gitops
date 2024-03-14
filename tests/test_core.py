@@ -13,6 +13,11 @@ def mock_invoke_run(monkeypatch):
     monkeypatch.setattr(core, "run", lambda cmd: None)
 
 
+@fixture(autouse=True)
+def mock_get_account_id(monkeypatch):
+    monkeypatch.setattr(apps, "get_account_id", lambda: "UNKNOWN")
+
+
 @fixture
 def confirm_yes(monkeypatch):
     monkeypatch.setattr(apps, "confirm", lambda: True)
