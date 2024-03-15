@@ -1,4 +1,5 @@
 """Overwrite this file in kubernetes to inject custom code"""
+
 import logging
 import os
 
