@@ -1,0 +1,7 @@
+[tools]
+poetry = { version = "latest" }
+python = { version = "3.12.1"}
+
+[env]
+_.python.venv = ".venv" # relative to this file's directory
+POETRY_VIRTUALENVS_IN_PROJECT = "true"
