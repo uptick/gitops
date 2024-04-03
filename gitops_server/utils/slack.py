@@ -1,14 +1,15 @@
 import dataclasses
-import json
 import logging
 import os
-import urllib.request
 from collections.abc import Iterable
-from typing import Optional
 
 import httpx
 
 logger = logging.getLogger("gitops")
+
+SLACK_URL = os.environ.get("SLACK_URL")
+SLACK_API_USERS_URL = os.environ.get("SLACK_API_USERS_URL", "https://slack.com/api/users.list")
+SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
 
 
 @dataclasses.dataclass
@@ -27,34 +28,33 @@ class SlackGroup(SlackUser):
         return f"<!subteam^{self.id}|{self.name}>"
 
 
-async def post(message):
+async def post(message: str) -> None:
     """Post a message to a slack channel
 
     Uses the environment variable `SLACK_URL` to know which channel to post to.
     This URL is obtained by registering an integration with Slack.
     """
     logger.info("POSTING TO SLACK")
-    url = os.environ["SLACK_URL"]
     data = {"text": message}
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=data)
+        response = await client.post(SLACK_URL, json=data)
         if response.status_code >= 300:
             logger.warning("Failed to post a message to slack (see below):")
             logger.error(f"{message}", exc_info=True)
 
 
-def find_commiter_slack_user(name: str, email: str) -> Optional["SlackUser"]:
-    token = os.environ.get("SLACK_TOKEN", "")
-    if not token:
+async def find_commiter_slack_user(name: str, email: str) -> SlackUser | None:
+    """Find a slack user by name or email using the slack API"""
+    if not SLACK_TOKEN:
         return None
 
-    with urllib.request.urlopen(  # noqa:S310
-        urllib.request.Request(
-            "https://slack.com/api/users.list?limit=300&pretty=1",
-            headers={"Authorization": f"Bearer {token}"},
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{SLACK_API_USERS_URL}?limit=5&pretty=1",
+            headers={"Authorization": f"Bearer {SLACK_TOKEN}"},
+            params={"name": name, "email": email},
         )
-    ) as response:
-        data = json.loads(response.read())
+        data = response.json()
 
     if not data["ok"]:
         raise Exception(data["error"])
@@ -91,12 +91,12 @@ def pairwise_tuples(x: str) -> list[tuple[str, str]]:
 def search(name: str, email: str, users: list[SlackUser]) -> SlackUser | None:
     def scoring_fn(user: SlackUser) -> float:
         return (
-            jaccard_similarity(pairwise_tuples(user.email), pairwise_tuples(email))
-            + jaccard_similarity(pairwise_tuples(name), pairwise_tuples(user.name))
-            + jaccard_similarity(pairwise_tuples(name), pairwise_tuples(user.real_name))
+            jaccard_similarity(pairwise_tuples(user.email.lower()), pairwise_tuples(email.lower()))
+            + jaccard_similarity(pairwise_tuples(name.lower()), pairwise_tuples(user.name.lower()))
+            + jaccard_similarity(pairwise_tuples(name.lower()), pairwise_tuples(user.real_name.lower()))
         )
 
     matches = sorted([(scoring_fn(u), u) for u in users], key=lambda x: x[0], reverse=True)
-    if matches[0][0] > 1.0:
+    if matches[0][0] > 0.5:
         return matches[0][1]
     return None
