@@ -77,7 +77,7 @@ async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> U
         slack_user = DEFAULT_USER_GROUP
     else:
         slack_user = (
-            find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email) or DEFAULT_USER_GROUP
+            await find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email) or DEFAULT_USER_GROUP
         )
     slack_user_msg = f" {slack_user} " if slack_user else ""
     log_msg = f"<https://my.papertrailapp.com/systems/{app.name}-migration/events|(Migration Logs)>"
