@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+
 from colorama import Fore
 
 from .cli import colourise
@@ -12,6 +13,8 @@ TAG_ORDER = [
     "sandbox",
     "production",
     "enterprise",
+    "multitenanted",
+    "workspace_group",
     "dedicated",
     "preview",
     "onboardng",
@@ -27,6 +30,8 @@ TAG_COLOURS = {
     "customer": Fore.LIGHTBLUE_EX,
     "internal": Fore.LIGHTCYAN_EX,
     "sandbox": Fore.LIGHTYELLOW_EX,
+    "multitenanted": Fore.LIGHTBLUE_EX,
+    "workspace_group": Fore.LIGHTYELLOW_EX,
     "production": Fore.LIGHTRED_EX,
     "enterprise": Fore.WHITE,
     "dedicated": Fore.WHITE,
