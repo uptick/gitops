@@ -163,7 +163,7 @@ class Deployer:
                         cfg.flush()
                         os.fsync(cfg.fileno())
                         result = await run(
-                            "helm secrets upgrade"
+                            "helm secrets upgrade --create-namespace"
                             " --install"
                             " --timeout=600s"
                             f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
@@ -181,7 +181,7 @@ class Deployer:
                     chart_version_arguments = f" --version={app.chart.version}" if app.chart.version else ""
                     await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
                     result = await run(
-                        "helm secrets upgrade"
+                        "helm secrets upgrade --create-namespace"
                         " --install"
                         " --timeout=600s"
                         f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
