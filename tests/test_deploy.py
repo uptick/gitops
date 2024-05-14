@@ -29,13 +29,13 @@ class TestDeploy:
         assert run_mock.call_count == 4
         assert run_mock.call_args_list[0][0][0] == "cd mock-repo; helm dependency build"
         assert re.match(
-            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
+            r"helm secrets upgrade --create-namespace --install --timeout=600s -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[1][0][0],
         )
         assert run_mock.call_args_list[2][0][0] == "cd mock-repo; helm dependency build"
         assert re.match(
-            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
+            r"helm secrets upgrade --create-namespace --install --timeout=600s -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[3][0][0],
         )
@@ -78,7 +78,7 @@ class TestDeploy:
         assert run_mock.call_count == 2
         assert run_mock.call_args_list[0][0][0] == "helm repo add brigade https://helm.charts"
         assert re.match(
-            r"helm secrets upgrade --install --timeout=600s -f .+\.yml"
+            r"helm secrets upgrade --create-namespace --install --timeout=600s -f .+\.yml"
             r" --namespace=mynamespace helm_app brigade/brigade",
             run_mock.call_args_list[1][0][0],
         )
@@ -99,13 +99,13 @@ class TestDeploy:
         assert run_mock.call_count == 4
         assert run_mock.call_args_list[0][0][0] == "cd mock-repo; helm dependency build"
         assert re.match(
-            r"helm secrets upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
+            r"helm secrets upgrade --create-namespace --install --timeout=600s --set skip_migrations=true -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[1][0][0],
         )
         assert run_mock.call_args_list[2][0][0] == "cd mock-repo; helm dependency build"
         assert re.match(
-            r"helm secrets upgrade --install --timeout=600s --set skip_migrations=true -f .+\.yml"
+            r"helm secrets upgrade --create-namespace --install --timeout=600s --set skip_migrations=true -f .+\.yml"
             r" --namespace=mynamespace sample-app-\d mock-repo",
             run_mock.call_args_list[3][0][0],
         )
