@@ -10,3 +10,5 @@ secrets.env
 **/.mypy_cache
 **/.pytest_cache
 .cache/
+.DS_Store
+.venv
