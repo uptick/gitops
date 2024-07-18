@@ -1,9 +1,8 @@
-import pkg_resources
 from invoke import Collection, Program, Task
 
-from . import core, db, shorthands
+from . import __version__, core, db, shorthands
 
-version = pkg_resources.require("gitops")[0].version
+version = __version__
 
 namespace = Collection()
 

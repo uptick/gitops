@@ -5,7 +5,7 @@ from pathlib import Path
 from . import monkeypatches  # NOQA
 from .utils.cli import success, warning
 
-__version__ = "0.10.6"
+__version__ = "0.10.7"
 
 
 # Checking gitops version matches cluster repo version.
@@ -13,13 +13,13 @@ versions_path = Path(os.environ.get("GITOPS_APPS_DIRECTORY", "apps")).parent.abs
 if versions_path.exists():
     import configparser
 
-    from pkg_resources.extern.packaging.version import parse as parse_version
+    from packaging.version import parse
 
     config = configparser.RawConfigParser()
     config.read(versions_path)
     if "gitops.versions" in config:
         min_gitops_version = config.get("gitops.versions", "gitops")
-        if parse_version(__version__) < parse_version(min_gitops_version):
+        if parse(__version__) < parse(min_gitops_version):
             print(warning("Please upgrade Gitops."), file=sys.stderr)
             print(
                 f"Your current version {success(__version__)} is less than the clusters minimum"
