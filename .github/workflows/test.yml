@@ -2,7 +2,7 @@ name: Test
 on:
   push:
     branches:
-      - develop
+    - develop
   pull_request: ~
 
 jobs:
@@ -10,16 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.11", "3.12"]
+        python: ["3.12"]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install deps
-        run: |
-          pip install poetry && poetry install -E server
-      - name: Run tests...
-        run: poetry run py.test
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - uses: jdx/mise-action@v2
+    - name: Run tests...
+      run: "mise run ci"

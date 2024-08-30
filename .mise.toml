@@ -1,10 +1,28 @@
 [tools]
-poetry = { version = "latest" }
 python = { version = "3.12.1"}
+uv = { version = "0.4.0"}
 
 [env]
 _.python.venv = ".venv" # relative to this file's directory
-POETRY_VIRTUALENVS_IN_PROJECT = "true"
+
+
+[tasks."install"]
+run = ["uv sync --all-extras"]
+
+[tasks."lint"]
+run = ["uv run ruff check ."]
+
+[tasks."format"]
+run = ["uv run ruff format ."]
+
+[tasks."test"]
+run = ["uv run py.test"]
+
+[tasks."mypy"]
+run = ["uv run mypy"]
+
+[tasks."ci"]
+depends = ["lint", "format", "test", "mypy"]
 
 [tasks."helm:lint"]
 run = "helm install --dry-run --debug -f charts/gitops/values.yaml debug charts/gitops"
