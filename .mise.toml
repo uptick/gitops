@@ -5,3 +5,10 @@ python = { version = "3.12.1"}
 [env]
 _.python.venv = ".venv" # relative to this file's directory
 POETRY_VIRTUALENVS_IN_PROJECT = "true"
+
+[tasks."helm:lint"]
+run = "helm install --dry-run --debug -f charts/gitops/values.yaml debug charts/gitops"
+
+[tasks.release]
+description = "Bump release versions across all files"
+run = "python release.py"
