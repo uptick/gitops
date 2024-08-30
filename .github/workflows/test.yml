@@ -5,15 +5,21 @@ on:
     - develop
   pull_request: ~
 
+permissions:
+  actions: read # Read the metrics
+  contents: write # to be able to publish a GitHub release
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  id-token: write # to enable use of OIDC for npm provenance / AWS
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.12"]
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - uses: jdx/mise-action@v2
-    - name: Run tests...
-      run: "mise run ci"
+  ci:
+    uses: uptick/actions/.github/workflows/ci.yaml@main
+    secrets: inherit
+    with:
+      praise-on-fix: false
+      python-version: 3.12
+      mise: true
+      mise-install: true
+      command: |
+        mise run ci
