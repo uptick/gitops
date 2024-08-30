@@ -22,4 +22,5 @@ jobs:
       mise: true
       mise-install: true
       command: |
+        mise run install
         mise run ci
