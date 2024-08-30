@@ -1,7 +1,32 @@
 [tools]
-poetry = { version = "latest" }
-python = { version = "3.12.1"}
+python = { version = "3.12.1", venv = ".venv" }
+uv = { version = "0.4.0"}
 
 [env]
-_.python.venv = ".venv" # relative to this file's directory
-POETRY_VIRTUALENVS_IN_PROJECT = "true"
+_.python.venv = { path = "{{config_root}}/.venv", create = true }
+
+
+[tasks."install"]
+run = ["uv sync --all-extras"]
+
+[tasks."lint"]
+run = ["uv run ruff check ."]
+
+[tasks."format"]
+run = ["uv run ruff format ."]
+
+[tasks."test"]
+run = ["uv run py.test"]
+
+[tasks."mypy"]
+run = ["uv run mypy ."]
+
+[tasks."ci"]
+depends = ["lint", "format", "test"]
+
+[tasks."helm:lint"]
+run = "helm install --dry-run --debug -f charts/gitops/values.yaml debug charts/gitops"
+
+[tasks.release]
+description = "Bump release versions across all files"
+run = "python release.py"

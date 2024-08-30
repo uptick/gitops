@@ -2,24 +2,25 @@ name: Test
 on:
   push:
     branches:
-      - develop
+    - develop
   pull_request: ~
 
+permissions:
+  actions: read # Read the metrics
+  contents: write # to be able to publish a GitHub release
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  id-token: write # to enable use of OIDC for npm provenance / AWS
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.11", "3.12"]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install deps
-        run: |
-          pip install poetry && poetry install -E server
-      - name: Run tests...
-        run: poetry run py.test
+  ci:
+    uses: uptick/actions/.github/workflows/ci.yaml@main
+    secrets: inherit
+    with:
+      praise-on-fix: false
+      python-version: 3.12
+      mise: true
+      mise-install: true
+      command: |
+        mise run install
+        mise run ci

@@ -41,7 +41,7 @@ class App:
 
     def __eq__(self, other: object) -> bool:
         return (
-            type(self) == type(other)
+            type(self) == type(other)  # noqa
             and isinstance(other, App)
             and self.name == other.name
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)

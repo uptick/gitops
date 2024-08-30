@@ -9,11 +9,11 @@ import tempfile
 import textwrap
 import time
 from base64 import b64encode
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
 from typing import TypedDict
-from collections.abc import Iterator
 
 import boto3
 import humanize
@@ -197,7 +197,7 @@ def render_template(
 
     # Replace keys using our templating language
     for k, v in values.items():
-        template = template.replace("{{ %s }}" % k, v)
+        template = template.replace("{{ %s }}" % k, v)  # noqa
 
     job_json = yaml.safe_load(template)
     # Adding extra labels to k8s job pod spec
