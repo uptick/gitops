@@ -2,7 +2,6 @@ import os
 import sys
 from pathlib import Path
 
-from . import monkeypatches  # NOQA
 from .utils.cli import success, warning
 
 __version__ = "0.11.0"
