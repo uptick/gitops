@@ -40,8 +40,6 @@ This is a git repository that you set up, where you list out all of your applica
 
 Secrets should be placed in `secrets.env`. The example file `secrets.example.env` has the environment variables you will need to supply.
 
-Gitops has a helm chart defining its deployment. Invoke scripts are provided to make deployment painless. See `tasks.py`.
-
 Add `export GITOPS_APPS_DIRECTORY=~/<cluster-apps-folder>` to invoke gitops from any directory.
 
 Ensure that gitops has `edit` access to the namespace it is deploying to. An example RoleBinding is:
