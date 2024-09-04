@@ -19,7 +19,7 @@ async def run(command, suppress_errors=False) -> RunOutput:
     )
 
     stdout, stderr = await proc.communicate()
-    exit_code = proc.returncode
+    exit_code = proc.returncode or 1
     if exit_code == 0:
         return RunOutput(exit_code=exit_code, output=stdout.decode())
     else:

@@ -9,7 +9,7 @@ from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import UpdateAppResult
 from gitops_server.utils import github
-from gitops_server.utils.slack import SlackGroup, find_commiter_slack_user
+from gitops_server.utils.slack import SlackGroup, SlackUser, find_commiter_slack_user
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ async def handle_failed_deploy(app: App, result: UpdateAppResult, deployer) -> U
     email = deployer.author_email
 
     if "devops" in email.lower() or "tickforge" in email.lower():
-        slack_user = DEFAULT_USER_GROUP
+        slack_user: SlackGroup | SlackUser = DEFAULT_USER_GROUP
     else:
         slack_user = (
             await find_commiter_slack_user(name=deployer.author_name, email=deployer.author_email) or DEFAULT_USER_GROUP

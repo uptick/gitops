@@ -13,6 +13,6 @@ for core_ns in [core, shorthands]:
         namespace.add_task(task)
 
 # Namespace the rarer ones.
-namespace.add_collection(db)
+namespace.add_collection(db)  # type: ignore
 
 program = Program(namespace=namespace, version=version)

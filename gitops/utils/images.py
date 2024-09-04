@@ -58,7 +58,7 @@ def colour_image(image_tag: str) -> str:
         return colourise(bits[0], color_hash(bits[0]))
 
 
-def color_hash(bit: str) -> Fore:  # type: ignore[no-untyped-def]
+def color_hash(bit: str) -> str:
     return [
         Fore.RED,
         Fore.GREEN,

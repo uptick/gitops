@@ -7,7 +7,6 @@ from fastapi import HTTPException, Request
 
 from gitops_server import settings
 from gitops_server.app import app
-from gitops_server.logging_config import *  # noqa
 from gitops_server.workers import DeploymentStatusWorker, DeployQueueWorker
 
 logging.basicConfig(level=logging.INFO)

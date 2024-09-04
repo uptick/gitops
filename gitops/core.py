@@ -372,7 +372,7 @@ def git_push(cluster_path: str, retry: int = 3):
     attempts = 0
     while attempts <= retry:
         result = run(f"cd {cluster_path}; git push", warn=True)
-        if result.exited == 1 and "remote contains work" in result.stderr:
+        if result and result.exited == 1 and "remote contains work" in result.stderr:
             attempts += 1
             run(f"cd {cluster_path}; git pull --rebase=true")
         else:

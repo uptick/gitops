@@ -20,7 +20,7 @@ import humanize
 import yaml
 from colorama import Fore
 from invoke import run
-from invoke.exceptions import UnexpectedExit
+from invoke.exceptions import Failure, UnexpectedExit
 
 from gitops.common.app import App
 from gitops.settings import get_apps_directory
@@ -55,8 +55,8 @@ async def run_job(
         "image": app.image,
         "serviceAccountName": app.service_account_name,
     }
-    extra_labels = {}
-    container_resources = {}
+    extra_labels: dict[str, str] = {}
+    container_resources: ContainerResources | None = None
 
     if cpu and memory:
         cpu_request = f"{cpu}m" if cpu else ""
@@ -275,10 +275,10 @@ async def _run_job(
                         _, _, output_log = await async_run(cmd)
                         logs += output_log
 
-                except Exception as e:
+                except Failure as e:
                     if "current phase is Succeeded" not in str(e.result.stdout):
                         raise e
-        except Exception as e:
+        except Failure as e:
             if "current phase is Succeeded" not in str(e.result.stdout):
                 raise e
         finally:
@@ -292,9 +292,9 @@ async def wait_for_pod(context: str, namespace: str, pod: str) -> str | None:
     while True:
         cmd = "kubectl get pod" f" --context {context}" f" -n {namespace}" ' -o jsonpath="{.status.phase}"' f" {pod}"
         stdout, _, _ = await async_run(cmd)
-        stdout = stdout.decode().lower()
-        if stdout != "pending":
-            return stdout
+        output = stdout.decode().lower()
+        if output != "pending":
+            return output
 
 
 def retry(*args: object, max_attempts: int = 3, delay: int = 1):  # noqa: C901

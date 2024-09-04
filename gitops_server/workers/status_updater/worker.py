@@ -14,9 +14,9 @@ TODO
 import asyncio
 import logging
 
-import kubernetes_asyncio
-import kubernetes_asyncio.client
-import kubernetes_asyncio.config
+import kubernetes_asyncio  # type:ignore[import-untyped]
+import kubernetes_asyncio.client  # type:ignore[import-untyped]
+import kubernetes_asyncio.config  # type:ignore[import-untyped]
 
 from gitops_server.settings import CLUSTER_NAMESPACE
 from gitops_server.utils import github
