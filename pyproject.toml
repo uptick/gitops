@@ -50,3 +50,6 @@ style = [
     'py://nitpick/resources/any/commitizen',
 ]
 cache = "never"
+
+[tool.mypy]
+exclude = ["tests"]
