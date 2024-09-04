@@ -1,5 +1,5 @@
 import sys
-from pathlib import PosixPath
+from pathlib import Path
 
 from colorama import Fore
 from tabulate import tabulate
@@ -15,7 +15,7 @@ from .images import colour_image
 from .tags import colour_tags, validate_tags
 
 
-def is_valid_app_directory(directory: PosixPath) -> bool:
+def is_valid_app_directory(directory: Path) -> bool:
     files = ["deployment.yml", "secrets.yml"]
     file_paths = [(directory / file).is_file() for file in files]
     return all(file_paths)

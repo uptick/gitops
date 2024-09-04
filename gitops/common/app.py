@@ -155,7 +155,7 @@ class Chart:
             # for backwards compat, any chart definition which is a string, is a git repo
             self.type = "git"
             self.git_sha = None
-            self.git_repo_url = definition
+            self.git_repo_url = definition or None
         elif isinstance(definition, dict):
             self.type = definition["type"]
             self.git_sha = definition.get("git_sha")

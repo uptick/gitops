@@ -6,7 +6,7 @@ import random
 import time
 
 import boto3
-import dsnparse
+import dsnparse  # type: ignore[import]
 from invoke import run, task
 
 from .utils import kube

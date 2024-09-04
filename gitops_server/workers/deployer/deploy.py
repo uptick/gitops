@@ -33,10 +33,9 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
 
 async def post_result(app: App, result: UpdateAppResult, deployer: "Deployer", **kwargs):
     if result["exit_code"] != 0:
-        result = await handle_failed_deploy(app, result, deployer)
-
+        deploy_result = await handle_failed_deploy(app, result, deployer)
         message = (
-            result.get("slack_message")
+            deploy_result["slack_message"]
             or f"Failed to deploy app `{result['app_name']}` for cluster `{settings.CLUSTER_NAME}`:\n>>>{result['output']}"
         )
 
@@ -139,7 +138,8 @@ class Deployer:
         async with self.semaphore:
             logger.info(f"Uninstalling app {app.name!r}.")
             result = await run(f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True)
-            update_result = UpdateAppResult(app_name=app.name, **result)
+            if result:
+                update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
             await post_result(
                 app=app,
                 result=update_result,
@@ -156,6 +156,7 @@ class Deployer:
         async with self.semaphore:
             logger.info(f"Deploying app {app.name!r}.")
             if app.chart.type == "git":
+                assert app.chart.git_repo_url
                 async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
                     await run(f"cd {chart_folder_path}; helm dependency build")
                     with tempfile.NamedTemporaryFile(suffix=".yml") as cfg:
@@ -195,7 +196,7 @@ class Deployer:
                 logger.warning("Local is not implemented yet")
                 return None
 
-            update_result = UpdateAppResult(app_name=app.name, **result)
+            update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
 
             await post_result(app=app, result=update_result, deployer=self)
         return update_result

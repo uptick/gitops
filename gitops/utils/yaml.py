@@ -24,12 +24,12 @@ def increase_indent(self, flow=False, indentless=False):
 if pyyaml.safe_dump is pyyaml.dump:
     # PyYAML v4.1
     SafeDumper = pyyaml.dumper.Dumper
-    DangerDumper = pyyaml.dumper.DangerDumper
+    DangerDumper = pyyaml.dumper.DangerDumper  # type: ignore
 else:
-    SafeDumper = pyyaml.dumper.SafeDumper
+    SafeDumper = pyyaml.dumper.SafeDumper  # type: ignore
     DangerDumper = pyyaml.dumper.Dumper
 
-SafeDumper.increase_indent = increase_indent
+SafeDumper.increase_indent = increase_indent  # type: ignore
 DangerDumper.increase_indent = increase_indent
 
 pyyaml.add_representer(dict, map_representer, Dumper=SafeDumper)
@@ -43,4 +43,4 @@ del map_constructor, map_representer
 # Merge PyYAML namespace into ours.
 # This allows users a drop-in replacement:
 #   import utils.yaml as yaml
-from yaml import *  # noqa isort:skip
+from yaml import *  # type: ignore # noqa isort:skip

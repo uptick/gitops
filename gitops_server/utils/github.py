@@ -8,8 +8,7 @@ logger = logging.getLogger("github")
 GITHUB_OAUTH_TOKEN = os.environ.get("GITHUB_OAUTH_TOKEN")
 
 
-class IssueNotFound(Exception):
-    ...
+class IssueNotFound(Exception): ...
 
 
 class STATUSES:

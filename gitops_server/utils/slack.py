@@ -37,10 +37,11 @@ async def post(message: str) -> None:
     logger.info("POSTING TO SLACK")
     data = {"text": message}
     async with httpx.AsyncClient() as client:
-        response = await client.post(SLACK_URL, json=data)
-        if response.status_code >= 300:
-            logger.warning("Failed to post a message to slack (see below):")
-            logger.error(f"{message}", exc_info=True)
+        if SLACK_URL:
+            response = await client.post(SLACK_URL, json=data)
+            if response.status_code >= 300:
+                logger.warning("Failed to post a message to slack (see below):")
+                logger.error(f"{message}", exc_info=True)
 
 
 async def find_commiter_slack_user(name: str, email: str) -> SlackUser | None:

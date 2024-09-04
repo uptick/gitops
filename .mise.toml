@@ -22,7 +22,7 @@ run = ["uv run py.test"]
 run = ["uv run mypy ."]
 
 [tasks."ci"]
-depends = ["lint", "format", "test"]
+depends = ["lint", "format", "test", "mypy"]
 
 [tasks."helm:lint"]
 run = "helm install --dry-run --debug -f charts/gitops/values.yaml debug charts/gitops"

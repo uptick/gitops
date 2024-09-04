@@ -13,13 +13,17 @@ def gen_secret(length: int = 64) -> str:
 
 
 def get_account_id() -> str:
+    # TODO REMOVE THIS FUNCTION and account_id in general
+
     if "ACCOUNT_ID" not in CACHE:
         # This is not ideal, as it makes an assumption that the account_id of interest is the
         # one the user is currently sitting in. Ideally, should ask the cluster (though that is
         # messy in its own right, since we don't necessarily want the cluster that's in the
         # current context either).
-        caller_identity = run("aws sts get-caller-identity", hide=True).stdout.strip()
-        CACHE["ACCOUNT_ID"] = json.loads(caller_identity)["Account"]
+        result = run("aws sts get-caller-identity", hide=True)
+        if result:
+            caller_identity = result.stdout.strip()
+            CACHE["ACCOUNT_ID"] = json.loads(caller_identity)["Account"]
     return CACHE["ACCOUNT_ID"]
 
 
