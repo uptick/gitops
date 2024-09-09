@@ -5,6 +5,8 @@ import os
 import tempfile
 import uuid
 
+from opentelemetry import trace
+
 from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import AppDefinitions, UpdateAppResult
@@ -13,12 +15,15 @@ from gitops_server.utils.git import temp_repo
 
 from .hooks import handle_failed_deploy, handle_successful_deploy
 
+tracer = trace.get_tracer(__name__)
+
 BASE_REPO_DIR = "/var/gitops/repos"
 ROLE_ARN = f"arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess"
 logger = logging.getLogger("gitops")
 GITOPS_MAX_PARALLEL_DEPLOYS = os.environ.get("GITOPS_MAX_PARALLEL_DEPLOYS", "5")
 
 
+@tracer.start_as_current_span("post_init_summary")
 async def post_init_summary(source, username, added_apps, updated_apps, removed_apps, commit_message):
     deltas = ""
     for typ, d in [("Adding", added_apps), ("Updating", updated_apps), ("Removing", removed_apps)]:
@@ -31,6 +36,7 @@ async def post_init_summary(source, username, added_apps, updated_apps, removed_
     )
 
 
+@tracer.start_as_current_span("post_result")
 async def post_result(app: App, result: UpdateAppResult, deployer: "Deployer", **kwargs):
     if result["exit_code"] != 0:
         deploy_result = await handle_failed_deploy(app, result, deployer)
@@ -45,6 +51,7 @@ async def post_result(app: App, result: UpdateAppResult, deployer: "Deployer", *
         await handle_successful_deploy(app, result, deployer)
 
 
+@tracer.start_as_current_span("post_result_summary")
 async def post_result_summary(source: str, results: list[UpdateAppResult]):
     n_success = sum([r["exit_code"] == 0 for r in results])
     n_failed = sum([r["exit_code"] != 0 for r in results])
@@ -55,6 +62,7 @@ async def post_result_summary(source: str, results: list[UpdateAppResult]):
     )
 
 
+@tracer.start_as_current_span("load_app_definitions")
 async def load_app_definitions(url: str, sha: str) -> AppDefinitions:
     logger.info(f'Loading app definitions at "{sha}".')
     async with temp_repo(url, sha=sha) as repo:
@@ -107,99 +115,111 @@ class Deployer:
         )
 
     async def deploy(self):
-        added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
-        if not (added_apps | updated_apps | removed_apps):
-            logger.info("No deltas; aborting.")
-            return
-        logger.info(
-            f"Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)},"
-            f" R{list(removed_apps)}"
-        )
-        await post_init_summary(
-            source=self.current_app_definitions.name,
-            username=self.author_name,
-            added_apps=added_apps,
-            updated_apps=updated_apps,
-            removed_apps=removed_apps,
-            commit_message=self.commit_message,
-        )
-        update_results = await asyncio.gather(
-            *[
-                self.update_app_deployment(self.current_app_definitions.apps[app_name])
-                for app_name in (added_apps | updated_apps)
-            ]
-        )
-        uninstall_results = await asyncio.gather(
-            *[self.uninstall_app(self.previous_app_definitions.apps[app_name]) for app_name in removed_apps]
-        )
-        await post_result_summary(self.current_app_definitions.name, update_results + uninstall_results)
+        with tracer.start_as_current_span("deploy"):
+            added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
+            if not (added_apps | updated_apps | removed_apps):
+                logger.info("No deltas; aborting.")
+                return
+            logger.info(
+                f"Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)},"
+                f" R{list(removed_apps)}"
+            )
+            await post_init_summary(
+                source=self.current_app_definitions.name,
+                username=self.author_name,
+                added_apps=added_apps,
+                updated_apps=updated_apps,
+                removed_apps=removed_apps,
+                commit_message=self.commit_message,
+            )
+            update_results = await asyncio.gather(
+                *[
+                    self.update_app_deployment(self.current_app_definitions.apps[app_name])
+                    for app_name in (added_apps | updated_apps)
+                ]
+            )
+            uninstall_results = await asyncio.gather(
+                *[self.uninstall_app(self.previous_app_definitions.apps[app_name]) for app_name in removed_apps]
+            )
+            await post_result_summary(self.current_app_definitions.name, update_results + uninstall_results)
 
     async def uninstall_app(self, app: App) -> UpdateAppResult:
-        async with self.semaphore:
-            logger.info(f"Uninstalling app {app.name!r}.")
-            result = await run(f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True)
-            if result:
-                update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
-            await post_result(
-                app=app,
-                result=update_result,
-                deployer=self,
-            )
-        return update_result
+        with tracer.start_as_current_span("uninstall_app", attributes={"app": app.name}):
+            async with self.semaphore:
+                logger.info(f"Uninstalling app {app.name!r}.")
+                result = await run(f"helm uninstall {app.name} -n {app.namespace}", suppress_errors=True)
+                if result:
+                    update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
+                await post_result(
+                    app=app,
+                    result=update_result,
+                    deployer=self,
+                )
+            return update_result
 
     async def update_app_deployment(self, app: App) -> UpdateAppResult | None:
-        app.set_value("deployment.labels.gitops/deploy_id", self.deploy_id)
-        app.set_value("deployment.labels.gitops/status", github.STATUSES.in_progress)
-        if github_deployment_url := app.values.get("github/deployment_url"):
-            app.set_value("deployment.annotations.github/deployment_url", github_deployment_url)
+        with tracer.start_as_current_span("update_app_deployment", attributes={"app": app.name}) as span:
+            app.set_value("deployment.labels.gitops/deploy_id", self.deploy_id)
+            app.set_value("deployment.labels.gitops/status", github.STATUSES.in_progress)
+            if github_deployment_url := app.values.get("github/deployment_url"):
+                app.set_value("deployment.annotations.github/deployment_url", github_deployment_url)
 
-        async with self.semaphore:
-            logger.info(f"Deploying app {app.name!r}.")
-            if app.chart.type == "git":
-                assert app.chart.git_repo_url
-                async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
-                    await run(f"cd {chart_folder_path}; helm dependency build")
+            async with self.semaphore:
+                logger.info(f"Deploying app {app.name!r}.")
+                if app.chart.type == "git":
+                    span.set_attribute("gitops.chart.type", "git")
+                    assert app.chart.git_repo_url
+                    async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
+                        with tracer.start_as_current_span("helm_dependency_build"):
+                            await run(f"cd {chart_folder_path}; helm dependency build")
+
+                        with tempfile.NamedTemporaryFile(suffix=".yml") as cfg:
+                            cfg.write(json.dumps(app.values).encode())
+                            cfg.flush()
+                            os.fsync(cfg.fileno())
+
+                            with tracer.start_as_current_span("helm_upgrade"):
+                                result = await run(
+                                    "helm secrets upgrade --create-namespace"
+                                    " --install"
+                                    " --timeout=600s"
+                                    f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
+                                    f" -f {cfg.name}"
+                                    f" --namespace={app.namespace}"
+                                    f" {app.name}"
+                                    f" {chart_folder_path}",
+                                    suppress_errors=True,
+                                )
+                elif app.chart.type == "helm":
+                    span.set_attribute("gitops.chart.type", "helm")
                     with tempfile.NamedTemporaryFile(suffix=".yml") as cfg:
                         cfg.write(json.dumps(app.values).encode())
                         cfg.flush()
                         os.fsync(cfg.fileno())
-                        result = await run(
-                            "helm secrets upgrade --create-namespace"
-                            " --install"
-                            " --timeout=600s"
-                            f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
-                            f" -f {cfg.name}"
-                            f" --namespace={app.namespace}"
-                            f" {app.name}"
-                            f" {chart_folder_path}",
-                            suppress_errors=True,
-                        )
-            elif app.chart.type == "helm":
-                with tempfile.NamedTemporaryFile(suffix=".yml") as cfg:
-                    cfg.write(json.dumps(app.values).encode())
-                    cfg.flush()
-                    os.fsync(cfg.fileno())
-                    chart_version_arguments = f" --version={app.chart.version}" if app.chart.version else ""
-                    await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
-                    result = await run(
-                        "helm secrets upgrade --create-namespace"
-                        " --install"
-                        " --timeout=600s"
-                        f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
-                        f" -f {cfg.name}"
-                        f" --namespace={app.namespace}"
-                        f" {app.name}"
-                        f" {app.chart.helm_chart} {chart_version_arguments}",
-                        suppress_errors=True,
-                    )
-            else:
-                logger.warning("Local is not implemented yet")
-                return None
+                        chart_version_arguments = f" --version={app.chart.version}" if app.chart.version else ""
+                        with tracer.start_as_current_span("helm_repo_add"):
+                            await run(f"helm repo add {app.chart.helm_repo} {app.chart.helm_repo_url}")
 
-            update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
+                        with tracer.start_as_current_span("helm_upgrade"):
+                            result = await run(
+                                "helm secrets upgrade --create-namespace"
+                                " --install"
+                                " --timeout=600s"
+                                f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
+                                f" -f {cfg.name}"
+                                f" --namespace={app.namespace}"
+                                f" {app.name}"
+                                f" {app.chart.helm_chart} {chart_version_arguments}",
+                                suppress_errors=True,
+                            )
+                else:
+                    logger.warning("Local is not implemented yet")
+                    return None
 
-            await post_result(app=app, result=update_result, deployer=self)
-        return update_result
+                update_result = UpdateAppResult(app_name=app.name, slack_message="", **result)
+
+                await post_result(app=app, result=update_result, deployer=self)
+            return update_result
 
     def calculate_app_deltas(self):
         cur = self.current_app_definitions.apps.keys()

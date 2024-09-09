@@ -4,12 +4,15 @@ import logging
 import os
 
 import httpx
+from opentelemetry import trace
 
 from gitops.common.app import App
 from gitops_server import settings
 from gitops_server.types import UpdateAppResult
 from gitops_server.utils import github
 from gitops_server.utils.slack import SlackGroup, SlackUser, find_commiter_slack_user
+
+tracer = trace.get_tracer(__name__)
 
 logger = logging.getLogger(__name__)
 
