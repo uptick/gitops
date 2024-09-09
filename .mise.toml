@@ -5,6 +5,8 @@ uv = { version = "0.4.0"}
 [env]
 _.python.venv = { path = "{{config_root}}/.venv", create = true }
 
+[tasks.start]
+run = "uvicorn --host 0.0.0.0 --port 8000 gitops_server.main:app --reload"
 
 [tasks."install"]
 run = ["uv sync --all-extras"]

@@ -2,14 +2,23 @@ import asyncio
 import hashlib
 import hmac
 import logging
+import logging.config
 
 from fastapi import HTTPException, Request
+from uptick_observability.fastapi import manually_instrument_fastapi
+from uptick_observability.logging import (
+    DEFAULT_LOGGING_CONFIG_DICT,
+    manually_instrument_logging,
+)
 
 from gitops_server import settings
 from gitops_server.app import app
 from gitops_server.workers import DeploymentStatusWorker, DeployQueueWorker
 
-logging.basicConfig(level=logging.INFO)
+manually_instrument_logging()
+manually_instrument_fastapi()
+
+logging.config.dictConfig(DEFAULT_LOGGING_CONFIG_DICT)
 logger = logging.getLogger("gitops")
 
 
@@ -20,7 +29,6 @@ class EndpointFilter(logging.Filter):
 
 # Filter out / from access logs (We don't care about these calls)
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
-logger = logging.getLogger("document-wrapper")
 
 
 @app.get("/")
