@@ -4,5 +4,5 @@ metadata:
   name: {{ .Release.Name }}-environment
 data:
   {{- range $key, $val := .Values.environment }}
-  {{ $key }}: {{ $val }}
+  {{ $key }}: {{ $val | quote }}
   {{- end }}
