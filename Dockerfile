@@ -39,6 +39,7 @@ COPY --link=true pyproject.toml uv.lock /app/
 RUN --mount=type=cache,target=/root/.cache/ \
     (uv sync --frozen --no-install-project --extra server || uv sync --frozen --no-install-project --extra server)
 # Install dependencies
+RUN git config --global advice.detachedHead false
 
 COPY cluster.key /app/
 COPY gitops /app/gitops/
