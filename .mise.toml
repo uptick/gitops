@@ -32,3 +32,16 @@ run = "helm install --dry-run --debug -f charts/gitops/values.yaml debug charts/
 [tasks.release]
 description = "Bump release versions across all files"
 run = "python release.py"
+
+[tasks.start_otel]
+run = ["""
+OTEL_PYTHON_LOG_CORRELATION=true \
+OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=True \
+OTEL_LOGS_EXPORTER=none \
+OTEL_METRICS_EXPORTER=none \
+OTEL_TRACES_EXPORTER=console \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
+OTEL_RESOURCE_ATTRIBUTES=server_name=gitops \
+OTEL_SERVICE_NAME=gitops-test \
+OTEL_EXPORTER_OTLP_TIMEOUT=1 \
+uvicorn --host 0.0.0.0 --port 7000 gitops_server.main:app"""]

@@ -5,8 +5,8 @@ import logging
 import logging.config
 
 from fastapi import HTTPException, Request
-from uptick_observability.fastapi import manually_instrument_fastapi
-from uptick_observability.logging import (
+from uptick_observability.fastapi import manually_instrument_fastapi  # type: ignore[import-untyped]
+from uptick_observability.logging import (  # type: ignore[import-untyped]
     DEFAULT_LOGGING_CONFIG_DICT,
     manually_instrument_logging,
 )
