@@ -2,58 +2,76 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch: {}
+
+
+permissions:
+  actions: read # Read the metrics
+  contents: write # to be able to publish a GitHub release
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  id-token: write # to enable use of OIDC for npm provenance / AWS
+
+env:
+  MISE_PYTHON_COMPILE: false
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-southeast-2
 
-      - name: Docker Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+    - name: Docker Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Check out the repo
-        uses: actions/checkout@v3
+    - name: Check out the repo
+      uses: actions/checkout@v3
 
-      - name: Pull latest image. Build docker image and publish it.
-        env:
-          latest_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:latest
-          current_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:${{github.event.release.tag_name}}
-        run: |
-          echo ${{secrets.CLUSTER_KEY}} | base64 -d > cluster.key
-          docker pull $latest_image
-          docker build -t $latest_image --cache-from $latest_image .
-          docker push $latest_image
-          docker tag  $latest_image $current_image
-          docker push $current_image
-          echo "Published image at: $current_image"
+    - name: Pull latest image. Build docker image and publish it.
+      env:
+        latest_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:latest
+        current_image: 305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/gitops:${{github.event.release.tag_name}}
+      run: |
+        echo ${{secrets.CLUSTER_KEY}} | base64 -d > cluster.key
+        docker pull $latest_image
+        docker build -t $latest_image --cache-from $latest_image .
+        docker push $latest_image
+        docker tag  $latest_image $current_image
+        docker push $current_image
+        echo "Published image at: $current_image"
 
   publish_helm_chart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Publish Helm charts
-        uses: stefanprodan/helm-gh-pages@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v3
+    - name: Publish Helm charts
+      uses: stefanprodan/helm-gh-pages@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   publish_to_pypi:
     name: Publishes tag to pypi
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.12"
-      - name: Build package
-        run: python3 -m pip install --user --upgrade poetry
-      - name: Upload package
-        run: poetry publish -u __token__ -p ${{secrets.PYPI_TOKEN}} --build
+    - uses: actions/checkout@v3
+
+    - uses: jdx/mise-action@v2
+      with:
+        install: true
+        cache: true
+        experimental: true
+
+    - run: |
+        mise run build
+      shell: bash
+
+    - name: Publish Pypi Package
+      uses: pypa/gh-action-pypi-publish@release/v1

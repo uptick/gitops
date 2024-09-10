@@ -1,6 +1,6 @@
 [tools]
 python = { version = "3.12.1", venv = ".venv" }
-uv = { version = "0.4.0"}
+uv = { version = "0.4.7"}
 
 [env]
 _.python.venv = { path = "{{config_root}}/.venv", create = true }
@@ -45,3 +45,6 @@ OTEL_RESOURCE_ATTRIBUTES=server_name=gitops \
 OTEL_SERVICE_NAME=gitops-test \
 OTEL_EXPORTER_OTLP_TIMEOUT=1 \
 uvicorn --host 0.0.0.0 --port 7000 gitops_server.main:app"""]
+
+[tasks.build]
+run = "uv build"
