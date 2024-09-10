@@ -115,33 +115,37 @@ class Deployer:
         )
 
     async def deploy(self):
-        with tracer.start_as_current_span("deploy"):
-            added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
-            if not (added_apps | updated_apps | removed_apps):
-                logger.info("No deltas; aborting.")
-                return
-            logger.info(
-                f"Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)},"
-                f" R{list(removed_apps)}"
-            )
-            await post_init_summary(
-                source=self.current_app_definitions.name,
-                username=self.author_name,
-                added_apps=added_apps,
-                updated_apps=updated_apps,
-                removed_apps=removed_apps,
-                commit_message=self.commit_message,
-            )
-            update_results = await asyncio.gather(
-                *[
-                    self.update_app_deployment(self.current_app_definitions.apps[app_name])
-                    for app_name in (added_apps | updated_apps)
-                ]
-            )
-            uninstall_results = await asyncio.gather(
-                *[self.uninstall_app(self.previous_app_definitions.apps[app_name]) for app_name in removed_apps]
-            )
-            await post_result_summary(self.current_app_definitions.name, update_results + uninstall_results)
+        added_apps, updated_apps, removed_apps = self.calculate_app_deltas()
+        current_span = trace.get_current_span()
+        if current_span:
+            current_span.set_attribute("gitops.added_apps", len(added_apps))
+            current_span.set_attribute("gitops.updated_aps", len(updated_apps))
+            current_span.set_attribute("gitops.removed_app", len(removed_apps))
+        if not (added_apps | updated_apps | removed_apps):
+            logger.info("No deltas; aborting.")
+            return
+        logger.info(
+            f"Running deployment for these deltas: A{list(added_apps)}, U{list(updated_apps)},"
+            f" R{list(removed_apps)}"
+        )
+        await post_init_summary(
+            source=self.current_app_definitions.name,
+            username=self.author_name,
+            added_apps=added_apps,
+            updated_apps=updated_apps,
+            removed_apps=removed_apps,
+            commit_message=self.commit_message,
+        )
+        update_results = await asyncio.gather(
+            *[
+                self.update_app_deployment(self.current_app_definitions.apps[app_name])
+                for app_name in (added_apps | updated_apps)
+            ]
+        )
+        uninstall_results = await asyncio.gather(
+            *[self.uninstall_app(self.previous_app_definitions.apps[app_name]) for app_name in removed_apps]
+        )
+        await post_result_summary(self.current_app_definitions.name, update_results + uninstall_results)
 
     async def uninstall_app(self, app: App) -> UpdateAppResult:
         with tracer.start_as_current_span("uninstall_app", attributes={"app": app.name}):

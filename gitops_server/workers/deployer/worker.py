@@ -1,9 +1,13 @@
 import asyncio
 import logging
 
+from opentelemetry import trace
+
 from .deploy import Deployer
 
 logger = logging.getLogger("gitops_worker")
+
+tracer = trace.get_tracer(__name__)
 
 
 class DeployQueueWorker:
@@ -52,5 +56,12 @@ class DeployQueueWorker:
         ref = work.get("ref")
         logger.info(f'Have a push to "{ref}".')
         if ref == "refs/heads/master":
-            deployer = await Deployer.from_push_event(work)
-            await deployer.deploy()
+            with tracer.start_as_current_span("gitops_process_webhook") as current_span:
+                deployer = await Deployer.from_push_event(work)
+                current_span.set_attribute("gitops.ref", ref)
+                current_span.set_attribute("gitops.after", work.get("after"))
+                current_span.set_attribute("gitops.before", work.get("before"))
+                current_span.set_attribute("gitops.author_email", deployer.author_email)
+                current_span.set_attribute("gitops.author_name", deployer.author_name)
+                current_span.set_attribute("gitops.commit_message", deployer.commit_message)
+                await deployer.deploy()
