@@ -15,10 +15,11 @@ async def run(command, suppress_errors=False) -> RunOutput:
     exit_code = 0
     logger.info(f'Running "{command}".')
     proc = await asyncio.create_subprocess_shell(
-        command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        command,  # stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
 
-    stdout, stderr = await proc.communicate()
+    stdout, stderr = b"", b""
+    await proc.communicate()
     exit_code = proc.returncode if proc.returncode not in (None, 128) else 1  # type: ignore
     if exit_code == 0:
         return RunOutput(exit_code=exit_code, output=stdout.decode())
