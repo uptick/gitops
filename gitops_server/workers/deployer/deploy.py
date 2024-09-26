@@ -65,7 +65,7 @@ async def post_result_summary(source: str, results: list[UpdateAppResult]):
 @tracer.start_as_current_span("load_app_definitions")
 async def load_app_definitions(url: str, sha: str) -> AppDefinitions:
     logger.info(f'Loading app definitions at "{sha}".')
-    async with temp_repo(url, sha=sha) as repo:
+    async with temp_repo(url, ref=sha) as repo:
         app_definitions = AppDefinitions(name=get_repo_name_from_url(url))
         app_definitions.from_path(repo)
         return app_definitions
@@ -173,7 +173,7 @@ class Deployer:
                 if app.chart.type == "git":
                     span.set_attribute("gitops.chart.type", "git")
                     assert app.chart.git_repo_url
-                    async with temp_repo(app.chart.git_repo_url, sha=app.chart.git_sha) as chart_folder_path:
+                    async with temp_repo(app.chart.git_repo_url, ref=app.chart.git_sha) as chart_folder_path:
                         with tracer.start_as_current_span("helm_dependency_build"):
                             await run(f"cd {chart_folder_path}; helm dependency build")
 

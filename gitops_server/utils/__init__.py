@@ -1,12 +1,25 @@
 import asyncio
 import logging
+from pathlib import Path
+from collections.abc import Callable
 
 from ..types import RunOutput
 
-logger = logging.getLogger("gitops")
+logger = logging.getLogger("gitops.run")
 
 
-async def run(command, suppress_errors=False) -> RunOutput:
+async def _read_stream(stream: asyncio.StreamReader | None, cb: Callable[[bytes], None]) -> None:
+    if stream is None:
+        return
+    while True:
+        line = await stream.readline()
+        if line:
+            cb(line)
+        else:
+            break
+
+
+async def run(command: str, suppress_errors: bool = False, cwd: str | Path | None = None) -> RunOutput:
     """Run a shell command.
 
     Runs the command in an asyncio executor to keep things async. Will
@@ -15,10 +28,25 @@ async def run(command, suppress_errors=False) -> RunOutput:
     exit_code = 0
     logger.info(f'Running "{command}".')
     proc = await asyncio.create_subprocess_shell(
-        command,  # stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=cwd
+    )
+    stdout, stderr = b"", b""
+
+    def log_stdout(line: bytes) -> None:
+        nonlocal stdout
+        stdout += line
+        logger.info(f"{line.decode()}")
+
+    def log_stderr(line: bytes) -> None:
+        nonlocal stderr
+        stderr += line
+        logger.info(f"{line.decode()}")
+
+    await asyncio.gather(
+        _read_stream(proc.stdout, log_stdout),
+        _read_stream(proc.stderr, log_stderr),
     )
 
-    stdout, stderr = b"", b""
     await proc.communicate()
     exit_code = proc.returncode if proc.returncode not in (None, 128) else 1  # type: ignore
     if exit_code == 0:
