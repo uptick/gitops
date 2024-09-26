@@ -33,8 +33,9 @@ async def clone_repo(git_repo_url: str, path: str, sha: str | None = None, branc
         else:
             await run(f"git clone --depth 100 {url_with_oauth_token} {path};")
 
-    with tracer.start_as_current_span("temp_repo.git_crypt_unlock"):
-        await run(f'cd {path}; git-crypt unlock {os.environ["GIT_CRYPT_KEY_FILE"]}')
+    if GIT_CRYPT_KEY_FILE := os.environ.get("GIT_CRYPT_KEY_FILE"):
+        with tracer.start_as_current_span("temp_repo.git_crypt_unlock"):
+            await run(f"cd {path}; git-crypt unlock {GIT_CRYPT_KEY_FILE}")
 
 
 def is_sha(sha_or_ref: str | None) -> bool:
