@@ -61,7 +61,7 @@ subjects:
 ```
 
 ## Contribution
-We used to manually pump versions using `Make` or most recently `mise` but now we're using [releaseplease](https://github.com/googleapis/release-please) to publish a new version do the following:
+We're using [releaseplease](https://github.com/googleapis/release-please), to publish a new version do the following:
 1. Checkout a feature branch and make the changes
    1. Make sure to follow instructions for writing commits by [releaseplease](https://github.com/googleapis/release-please)
       1. fix: which represents bug fixes, and correlates to a SemVer patch.
