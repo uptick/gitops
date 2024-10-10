@@ -67,8 +67,7 @@ async def post_result_summary(source: str, results: list[UpdateAppResult]):
 async def load_app_definitions(url: str, sha: str) -> AppDefinitions:
     logger.info(f'Loading app definitions at "{sha}".')
     async with temp_repo(url, ref=sha) as repo:
-        app_definitions = AppDefinitions(name=get_repo_name_from_url(url))
-        app_definitions.from_path(repo)
+        app_definitions = AppDefinitions(name=get_repo_name_from_url(url), path=repo)
         return app_definitions
 
 

@@ -2,6 +2,8 @@ import os
 import sys
 from pathlib import Path
 
+from gitops.utils.apps import App, get_app_details, get_apps
+
 from .utils.cli import success, warning
 
 __version__ = "0.11.5"
@@ -25,3 +27,5 @@ if versions_path.exists():
                 f" requirement {success(min_gitops_version)}.",
                 file=sys.stderr,
             )
+
+__all__ = ["App", "get_app_details", "get_apps", "__version__"]

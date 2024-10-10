@@ -24,8 +24,19 @@ class App:
         deployments: dict | None = None,
         secrets: dict | None = None,
         load_secrets: bool = True,
+        encode_secrets: bool = True,
+        # deprecated
         account_id: str = "",
     ) -> None:
+        """
+        :params name: The name of the app
+        :params path: The path to the app directory
+        :params deployments: The deployments dictionary (injecting for testing)
+        :params secrets: The secrets dictionary (injecting for testing)
+        :params load_secrets: Whether to load the secrets file
+        :params encode_secrets: Whether to base64 encode the secrets
+        """
+        self.encode_secrets = encode_secrets
         self.name = name
         self.path = path
         self.account_id = account_id
@@ -47,6 +58,9 @@ class App:
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
+    def __repr__(self) -> str:
+        return f"App(name={self.name}, cluster={self.cluster}, tags={self.tags})"
+
     def is_inactive(self) -> bool:
         return "inactive" in self.values.get("tags", [])
 
@@ -61,11 +75,11 @@ class App:
             current_dict = current_dict.setdefault(key, {})
         current_dict[keys[-1]] = value
 
-    def _make_values(self, deployments: dict, secrets: dict) -> dict:
-        values = {
-            **deployments,
-            "secrets": {**{k: b64encode(v.encode()).decode() for k, v in secrets.items()}},
-        }
+    def _make_values(self, deployments: dict, secrets: dict[str, str]) -> dict:
+        def encode(value: str) -> str:
+            return b64encode(str(value).encode()).decode() if self.encode_secrets else value
+
+        values = {**deployments, "secrets": {**{k: encode(v) for k, v in secrets.items()}}}
 
         image = self._make_image(deployments)
         if image:
@@ -126,6 +140,11 @@ class App:
     @property
     def service_account_name(self) -> str:
         return self.values.get("serviceAccount", {}).get("name") or self.values.get("serviceAccountName") or "default"
+
+    @property
+    def secrets(self) -> dict[str, str]:
+        # TODO: This should be a first class property
+        return self.values.get("secrets", {})
 
 
 class Chart:

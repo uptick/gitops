@@ -1,3 +1,5 @@
+from typing import Any
+
 import yaml
 
 from gitops.common.app import App
@@ -20,14 +22,14 @@ async def mock_load_app_definitions(url, sha):
     return app_definitions
 
 
-def create_test_yaml(fg=4, bg=2):
+def create_test_yaml(fg=4, bg=2, **kwargs: Any):
     data = {
         "chart": "https://github.com/some/chart",
         "images": {"template": "template-tag-{tag}"},
         "namespace": "mynamespace",
         "tags": ["tag1", "tag2"],
         "image-tag": "myimagetag",
-        "cluster": "UNKNOWN",
+        "cluster": "test-cluster",
         "containers": {"fg": {"replicas": fg}, "bg": {"replicas": bg}},
         "environment": {
             "DJANGO_SETTINGS_MODULE": "my.settings.module",
@@ -36,6 +38,10 @@ def create_test_yaml(fg=4, bg=2):
             "MEDIA_CLOUDINARY_PREFIX": "cloudinaryprefix",
         },
     }
+
+    for k, v in kwargs.items():
+        data[k] = v
+
     with open("/tmp/deployment.yml", "w+") as fh:
         fh.write(yaml.dump(data))
 

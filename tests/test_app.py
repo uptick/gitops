@@ -105,3 +105,18 @@ class TestChart:
 
         assert chart.type == "local"
         assert chart.path == "."
+
+    def test_app_namespace_property(self):
+        path = create_test_yaml()
+        app = App("test", path, encode_secrets=True)
+
+        assert app.namespace
+
+    def test_app_encode_secrets_works(self):
+        path = create_test_yaml()
+        app = App("test", path, encode_secrets=True)
+
+        assert app.secrets["SNAPE"] != "KILLS_DUMBLEDORE"
+
+        app_decoded = App("test", path, encode_secrets=False)
+        assert app_decoded.secrets["SNAPE"] == "KILLS_DUMBLEDORE"
