@@ -60,7 +60,12 @@ subjects:
   namespace: gitops
 ```
 
-# Making a release
-
-1. Run `make release` to set tag version the multiple required locations.
-2. Create a github release. Set the release tag to match the version number used. The github pipeline will do the following: Create a new version of the chart, create a docker image and release a new python library version to pypi.
+## Contribution
+We're using [releaseplease](https://github.com/googleapis/release-please), to publish a new version do the following:
+1. Checkout a feature branch and make the changes
+   1. Make sure to follow instructions for writing commits by [releaseplease](https://github.com/googleapis/release-please)
+      1. fix: which represents bug fixes, and correlates to a SemVer patch.
+      2. feat: which represents a new feature, and correlates to a SemVer minor.
+      3. feat!:, or fix!:, refactor!:, etc., which represent a breaking change (indicated by the !) and will result in a SemVer major.
+2. Push changes and get the PR approved
+3. Once it is merged; an additional PR containing the release changes needs to be merged to create a release.
