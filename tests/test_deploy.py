@@ -4,10 +4,11 @@ from unittest.mock import patch
 import pytest
 
 from gitops.common.app import App
+from gitops_server.types import AppDefinitions
 from gitops_server.workers.deployer import Deployer
 
 from .sample_data import SAMPLE_GITHUB_PAYLOAD, SAMPLE_GITHUB_PAYLOAD_SKIP_MIGRATIONS
-from .utils import mock_load_app_definitions
+from .utils import create_test_yaml, mock_load_app_definitions
 
 # Patch gitops_server.git.run & check correct commands + order
 # Patch command that reads yaml from cluster repo +
@@ -120,3 +121,16 @@ class TestDeploy:
         ]
         for where, check in check_in_run_mock:
             assert check in post_mock.call_args_list[where][0][0]
+
+
+class TestLoadAppDefinitions:
+    def test_load_app_definitions_ignores_suspended_apps(self):
+        app_definitions = AppDefinitions(
+            "mock-repo",
+            apps={
+                "in-cluster": App("in-cluster", path=create_test_yaml(tags=[])),
+                "suspended": App("suspended", path=create_test_yaml(tags=["suspended"])),
+                "not-in-cluster": App("not-in-cluster", path=create_test_yaml(tags=[], cluster="other-cluster")),
+            },
+        )
+        assert len(app_definitions.apps) == 1
