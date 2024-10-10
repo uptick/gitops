@@ -22,13 +22,16 @@ def is_valid_app_directory(directory: Path) -> bool:
     return all(file_paths)
 
 
-def get_app_details(app_name: str, load_secrets: bool = True, exit_if_not_found: bool = True) -> App:
+def get_app_details(
+    app_name: str, load_secrets: bool = True, encode_secrets: bool = True, exit_if_not_found: bool = True
+) -> App:
     account_id = get_account_id() if load_secrets else "UNKNOWN"
     try:
         app = App(
             app_name,
             path=str(get_apps_directory() / app_name),
             load_secrets=load_secrets,
+            encode_secrets=encode_secrets,
             account_id=account_id,
         )
     except FileNotFoundError as e:
@@ -68,6 +71,7 @@ def get_apps(  # noqa: C901
     autoexclude_inactive: bool = True,
     message: str | None = None,
     load_secrets: bool = True,
+    encode_secrets: bool = True,
 ) -> list[App]:
     """Return apps that contain ALL of the tags listed in `filter` and NONE of the tags listed in
     `exclude`. The incoming filter and exclude params may come in as a list or commastring.
@@ -102,7 +106,7 @@ def get_apps(  # noqa: C901
             continue
         elif not is_valid_app_directory(entry):
             continue
-        app = get_app_details(entry.name, load_secrets=load_secrets)
+        app = get_app_details(entry.name, load_secrets=load_secrets, encode_secrets=encode_secrets)
 
         pseudotags = [app.name, app.cluster]
         if app.image and app.image_prefix:
