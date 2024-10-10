@@ -58,6 +58,9 @@ class App:
             and json.dumps(self.values, sort_keys=True) == json.dumps(other.values, sort_keys=True)
         )
 
+    def __repr__(self) -> str:
+        return f"App(name={self.name}, cluster={self.cluster}, tags={self.tags})"
+
     def is_inactive(self) -> bool:
         return "inactive" in self.values.get("tags", [])
 
