@@ -1,7 +1,7 @@
 
 [project]
 name = "gitops"
-version = "0.11.5"
+version = "0.11.4"
 description = "Manage multiple apps across one or more k8s clusters."
 requires-python = ">=3.12"
 readme = "README.md"
