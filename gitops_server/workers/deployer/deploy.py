@@ -186,7 +186,7 @@ class Deployer:
                             with tracer.start_as_current_span("helm_upgrade"):
                                 result = await run(
                                     "helm secrets upgrade --create-namespace"
-                                    f"--history-max {MAX_HELM_HISTORY}"
+                                    f" --history-max {MAX_HELM_HISTORY}"
                                     " --install"
                                     " --timeout=600s"
                                     f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
@@ -209,7 +209,7 @@ class Deployer:
                         with tracer.start_as_current_span("helm_upgrade"):
                             result = await run(
                                 "helm secrets upgrade --create-namespace"
-                                f"--history-max {MAX_HELM_HISTORY}"
+                                f" --history-max {MAX_HELM_HISTORY}"
                                 " --install"
                                 " --timeout=600s"
                                 f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
