@@ -21,6 +21,7 @@ BASE_REPO_DIR = "/var/gitops/repos"
 ROLE_ARN = f"arn:aws:iam::{settings.ACCOUNT_ID}:role/GitopsAccess"
 logger = logging.getLogger("gitops")
 GITOPS_MAX_PARALLEL_DEPLOYS = os.environ.get("GITOPS_MAX_PARALLEL_DEPLOYS", "5")
+MAX_HELM_HISTORY = 3
 
 
 @tracer.start_as_current_span("post_init_summary")
@@ -185,6 +186,7 @@ class Deployer:
                             with tracer.start_as_current_span("helm_upgrade"):
                                 result = await run(
                                     "helm secrets upgrade --create-namespace"
+                                    f"--history-max {MAX_HELM_HISTORY}"
                                     " --install"
                                     " --timeout=600s"
                                     f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
@@ -207,6 +209,7 @@ class Deployer:
                         with tracer.start_as_current_span("helm_upgrade"):
                             result = await run(
                                 "helm secrets upgrade --create-namespace"
+                                f"--history-max {MAX_HELM_HISTORY}"
                                 " --install"
                                 " --timeout=600s"
                                 f"{' --set skip_migrations=true' if self.skip_migrations else ''}"
