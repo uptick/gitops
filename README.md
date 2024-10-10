@@ -68,4 +68,4 @@ We're using [releaseplease](https://github.com/googleapis/release-please), to pu
       2. feat: which represents a new feature, and correlates to a SemVer minor.
       3. feat!:, or fix!:, refactor!:, etc., which represent a breaking change (indicated by the !) and will result in a SemVer major.
 2. Push changes and get the PR approved
-3. Once it's merged [releaseplease](https://github.com/googleapis/release-please) will take care of publishing a new release
+3. Once it is merged; an additional PR containing the release changes needs to be merged to create a release.
