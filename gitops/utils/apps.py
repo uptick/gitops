@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Literal
 
 from colorama import Fore
 from tabulate import tabulate
@@ -63,7 +64,7 @@ def update_app(app_name: str, **kwargs: object) -> None:
 def get_apps(  # noqa: C901
     filter: set[str] | list[str] | str = "",
     exclude: set[str] | list[str] | str = "",
-    mode: str = "PROMPT",
+    mode: Literal["PROMPT", "PREVIEW", "SILENT"] | None = "PROMPT",
     autoexclude_inactive: bool = True,
     message: str | None = None,
     load_secrets: bool = True,
