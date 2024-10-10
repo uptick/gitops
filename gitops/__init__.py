@@ -6,7 +6,7 @@ from gitops.utils.apps import App, get_app_details, get_apps
 
 from .utils.cli import success, warning
 
-__version__ = "0.11.5"
+__version__ = "0.11.6"
 
 
 # Checking gitops version matches cluster repo version.
