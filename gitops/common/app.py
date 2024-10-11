@@ -114,6 +114,12 @@ class App:
         return self.image.split(":")[0].split("/")[-1]
 
     @property
+    def image_repository(self) -> str:
+        """[305686791668.dkr.ecr.ap-southeast-2.amazonaws.com]/uptick:yoink-9f03ac80f3"""
+        return self.image.split("/")[0]
+
+
+    @property
     def image_tag(self) -> str:
         """305686791668.dkr.ecr.ap-southeast-2.amazonaws.com/uptick:[yoink-9f03ac80f3]"""
         return self.image.split(":")[-1]
